@@ -1,16 +1,12 @@
 === WC Vendors - WooCommerce Multivendor, WooCommerce Marketplace, Product Vendors ===
 Contributors: jkohlbach, RymeraWebCo, Rymera01, smub
 Tags: multivendor, marketplace, multi vendor, product vendors, woocommerce commissions
-Donate link: 
-Author URI: https://www.wcvendors.com/
-Plugin URI: https://www.wcvendors.com/
 Requires at least: 5.5.0
-Requires PHP: 7.4
 Tested up to: 6.6
 Stable tag: 2.5.3
+Requires PHP: 7.4
 License: GPLv2 or later
-WC requires at least: 6.0.0
-WC tested up to: 9.3
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 The original WooCommerce multi-vendor plugin. Easily create a WooCommerce marketplace with multi-seller, product vendor stores & vendor commissions.
 

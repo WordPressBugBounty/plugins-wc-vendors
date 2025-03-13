@@ -258,12 +258,12 @@ class WCVendors_Install {
             product_id bigint(20) NOT NULL,
             order_id bigint(20) NOT NULL,
             vendor_id bigint(20) NOT NULL,
-            total_due decimal(20,2) NOT NULL,
+            total_due decimal(20,8) NOT NULL,
             qty BIGINT( 20 ) NOT NULL,
-            total_shipping decimal(20,2) NOT NULL,
-            tax decimal(20,2) NOT NULL,
+            total_shipping decimal(20,8) NOT NULL,
+            tax decimal(20,8) NOT NULL,
             status varchar(20) NOT NULL DEFAULT 'due',
-            time datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+            time datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
             UNIQUE KEY id (id)
         );";
 

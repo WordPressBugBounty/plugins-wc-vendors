@@ -598,10 +598,10 @@ class WCVendors_Admin_Settings extends WC_Admin_Settings {
                             <?php echo wp_kses_post( ( $description ) ? $description : '' ); ?>
                             <br />
                             <a class="select_all button" href="#">
-                                <?php esc_html_e( 'Select all', 'wc-vendors' ); ?>
+                                <?php esc_html_e( 'Select All', 'wc-vendors' ); ?>
                             </a>
                             <a class="select_none button" href="#">
-                                <?php esc_html_e( 'Select none', 'wc-vendors' ); ?>
+                                <?php esc_html_e( 'Select None', 'wc-vendors' ); ?>
                             </a>
                             <?php do_action( 'wcvendors_after_multi_country_select', $value ); ?>
                         </td>

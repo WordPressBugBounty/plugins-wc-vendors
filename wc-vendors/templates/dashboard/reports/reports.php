@@ -48,57 +48,68 @@
 ?>
 
 <?php do_action( 'wcvendors_before_dashboard_overview_graphs' ); ?>
-<div class="wcv_reports wcv-cols-group wcv-horizontal-gutters">
-    <div class="xlarge-50 large-50 medium-100 small-100 tiny-100">
-        <h3><?php esc_html_e( 'Gross Sales Report', 'wc-vendors' ); ?></h3>
-        <table role="grid" class="wcvendors-table wcvendors-table-recent_order wcv-table">
-            <tbody>
-            <tr>
-                <td><?php esc_html_e( 'Total Order', 'wc-vendors' ); ?></td>
-                <td><strong><?php echo esc_html( $store_report->total_orders ); ?> </td></strong>
-            </tr>
+<div class="wcv_reports wcv-cols-group wcv-horizontal-gutters column-group ink-stacker gutters wcv-flex wcv-flex-wrap wcv-cols-group-wide">
+    <div class="xlarge-50 large-50 medium-100 small-100 tiny-100 wcv-bottom-space">
+        <div class="wcv-section">
+            <h3><?php esc_html_e( 'Gross Sales Report', 'wc-vendors' ); ?></h3>
+            <table role="grid" class="wcv-dashboard-table wcvendors-table-recent_order has-background">
+                <tbody>
+                <tr>
+                    <th><?php esc_html_e( 'Total Order', 'wc-vendors' ); ?></th>
+                    <td><strong><?php echo esc_html( $store_report->total_orders ); ?> </strong></td>
+                </tr>
 
-            <tr>
-                <td><?php esc_html_e( 'Total Product Sold', 'wc-vendors' ); ?></td>
-                <td><strong><?php echo esc_html( $store_report->total_products_sold ); ?></strong></td>
-            </tr>
+                <tr>
+                    <th><?php esc_html_e( 'Total Product Sold', 'wc-vendors' ); ?></th>
+                    <td><strong><?php echo esc_html( $store_report->total_products_sold ); ?></strong></td>
+                </tr>
 
-            <tr>
-                <td><?php esc_html_e( 'Total Gross Sales', 'wc-vendors' ); ?></td>
-                <td><strong><?php echo wp_kses( wc_price( $vendor_order_total ), wcv_allowed_html_tags() ); ?></strong></td>
-            </tr>
+                <tr>
+                    <th><?php esc_html_e( 'Total Gross Sales', 'wc-vendors' ); ?></th>
+                    <td><strong><?php echo wp_kses( wc_price( $vendor_order_total ), wcv_allowed_html_tags() ); ?></strong></td>
+                </tr>
 
-            <tr>
-                <td><?php esc_html_e( 'Total Commission', 'wc-vendors' ); ?></td>
-                <td><strong><?php echo wp_kses( wc_price( $commissionTotal ), wcv_allowed_html_tags() ); ?></strong></td>
-            </tr>
+                <tr>
+                    <th><?php esc_html_e( 'Total Commission', 'wc-vendors' ); ?></th>
+                    <td><strong><?php echo wp_kses( wc_price( $commissionTotal ), wcv_allowed_html_tags() ); ?></strong></td>
+                </tr>
 
-            <tr>
-                <td><?php esc_html_e( 'Net Revenue', 'wc-vendors' ); ?></td>
-                <td><strong><?php echo wc_price( $net_revenue ); // phpcs:ignore ?></strong></td>
-            </tr>
-            </tbody>
-        </table>
+                <tr>
+                    <th><?php esc_html_e( 'Net Revenue', 'wc-vendors' ); ?></th>
+                    <td><strong><?php echo wc_price( $net_revenue ); // phpcs:ignore ?></strong></td>
+                </tr>
+                </tbody>
+            </table>
         </div>
+    </div>
 
-    <div class="all-50 small-100 tiny-100">
+    <div class="xlarge-50 large-50 medium-100 small-100 tiny-100 wcv-bottom-space">
+        <div class="wcv-section">
         <h3><?php esc_html_e( 'Orders Totals', 'wc-vendors' ); ?> ( <?php echo esc_html( $store_report->total_orders ); ?> )</h3>
         <?php $order_chart_data = $store_report->get_order_chart_data(); ?>
         <?php if ( ! $order_chart_data ) : ?>
             <p><?php esc_html_e( 'No orders for this period. Adjust your dates above and click Update, or list new products for customers to buy.', 'wc-vendors' ); ?></p>
         <?php else : ?>
             <canvas id="orders_chart" width="350" height="200"></canvas>
+            <div id="wcv-total-orders-chart-legend" class="wcv-total-orders-chart-legend">
+                <div class="wcv-total-orders-chart-legend-item" style="display:flex;align-items:center;justify-content:center;">
+                    <div class="wcv-total-orders-chart-legend-color" style="width: 12px; height:12px;border-radius:50%;margin-right:5px;"></div>
+                    <div class="wcv-total-orders-chart-legend-label" style="font-size: 12px;"><?php esc_html_e( 'Total Orders', 'wc-vendors' ); ?></div>
+                </div>
+            </div>
             <script type="text/javascript">
                 var orders_chart_label = <?php echo $order_chart_data['labels']; //phpcs:ignore?>;
                 var orders_chart_data = <?php echo $order_chart_data['data']; //phpcs:ignore?>;
             </script>
 
         <?php endif; ?>
+        </div>
     </div>
-    <?php do_action( 'wcvendors_dashboard_before_product_totals' ); ?>
-    <?php do_action( 'wcvendors_dashboard_product_totals', $store_report ); ?>
-    <?php do_action( 'wcvendors_dashboard_after_product_totals' ); ?>
 </div>
+<?php do_action( 'wcvendors_dashboard_before_product_totals' ); ?>
+<?php do_action( 'wcvendors_dashboard_product_totals', $store_report ); ?>
+<?php do_action( 'wcvendors_dashboard_after_product_totals' ); ?>
+
 <?php do_action( 'wcvendors_after_dashboard_overview_graphs' ); ?>
 
 <?php do_action( 'wcvendors_before_dashboard_overview_recent' ); ?>

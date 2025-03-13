@@ -242,3 +242,26 @@ if ( ! function_exists( 'wcv_get_order_statuses' ) ) {
         return apply_filters( 'wcv_order_statuses', $order_statuses );
     }
 }
+
+if ( ! function_exists( 'wcv_recursive_sanitize_array' ) ) {
+    /**
+     * Recursively sanitize an array.
+     *
+     * @since 2.5.2
+     *
+     * @param array $arr Array to sanitize.
+     *
+     * @return array
+     */
+    function wcv_recursive_sanitize_array( $arr ) {
+        foreach ( $arr as $key => &$value ) {
+            if ( is_array( $value ) ) {
+                $arr[ $key ] = wcv_recursive_sanitize_array( $value );
+            } else {
+                $arr[ $key ] = sanitize_text_field( $value );
+            }
+        }
+
+        return $arr;
+    }
+}

@@ -112,6 +112,16 @@ class WCV_Table_Helper {
     public $container_wrap;
 
     /**
+     * Quick links for the table
+     *
+     * @var array $quick_links
+     *
+     * @since 2.5.4
+     * @version 2.5.4
+     */
+    public $quick_links;
+
+    /**
      * Initialize the class and set its properties.
      *
      * @since    2.5.2
@@ -146,6 +156,16 @@ class WCV_Table_Helper {
         $paged = ( get_query_var( 'paged' ) ) ? get_query_var( 'paged' ) : 1;
 
         $search = isset( $_GET['wcv-search'] ) ? $_GET['wcv-search'] : ''; // phpcs:ignore
+        $product_status = isset( $_GET['product_status'] ) ? $_GET['product_status'] : ''; // phpcs:ignore
+        $instock_status = array( 'instock', 'outofstock', 'onbackorder' );
+        $post_status    = array( 'publish', 'draft', 'pending', 'private' );
+        $product_tag   = isset( $_GET['_wcv_product_tag'] ) ? $_GET['_wcv_product_tag'] : ''; // phpcs:ignore
+        $product_cat   = isset( $_GET['_wcv_product_category'] ) ? $_GET['_wcv_product_category'] : ''; // phpcs:ignore
+        $product_type = isset( $_GET['_wcv_product_type'] ) ? $_GET['_wcv_product_type'] : ''; // phpcs:ignore
+
+        if ( 'all' === $product_status ) {
+            $product_status = 'any';
+        }
 
         // Default table rows.
         $args = array(
@@ -155,7 +175,56 @@ class WCV_Table_Helper {
             'post_status'    => 'any',
             'paged'          => $paged,
             's'              => $search,
+            'tax_query'      => array(
+                'relation' => 'AND',
+            ),
         );
+        if ( in_array( $product_status, $instock_status, true ) ) {
+            $args['post_status'] = 'any';
+            $meta_query          = array(
+                array(
+                    'key'     => '_stock_status',
+                    'value'   => $product_status,
+                    'compare' => '=',
+                ),
+            );
+
+            $args['meta_query'][] = $meta_query;
+        }
+
+        if ( in_array( $product_status, $post_status, true ) ) {
+            $args['post_status'] = $product_status;
+        }
+
+        if ( ! empty( $product_tag ) ) {
+            $args['tax_query'][] = array(
+                array(
+                    'taxonomy' => 'product_tag',
+                    'field'    => 'term_id',
+                    'terms'    => $product_tag,
+                ),
+            );
+        }
+
+        if ( ! empty( $product_cat ) ) {
+            $args['tax_query'][] = array(
+                array(
+                    'taxonomy' => 'product_cat',
+                    'field'    => 'term_id',
+                    'terms'    => $product_cat,
+                ),
+            );
+        }
+
+        if ( ! empty( $product_type ) ) {
+            $args['tax_query'][] = array(
+                array(
+                    'taxonomy' => 'product_type',
+                    'field'    => 'slug',
+                    'terms'    => $product_type,
+                ),
+            );
+        }
 
         $args    = wcv_deprecated_filter( 'wcvendors_pro_table_row_args_' . $this->id, '2.5.2', 'wcvendors_table_row_args_' . $this->id, $args );
         $results = new \WP_Query( $args );
@@ -384,5 +453,14 @@ class WCV_Table_Helper {
      */
     public function has_rows() {
         return array_filter( $this->rows );
+    }
+
+    /**
+     * Set quick links for the table
+     *
+     * @param array $quick_links Quick links for the table.
+     */
+    public function set_quick_links( $quick_links ) {
+        $this->quick_links = $quick_links;
     }
 }

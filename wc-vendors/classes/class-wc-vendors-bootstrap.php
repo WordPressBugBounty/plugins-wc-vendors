@@ -85,11 +85,8 @@ class WC_Vendors_Bootstrap {
      */
     public function __construct() {
 
-        // Load text domain.
-        add_action( 'init', array( $this, 'load_il8n' ), 0 );
-
         $this->title = __( 'WC Vendors Marketplace', 'wc-vendors' );
-
+        add_action( 'plugins_loaded', array( $this, 'load_il8n' ) );
         // Install & upgrade.
         add_action( 'admin_init', array( $this, 'check_install' ) );
         add_action( 'init', array( $this, 'maybe_flush_permalinks' ), 99 );
@@ -340,6 +337,7 @@ class WC_Vendors_Bootstrap {
         include_once WCV_PLUGIN_DIR . 'classes/front/forms/class-wcv-store-form.php';
         include_once WCV_PLUGIN_DIR . 'classes/front/dashboard/class-vendor-dashboard.php';
         include_once WCV_PLUGIN_DIR . 'classes/front/class-wcv-table-helper.php';
+        include_once WCV_PLUGIN_DIR . 'classes/front/class-wcv-dashboard-controller.php';
 
         if ( is_admin() ) {
 
@@ -664,6 +662,7 @@ class WC_Vendors_Bootstrap {
         add_filter( 'wcvendors_table_rows_order', array( $this->order_controller, 'table_rows' ), 10, 2 );
         add_filter( 'wcvendors_table_action_column_order', array( $this->order_controller, 'table_action_column' ) );
         add_filter( 'wcvendors_table_before_order', array( $this->order_controller, 'table_actions' ) );
+        add_filter( 'wcvendors_table_after_order', array( $this->order_controller, 'table_actions_after' ) );
         add_filter( 'wcvendors_table_no_data_notice_order', array( $this->order_controller, 'table_no_data_notice' ) );
         add_action( 'template_redirect', array( $this->order_controller, 'process_submit' ) );
         add_action( 'template_redirect', array( $this, 'wc_filter_address_hook' ) );
@@ -673,6 +672,7 @@ class WC_Vendors_Bootstrap {
         add_action( 'wp_ajax_wcv_json_unique_store_name', array( $this->vendor_controller, 'json_unique_store_name' ) );
         add_action( 'template_redirect', array( $this->vendor_controller, 'process_submit' ) );
         add_filter( 'woocommerce_login_redirect', array( $this->vendor_controller, 'vendor_login_redirect' ), 10, 2 );
+        add_action( 'wp_ajax_wcv_dismiss_store_setup_step_section', array( $this->vendor_controller, 'dismiss_store_setup_step_section' ) );
     }
 
     /**

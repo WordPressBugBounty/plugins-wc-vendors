@@ -11,7 +11,8 @@ jQuery(function($) {
         allowInvalidPreload: true,
         locale: window.wcv_datepicker.locale,
         dateFormat: window.wcv_datepicker.date_format,
-        defaultDate: ''
+        defaultDate: '',
+        wrap: false
       };
 
       wcv_datetime_picker.initDatePickers(options);

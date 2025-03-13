@@ -163,10 +163,13 @@ class Vendors_Settings {
      * @return void
      * @throws Exception If the vendor ID is invalid.
      *
-     * @since 2.4.8
+     * @since   2.5.4 - Call get_keys to ensure data added via filters is available for other methods.
+     * @since   2.4.8
      * @version 2.4.8
      */
     public function __construct( $vendor_id = false, $view = true ) {
+        $data_keys       = $this->get_keys();
+        $this->data_keys = $data_keys;
         if ( $vendor_id && ( WCV_Vendors::is_vendor( $vendor_id ) || WCV_Vendors::is_pending( $vendor_id ) ) ) {
             $this->vendor_id = (int) $vendor_id;
             if ( $view ) {
@@ -416,7 +419,7 @@ class Vendors_Settings {
      * Save settings
      *
      * @access public
-     * @return array The settings that have changed.
+     * @return array|bool The settings that have changed, false if no changes.
      *
      * @since 2.4.8
      * @version 2.4.8
@@ -438,7 +441,8 @@ class Vendors_Settings {
             unset( $changes['disable_cart'] );
             unset( $changes['vacation_mode'] );
         }
-
+        $allow_shop_desc_html = wc_string_to_bool( get_option( 'wcvendors_display_shop_description_html', 'no' ) );
+        $allow_markup         = wc_string_to_bool( get_option( 'wcvendors_allow_form_markup', 'no' ) );
         foreach ( $changes as $field => $value ) {
             $section = $this->get_section( $field );
             if ( 'wp' === $section ) {
@@ -455,6 +459,47 @@ class Vendors_Settings {
             if ( ! isset( $this->data_keys[ $section ][ $field ] ) ) {
                 continue;
             }
+
+            if ( 'shop_description' === $field ) {
+                $striped_store_description = $allow_shop_desc_html ? wp_kses( $value, wcv_allowed_html_tags() ) : wp_strip_all_tags( $value );
+                $value                     = $striped_store_description;
+            }
+
+            if ( 'seller_info' === $field ) {
+                $striped_seller_info = $allow_markup ? wp_kses( $value, wcv_allowed_html_tags() ) : wp_strip_all_tags( $value );
+                $value               = $striped_seller_info;
+            }
+
+            if ( 'shipping_policy' === $field || 'return_policy' === $field || 'privacy_policy' === $field ) {
+                $striped_policy = $allow_markup ? wp_kses( $value, wcv_allowed_html_tags() ) : wp_strip_all_tags( $value );
+                $value          = $striped_policy;
+            }
+
+            $manual_sanitize_fields = array(
+                'store_description',
+                'seller_info',
+                'shipping_policy',
+                'return_policy',
+                'privacy_policy',
+            );
+
+            if ( ! in_array( $field, $manual_sanitize_fields, true ) ) {
+
+                $type = gettype( $value );
+
+                switch ( $type ) {
+                    case 'string':
+                        $value = sanitize_text_field( $value );
+                        break;
+                    case 'array':
+                        $value = wcv_recursive_sanitize_array( $value );
+                        break;
+                    case 'float':
+                        $value = floatval( $value );
+                        break;
+                }
+            }
+
             $result = update_user_meta( $this->vendor_id, $this->data_keys[ $section ][ $field ], $value );
             if ( $result ) {
                 $this->change_shop_slug( $field, $value );
@@ -483,7 +528,7 @@ class Vendors_Settings {
     }
 
     /**
-     * Get current comission rates
+     * Get current commission rates
      *
      * @return array
      * @since 2.4.8
@@ -577,9 +622,9 @@ class Vendors_Settings {
     /**
      * Get commission due
      *
-     * @return float The commission due
+     * @return array The commission due
      *
-     * @since 2.4.8
+     * @since   2.4.8
      * @version 2.4.8
      */
     public function get_commission_due() {

@@ -116,6 +116,15 @@ class WCV_Order_Controller {
     public $max_num_pages;
 
     /**
+     * Per page for pagination
+     *
+     * @since    2.5.4
+     *
+     * @var int $per_page integer for number of orders per page
+     */
+    public $per_page;
+
+    /**
      * Total number of orders for the query
      *
      * @since    2.5.2
@@ -123,6 +132,26 @@ class WCV_Order_Controller {
      * @var      int $total_order_count integer for total number of orders for the query
      */
     public $total_order_count;
+
+    /**
+     * All orders
+     *
+     * @since    2.5.4
+     * @access   public
+     *
+     * @var      array $_all_orders array of all orders
+     */
+    public $_all_orders;
+
+    /**
+     * Date format for the date picker
+     *
+     * @since 2.5.4
+     * @access public
+     *
+     * @var string $date_format date format for the date picker
+     */
+    public $date_format;
 
     /**
      * Initialize the class and set its properties.
@@ -160,7 +189,9 @@ class WCV_Order_Controller {
         $this->controller_type = 'order';
 
         $orders_sales_range  = get_option( 'wcvendors_orders_sales_range', 'monthly' );
+        $this->date_format   = is_wcv_pro_active() ? get_option( 'wcvendors_dashboard_date_format', 'Y-m-d' ) : 'Y-m-d';
         $this->default_start = '';
+        $this->per_page      = get_option( 'wcvendors_orders_per_page', 20 );
 
         switch ( $orders_sales_range ) {
             case 'annually':
@@ -326,6 +357,19 @@ class WCV_Order_Controller {
             self::mark_shipped( $vendor_id, $order_id );
         }
 
+        if ( isset( $_GET['wcv_mark_unshipped'] ) ) {
+
+            if ( ! \WCV_Vendor_Dashboard::check_object_permission( 'order', absint( $_GET['wcv_mark_unshipped'] ) ) ) { // phpcs:ignore
+                return false;
+            }
+
+            $vendor_id = get_current_user_id();
+            $order_id  = $_GET['wcv_mark_unshipped']; // phpcs:ignore
+            $order     = wc_get_order( $order_id );
+            wcv_mark_vendor_unshipped( $order, $vendor_id );
+            wc_add_notice( __( 'Order marked as unshipped', 'wc-vendors' ) );
+        }
+
         if ( isset( $_GET['wcv_shipping_label'] ) ) {
 
             $vendor_id = get_current_user_id();
@@ -399,6 +443,16 @@ class WCV_Order_Controller {
             } else {
                 WC()->session->set( 'wcv_order_filter_status', '' );
             }
+
+            if ( isset( $_POST['_wcv_shipping_status_input'] ) && '' !== $_POST['_wcv_shipping_status_input'] && '' !== $update_button ) {
+                WC()->session->set( 'wcv_order_shipping_status', $_POST['_wcv_shipping_status_input'] );
+            } else {
+                WC()->session->set( 'wcv_order_shipping_status', '' );
+            }
+        }
+        if ( isset( $_GET['order_status'] ) && '' !== $_GET['order_status'] && ! isset( $_POST['update_button'] ) ) {
+            WC()->session->set( 'wcv_order_filter_status', '' );
+            WC()->session->set( 'wcv_order_shipping_status', '' );
         }
 
         do_action( 'wcvendors_orders_process_submit' );
@@ -423,13 +477,40 @@ class WCV_Order_Controller {
         $columns = apply_filters(
             'wcv_order_table_columns',
             array(
-                'ID'           => __( 'ID', 'wc-vendors' ),
-                'order_number' => __( 'Order', 'wc-vendors' ),
-                'customer'     => __( 'Customer', 'wc-vendors' ),
-                'products'     => __( 'Products', 'wc-vendors' ),
-                'total'        => __( 'Total', 'wc-vendors' ),
-                'status'       => __( 'Shipped', 'wc-vendors' ),
-                'order_date'   => __( 'Order Date', 'wc-vendors' ),
+                'ID'           => array(
+                    'label' => __( 'ID', 'wc-vendors' ),
+                    'icon'  => 'wcv-icon-column-order',
+                ),
+                'order_number' => array(
+                    'label'         => __( 'Order', 'wc-vendors' ),
+                    'icon'          => 'wcv-icon-column-order',
+                    'mobile_header' => false,
+                    'full_span'     => true,
+                ),
+                'customer'     => array(
+                    'label'         => __( 'Customer', 'wc-vendors' ),
+                    'icon'          => 'wcv-icon-column-customer',
+                    'mobile_header' => true,
+                    'full_span'     => false,
+                ),
+                'total'        => array(
+                    'label'         => __( 'Total', 'wc-vendors' ),
+                    'icon'          => 'wcv-icon-column-total',
+                    'mobile_header' => true,
+                    'full_span'     => false,
+                ),
+                'status'       => array(
+                    'label'         => __( 'Shipping', 'wc-vendors' ),
+                    'icon'          => 'wcv-icon-column-shipping',
+                    'mobile_header' => true,
+                    'full_span'     => false,
+                ),
+                'order_date'   => array(
+                    'label'         => __( 'Actions', 'wc-vendors' ),
+                    'icon'          => 'wcv-icon-column-actions',
+                    'mobile_header' => false,
+                    'full_span'     => true,
+                ),
             )
         );
 
@@ -458,13 +539,20 @@ class WCV_Order_Controller {
          * @since 1.7.10
          */
         $show_refunded_orders = wcv_is_show_reversed_order() ? true : false;
+        $_all_orders          = array();
 
-        $_all_orders             = WCV_Vendor_Controller::get_orders2( get_current_user_id(), $date_range, $show_refunded_orders, true );
+        $_all_orders = WCV_Vendor_Controller::get_orders2( get_current_user_id(), $date_range, $show_refunded_orders, true, true );
+
+        $this->_all_orders       = $_all_orders;
         $this->max_num_pages     = $_all_orders['max_pages'];
         $this->total_order_count = $_all_orders['total_order_count'];
         $rows                    = array();
         $all_orders              = $_all_orders['total_orders'];
-
+        $all_orders              = $this->filter_by_order_status( $all_orders );
+        $this->max_num_pages     = ceil( count( $all_orders ) / $this->per_page );
+        $paged                   = get_query_var( 'paged' ) ? get_query_var( 'paged' ) : 1;
+        $offset                  = ( $paged - 1 ) * $this->per_page;
+        $all_orders              = array_slice( $all_orders, $offset, $this->per_page );
         if ( ! empty( $all_orders ) ) {
 
             foreach ( $all_orders as $order_row ) {
@@ -502,7 +590,7 @@ class WCV_Order_Controller {
                         if ( $refunded_count > 0 ) {
                             $item_refunded_total = $parent_order->get_total_refunded_for_item( $item_id );
 
-                            if ( absint( $item_refunded_total ) > 0 ) {
+                            if ( abs( $item_refunded_total ) > 0 ) {
                                 $item_name = sprintf( '<del>%s</del>', $item_name );
                                 $item_tax  = wc_tax_enabled() ? $item->get_taxes() : false;
                                 if ( $item_tax && $order_row->total_tax > 0 ) {
@@ -512,7 +600,7 @@ class WCV_Order_Controller {
                                     }
                                 }
 
-                                $refunded_total += absint( $item_refunded_total ) + absint( $item_tax_refunded_total );
+                                $refunded_total += abs( $item_refunded_total ) + abs( $item_tax_refunded_total );
                             }
                         }
 
@@ -549,7 +637,9 @@ class WCV_Order_Controller {
                 }
 
                 $shippers    = $parent_order ? array_filter( (array) $parent_order->get_meta( 'wc_pv_shipped' ) ) : array();
-                $has_shipped = in_array( get_current_user_id(), $shippers, true ) ? __( 'Yes', 'wc-vendors' ) : __( 'No', 'wc-vendors' );
+                $has_shipped = in_array( get_current_user_id(), $shippers, true ) ?
+                sprintf( '<span class="wcv-status wcv-status--shipped">%s</span>', __( 'Shipped', 'wc-vendors' ) ) :
+                sprintf( '<span class="wcv-status wcv-status--not-shipped">%s</span>', __( 'Awaiting Shipping', 'wc-vendors' ) );
                 $shipped     = ( $needs_shipping ) ? $has_shipped : __( 'NA', 'wc-vendors' );
 
                 $parent_order_number = $parent_order->get_order_number();
@@ -559,37 +649,41 @@ class WCV_Order_Controller {
                     array(
                         'view_details' =>
                             array(
-                                'label'  => __( 'View Order Details', 'wc-vendors' ),
+                                'label'  => __( 'View Order', 'wc-vendors' ),
                                 'url'    => '#',
                                 'custom' => array(
                                     'id'            => 'open-order-details-modal-' . $parent_order_number,
                                     'data-order-id' => $parent_order_number,
                                 ),
+                                'icon'   => 'wcv-icon-order-detail-title',
                             ),
                         'print_label'  =>
                         array(
-                            'label'  => __( 'Shipping label', 'wc-vendors' ),
+                            'label'  => __( 'Show Shipping Label', 'wc-vendors' ),
                             'url'    => '?wcv_shipping_label=' . $parent_order_number,
                             'target' => '_blank',
                             'custom' => array( 'data-order-id' => $parent_order_number ),
+                            'icon'   => 'wcv-icon-bill',
                         ),
                         'add_note'     =>
                         array(
-                            'label'  => __( 'Order note', 'wc-vendors' ),
+                            'label'  => __( 'Add Note', 'wc-vendors' ),
                             'url'    => '#',
                             'custom' => array(
                                 'id'            => 'open-order-note-modal-' . $parent_order_number,
                                 'data-order-id' => $parent_order_number,
                             ),
+                            'icon'   => 'wcv-icon-note-detail-title',
                         ),
                         'add_tracking' =>
                             array(
-                                'label'  => __( 'Tracking number', 'wc-vendors' ),
+                                'label'  => __( 'Add Tracking Number', 'wc-vendors' ),
                                 'url'    => '#',
                                 'custom' => array(
                                     'id'            => 'open-tracking-modal-' . $parent_order_number,
                                     'data-order-id' => $parent_order_number,
                                 ),
+                                'icon'   => 'wcv-icon-shipping-truck',
                             ),
 
                     ),
@@ -612,14 +706,43 @@ class WCV_Order_Controller {
                 }
 
                 // If it hasn't been shipped then provide a link to mark as shipped.
-                if ( __( 'No', 'wc-vendors' ) === $shipped ) {
+                if ( ! in_array( get_current_user_id(), $shippers, true ) ) {
                     $row_actions['mark_shipped'] = array(
                         'label'  => __( 'Mark shipped', 'wc-vendors' ),
                         'url'    => '?wcv_mark_shipped=' . $parent_order->get_id(),
                         'custom' => array(
                             'class' => 'mark-order-shipped',
                         ),
+                        'icon'   => 'wcv-icon-mark-shipped',
                     );
+                }
+
+                $can_mark_unshipped = in_array( $parent_order->get_status(), wcv_marked_unshipped_order_status(), true );
+
+                if ( in_array( get_current_user_id(), $shippers, true ) && $can_mark_unshipped ) {
+                    $row_actions['mark_unshipped'] = array(
+                        'label'  => __( 'Mark Unshipped', 'wc-vendors' ),
+                        'url'    => '?wcv_mark_unshipped=' . $parent_order->get_id(),
+                        'custom' => array(
+                            'class' => 'mark-order-unshipped',
+                        ),
+                        'icon'   => 'wcv-icon-mark-unshipped',
+                    );
+                    $order_row->shipped            = false;
+                }
+
+                $can_mark_unshipped = in_array( $parent_order->get_status(), wcv_marked_unshipped_order_status(), true );
+
+                if ( in_array( get_current_user_id(), $shippers, true ) && $can_mark_unshipped ) {
+                    $row_actions['mark_unshipped'] = array(
+                        'label'  => __( 'Mark Unshipped', 'wc-vendors' ),
+                        'url'    => '?wcv_mark_unshipped=' . $parent_order->get_id(),
+                        'custom' => array(
+                            'class' => 'mark-order-unshipped',
+                        ),
+                        'icon'   => 'wcv-icon-mark-unshipped',
+                    );
+                    $order_row->shipped            = true;
                 }
 
                 // If the order is any of the following status, remove order actions.
@@ -679,7 +802,7 @@ class WCV_Order_Controller {
                 $tax_due        = sprintf( get_woocommerce_price_format(), get_woocommerce_currency_symbol( $order_currency ), number_format( $order_row->total_tax, 2 ) );
                 $commission     = sprintf( get_woocommerce_price_format(), get_woocommerce_currency_symbol( $order_currency ), number_format( $order_row->commission_total, 2 ) );
                 $product_price  = sprintf( get_woocommerce_price_format(), get_woocommerce_currency_symbol( $order_currency ), number_format( $order_row->total - $order_row->total_shipping, 2 ) );
-                $price_total    = wc_price( $order_row->total );
+                $price_total    = '<strong>' . wc_price( $order_row->total ) . '</strong>';
                 if ( $refunded_total > 0 ) {
                     $refund_text = __( 'Refunded: ', 'wc-vendors' ) . sprintf( get_woocommerce_price_format(), get_woocommerce_currency_symbol( $order_currency ), number_format( $refunded_total, 2 ) );
                     $price_total = sprintf( '<del>%s</del> %s', wc_price( $order_row->total ), wc_price( $order_row->total - $refunded_total ) );
@@ -722,21 +845,20 @@ class WCV_Order_Controller {
                     $customer_details .= $billing_phone;
                 }
 
-                $order_date = $vendor_order->get_date_created();
-
-                $order_details = sprintf(
+                $order_date         = $vendor_order->get_date_created();
+                $order_status       = $refunded_total > 0 ? $refunded_status : ucfirst( wc_get_order_status_name( $parent_order->get_status() ) );
+                $order_status_class = $refunded_total > 0 ? 'wcv-status--refunded' : 'wcv-status--' . $parent_order->get_status();
+                $order_details      = sprintf(
                     '
-                <div class="order_id">#%s</div>
-                <div class="product_list wcv_mobile">%s</div>
-                <div class="order_total wcv_mobile">%s</div>
+                <p class="order_id wcv-flex wcv-flex-center"><span class="tiny-right-space small-right-space">#%s</span> <span class="wcv_mobile">%s</span></p>
+                <p class="order_date wcv_desktop">%s</p>
+                <p class="wcv-status %s">%s</p>
                 ',
                     $parent_order->get_order_number(),
-                    $products_html,
-                    sprintf(
-                        // translators: %s Text displaying total.
-                        __( 'Total: %s', 'wc-vendors' ),
-                        $total_text
-                    )
+                    $order_date->date_i18n( get_option( 'date_format', 'F j, Y' ) ),
+                    $order_date->date_i18n( get_option( 'date_format', 'F j, Y' ) ),
+                    $order_status_class,
+                    $order_status,
                 );
 
                 $new_row->ID           = $parent_order->get_order_number();
@@ -746,16 +868,7 @@ class WCV_Order_Controller {
                 $new_row->total        = $total_text;
                 $new_row->status       = $shipped;
 
-                $new_row->order_date = date_i18n(
-                    get_option( 'date_format', 'F j, Y' ),
-                    $order_date->getOffsetTimestamp()
-                );
-
-                if ( $refunded_total > 0 ) {
-                    $new_row->order_date .= '</strong><br />' . $refunded_status;
-                } else {
-                    $new_row->order_date .= '<br /></strong><strong>' . ucfirst( wc_get_order_status_name( $parent_order->get_status() ) ) . '</strong>';
-                }
+                $new_row->order_date = '';
 
                 $new_row->row_actions = $row_actions;
 
@@ -803,16 +916,23 @@ class WCV_Order_Controller {
     }
 
     /**
-     *  Add actions before and after the table
+     *  Add actions before the table
      *
      * @since    2.5.2
      */
     public function table_actions() {
 
-        $can_export_csv = wc_string_to_bool( get_option( 'wcvendors_capability_orders_export', 'no' ) );
-        $add_url        = '?wcv_export_orders';
-
         $search             = isset( $_POST['wcv-search'] ) ? wp_unslash( sanitize_text_field( $_POST['wcv-search'] ) ) : ''; // phpcs:ignore
+
+        include wcv_deprecated_filter( 'wcvendors_pro_table_actions_path', '2.5.2', 'wcvendors_table_actions_path', 'partials/order/wcvendors-order-table-actions.php' );
+    }
+
+    /**
+     *  Add actions after the table
+     *
+     * @since    2.5.2
+     */
+    public function table_actions_after() {
         $pagination_wrapper = apply_filters(
             'wcv_order_paginate_wrapper',
             array(
@@ -821,7 +941,7 @@ class WCV_Order_Controller {
             )
         );
 
-        include wcv_deprecated_filter( 'wcvendors_pro_table_actions_path', '2.5.2', 'wcvendors_table_actions_path', 'partials/order/wcvendors-order-table-actions.php' );
+        include apply_filters( 'wcvendors_order_table_pagination', 'partials/order/wcvendors-order-table-pagination.php' );
     }
 
     /**
@@ -1107,6 +1227,7 @@ class WCV_Order_Controller {
                 'customer_note'      => $customer_note,
                 'is_order_refund'    => $is_order_refund,
                 'total_refund'       => $total_refund,
+                'shipped'            => isset( $order_row->shipped ) ? $order_row->shipped : false,
             ),
             'wc-vendors/dashboard/order/',
             $this->base_dir . 'templates/dashboard/order/'
@@ -1709,6 +1830,19 @@ class WCV_Order_Controller {
     }
 
     /**
+     * Get the order status from the order filter
+     *
+     * @return string $shipping_status The comma separated list of order statuses to filter by.
+     * @version 2.5.4
+     * @since   2.5.4 - Added
+     */
+    public function get_order_shipping_status() {
+        $shipping_status = WC()->session->get( 'wcv_order_shipping_status', '' );
+
+        return apply_filters( 'wcv_order_shipping_status', $shipping_status );
+    }
+
+    /**
      * Recursive get key value from array
      *
      * @param  array  $data  array to search.
@@ -1815,5 +1949,194 @@ class WCV_Order_Controller {
             $order->add_meta_data( 'wc_pv_shipped', $vendors_ids, true );
             $order->save();
         }
+    }
+
+
+    /**
+     * Count orders by statuses
+     *
+     * @since 2.5.4
+     * @version 2.5.4
+     * @return array $orders_count
+     */
+    public function count_orders_by_statuses() {
+        $orders_count = array(
+            'all'              => array(
+                'count' => $this->_all_orders['total_order_count'],
+                'label' => __( 'All', 'wc-vendors' ),
+            ),
+            'awating_shipping' => array(
+                'count' => $this->_all_orders['total_order_count'],
+                'label' => __( 'Awaited Shipping', 'wc-vendors' ),
+            ),
+            'processing'       => array(
+                'count' => 0,
+                'label' => __( 'Processing', 'wc-vendors' ),
+            ),
+            'on-hold'          => array(
+                'count' => 0,
+                'label' => __( 'On Hold', 'wc-vendors' ),
+            ),
+            'completed'        => array(
+                'count' => 0,
+                'label' => __( 'Completed', 'wc-vendors' ),
+            ),
+            'refunded'         => array(
+                'count' => 0,
+                'label' => __( 'Refunded', 'wc-vendors' ),
+            ),
+        );
+
+        if ( empty( $this->_all_orders['all_order_ids'] ) ) {
+            return $orders_count;
+        }
+
+        $all_orders = array_map(
+            function ( $order ) {
+            return $order->order;
+            },
+            $this->_all_orders['total_orders']
+        );
+
+        foreach ( $all_orders as $order ) {
+            $parent_order = $order->get_parent_order();
+            if ( ! $parent_order ) {
+                continue;
+            }
+
+            $order_status = $parent_order->get_status();
+            switch ( $order_status ) {
+                case 'processing':
+                    ++$orders_count['processing']['count'];
+                    break;
+                case 'on-hold':
+                    ++$orders_count['on-hold']['count'];
+                    break;
+                case 'completed':
+                    ++$orders_count['completed']['count'];
+                    break;
+                case 'refunded':
+                    ++$orders_count['refunded']['count'];
+                    break;
+            }
+        }
+
+        $vendor_id = get_current_user_id();
+
+        foreach ( $all_orders as $order ) {
+            $parent_order = $order->get_parent_order();
+
+            if ( ! $parent_order ) {
+                continue;
+            }
+
+            $shippers = (array) $parent_order->get_meta( 'wc_pv_shipped', true );
+
+            if ( in_array( $vendor_id, $shippers, true ) ) {
+                --$orders_count['awating_shipping']['count'];
+            }
+        }
+
+        return apply_filters( 'wcv_orders_count_by_statuses', $orders_count );
+    }
+
+    /**
+     * Get the order status from the order filter
+     *
+     * @param array $orders The orders.
+     * @version 2.5.4
+     * @since   2.5.4 - Added
+     */
+    public function filter_by_order_status( $orders ) {
+        $default_order_statuses = array_keys( wcv_get_order_statuses() );
+        $order_statuses         = (array) WC()->session->get( 'wcv_order_filter_status', array() );
+        $shipping_status        = WC()->session->get( 'wcv_order_shipping_status', '' );
+        $single_status  = isset( $_GET['order_status'] ) && ! isset( $_POST['update_button']) ? sanitize_text_field( wp_unslash( $_GET['order_status'] ) ) : ''; // phpcs:ignore
+
+        if ( ! empty( $single_status ) && 'all' !== $single_status ) {
+            $order_statuses = array( 'wc-' . $single_status );
+        }
+        if ( empty( $order_statuses ) && 'all' === $single_status ) {
+            return $orders;
+        }
+
+        $filtered_orders = array();
+        if ( empty( $single_status ) || 'all' === $single_status ) {
+            $order_statuses = array_filter( $order_statuses );
+            if ( empty( $order_statuses ) ) {
+                $order_statuses = $default_order_statuses;
+            }
+            foreach ( $orders as $order ) {
+                $vendor_order  = $order->order;
+                $parent_order  = $vendor_order->get_parent_order();
+                $parent_status = 'wc-' . $parent_order->get_status();
+                if ( in_array( $parent_status, $order_statuses, true ) ) {
+                    $filtered_orders[] = $order;
+                }
+            }
+
+            $filtered_orders = $this->filter_by_shipping_status( $filtered_orders, $shipping_status );
+        } elseif ( 'awating_shipping' !== $single_status ) {
+
+            foreach ( $orders as $order ) {
+                $vendor_order  = $order->order;
+                $parent_order  = $vendor_order->get_parent_order();
+                $parent_status = 'wc-' . $parent_order->get_status();
+                if ( in_array( $parent_status, $order_statuses, true ) ) {
+                    $filtered_orders[] = $order;
+                }
+            }
+        } else {
+
+            $vendor_id = get_current_user_id();
+            foreach ( $orders as $order ) {
+                $vendor_order = $order->order;
+                $parent_order = $vendor_order->get_parent_order();
+                $shippers     = (array) $parent_order->get_meta( 'wc_pv_shipped', true );
+                if ( ! in_array( $vendor_id, $shippers, true ) ) {
+                    $filtered_orders[] = $order;
+                }
+            }
+        }
+
+        return $filtered_orders;
+    }
+
+    /**
+     * Filter order by shipping status
+     *
+     * @param array  $orders The orders.
+     * @param string $shipping_status The shipping status.
+     */
+    public function filter_by_shipping_status( $orders, $shipping_status ) {
+        $filtered_orders = array();
+        $vendor_id       = get_current_user_id();
+        switch ( $shipping_status ) {
+            case 'awating_shipping':
+                foreach ( $orders as $order ) {
+                    $vendor_order = $order->order;
+                    $parent_order = $vendor_order->get_parent_order();
+                    $shippers     = (array) $parent_order->get_meta( 'wc_pv_shipped', true );
+                    if ( ! in_array( $vendor_id, $shippers, true ) ) {
+                        $filtered_orders[] = $order;
+                    }
+                }
+                break;
+            case 'shipped':
+                foreach ( $orders as $order ) {
+                    $vendor_order = $order->order;
+                    $parent_order = $vendor_order->get_parent_order();
+                    $shippers     = (array) $parent_order->get_meta( 'wc_pv_shipped', true );
+                    if ( in_array( $vendor_id, $shippers, true ) ) {
+                        $filtered_orders[] = $order;
+                    }
+                }
+                break;
+            default:
+                $filtered_orders = $orders;
+                break;
+        }
+
+        return $filtered_orders;
     }
 }

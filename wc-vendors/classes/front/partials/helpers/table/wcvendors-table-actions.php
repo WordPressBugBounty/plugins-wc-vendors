@@ -15,7 +15,7 @@
     <?php
 
     foreach ( $this->actions as $ac => $details ) {
-
+        $icon = isset( $details['icon'] ) ? $details['icon'] : 'wcv-icon-plus-square';
         if ( ! empty( $details ) ) {
 
             if ( empty( $details['url'] ) ) {
@@ -39,7 +39,17 @@
             }
         }
 
-        printf( '<a href="%s" %s %s %s %s>%s</a>', esc_url( $action_url ), $customId, $class, $target, $custom, esc_html( $details['label'] ) ); //phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+        printf(
+            '<div class="row-action-item wcv-flex wcv-flex-start %s">%s<a href="%s" %s %s %s %s>%s</a></div>',
+            isset( $details['wrap_class'] ) ? esc_attr( $details['wrap_class'] ) : '',
+            wcv_get_icon( 'wcv-icon wcv-icon-24 wcv-icon-left', $icon ), //phpcs:ignore
+            esc_url( $action_url ),
+            $customId, //phpcs:ignore
+            $class,//phpcs:ignore
+            $target,//phpcs:ignore
+            $custom,//phpcs:ignore
+            esc_html( $details['label'] )
+        ); //phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
     }
     ?>
 </div>

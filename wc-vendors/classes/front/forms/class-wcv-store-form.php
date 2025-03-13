@@ -1,7 +1,9 @@
 <?php
 namespace WC_Vendors\Classes\Front\Forms;
 
+use WC_Vendors;
 use WC_Vendors\Classes\Front\WCV_Form_Helper;
+use WC_Vendors\Classes\Front\WCV_Dashboard_Controller;
 
 /**
  * The WCV Store Form Class
@@ -66,8 +68,9 @@ class WCV_Store_Form {
         $hide_tabs_signup   = apply_filters( 'wcvendors_signup_hide_tabs', array() );
         $hide_tabs_settings = apply_filters( 'wcvendors_settings_hide_tabs', array() );
 
-        $hide_tabs   = ( 'signup' === self::$form_type ) ? $hide_tabs_signup : $hide_tabs_settings;
-        $css_classes = apply_filters( 'wcv_store_tabs_class', array( 'tabs-nav' ) );
+        $hide_tabs       = ( 'signup' === self::$form_type ) ? $hide_tabs_signup : $hide_tabs_settings;
+        $css_classes     = apply_filters( 'wcv_store_tabs_class', array( 'tabs-nav' ) );
+        $completed_steps = WCV_Dashboard_Controller::check_completed_steps();
 
         $store_tabs = apply_filters(
             'wcv_store_tabs',
@@ -78,9 +81,10 @@ class WCV_Store_Form {
                     'class'  => array(),
                 ),
                 'payment' => array(
-                    'label'  => __( 'Payouts', 'wc-vendors' ),
-                    'target' => 'payment',
-                    'class'  => array(),
+                    'label'        => __( 'Payouts', 'wc-vendors' ),
+                    'target'       => 'payment',
+                    'class'        => array( 'has-dot' ),
+                    'is_completed' => apply_filters( 'wcvendors_payment_tab_is_completed', $completed_steps['payout'] ),
                 ),
             )
         );
@@ -113,9 +117,11 @@ class WCV_Store_Form {
             apply_filters(
                 'wcv_store_save_button',
                 array(
-                    'id'    => 'store_save_button',
-                    'value' => $button_text,
-                    'class' => '',
+                    'id'            => 'store_save_button',
+                    'value'         => $button_text,
+                    'class'         => 'wcv-button wcv-button-blue',
+                    'append_before' => '<div class="wcv-button-group small">',
+                    'append_after'  => '</div>',
                 )
             )
         );
@@ -147,7 +153,7 @@ class WCV_Store_Form {
                         'placeholder'       => __( 'First name', 'wc-vendors' ),
                         'value'             => $vendor_first_name,
                         'type'              => 'text',
-                        'wrapper_start'     => '<div class="wcv-cols-group wcv-horizontal-gutters"><div class="all-50 small-100">',
+                        'wrapper_start'     => '<div class="wcv-cols-group wcv-horizontal-gutters"><div class="all-50 small-50">',
                         'wrapper_end'       => '</div>',
                         'custom_attributes' => $required_attr,
                     )
@@ -163,7 +169,7 @@ class WCV_Store_Form {
                         'placeholder'       => __( 'Last name', 'wc-vendors' ),
                         'type'              => 'text',
                         'value'             => $vendor_last_name,
-                        'wrapper_start'     => '<div class="all-50 small-100">',
+                        'wrapper_start'     => '<div class="all-50 small-50">',
                         'wrapper_end'       => '</div></div>',
                         'custom_attributes' => $required_attr,
                     )
@@ -181,23 +187,36 @@ class WCV_Store_Form {
      */
     public static function preferred_payout_method() {
         $commission_payout_method = get_user_meta( get_current_user_id(), 'wcv_commission_payout_method', true );
+        $payout_method_options    = apply_filters(
+            'wcv_commission_payout_method_options',
+            array(
+                ''               => __( 'None', 'wc-vendors' ),
+                'paypal'         => wcv_get_icon( 'wcv-icon wcv-select-icon', 'wcv-icon-paypal' ) . __( 'PayPal', 'wc-vendors' ),
+                'bank'           => wcv_get_icon( 'wcv-icon wcv-select-icon', 'wcv-icon-bank' ) . __( 'Bank Transfer', 'wc-vendors' ),
+                'stripe-connect' => wcv_get_icon( 'wcv-icon wcv-select-icon', 'wcv-icon-stripe' ) . __( 'Stripe Connect', 'wc-vendors' ),
+            )
+        );
+
+        if ( ! class_exists( 'WC_Vendors_Stripe_Connect_Gateway' ) ) {
+            unset( $payout_method_options['stripe-connect'] );
+        }
 
         WCV_Form_Helper::select(
             apply_filters(
                 'wcv_commission_payout_method',
                 array(
-                    'id'            => 'wcv_commission_payout_method',
-                    'class'         => 'Commission payout method',
-                    'label'         => __( 'Choose how you want your commission payout.', 'wc-vendors' ),
-                    'desc_tip'      => 'true',
-                    'description'   => __( 'Your commission payout will be via this method.', 'wc-vendors' ),
-                    'wrapper_start' => '<div class="all-100">',
-                    'wrapper_end'   => '</div>',
-                    'value'         => $commission_payout_method,
-                    'options'       => array(
-                        ''       => sprintf( '---%s---', __( 'Select', 'wc-vendors' ) ),
-                        'paypal' => __( 'PayPal', 'wc-vendors' ),
-                        'bank'   => __( 'Bank Transfer', 'wc-vendors' ),
+                    'id'                => 'wcv_commission_payout_method',
+                    'class'             => 'wcv-custom-select',
+                    'label'             => __( 'Commission Payout Method.', 'wc-vendors' ),
+                    'desc_tip'          => 'true',
+                    'description'       => __( 'Your commission payout will be via this method.', 'wc-vendors' ),
+                    'wrapper_start'     => '<div class="wcv-cols-group wcv-horizontal-gutters"><div class="all-50 small-100 tiny-100">',
+                    'wrapper_end'       => '</div></div>',
+                    'value'             => $commission_payout_method,
+                    'options'           => $payout_method_options,
+                    'multiple'          => false,
+                    'custom_attributes' => array(
+                        'data-text-align' => 'left',
                     ),
                 )
             )
@@ -255,7 +274,7 @@ class WCV_Store_Form {
                     'wcv_vendor_paypal_payout',
                     array(
                         'id'            => 'wcv_paypal_masspay_wallet',
-                        'class'         => '',
+                        'class'         => 'wcv-custom-select',
                         'label'         => __( 'Choose your wallet.', 'wc-vendors' ),
                         'desc_tip'      => 'true',
                         'description'   => __( 'Your commission will be paid to this wallet.', 'wc-vendors' ),
@@ -495,11 +514,13 @@ class WCV_Store_Form {
                 'wcv_vendor_store_name',
                 array(
                     'id'                => '_wcv_store_name',
-                    'label'             => __( 'Store name <small>required</small>', 'wc-vendors' ),
+                    'label'             => __( 'Store name', 'wc-vendors' ),
                     'placeholder'       => '',
                     'desc_tip'          => 'true',
                     'description'       => __( 'Your shop name is public and must be unique.', 'wc-vendors' ),
                     'type'              => 'text',
+                    'wrapper_start'     => '<div class="all-50 small-100 tiny-100">',
+                    'wrapper_end'       => '</div>',
                     'value'             => $store_name,
                     'custom_attributes' => array(
                         'required'                   => '',
@@ -536,14 +557,18 @@ class WCV_Store_Form {
                 apply_filters(
                     'wcv_vendor_store_phone',
                     array(
-                        'id'                => '_wcv_store_phone',
-                        'label'             => __( 'Store phone', 'wc-vendors' ),
-                        'placeholder'       => __( 'Your store phone number', 'wc-vendors' ),
-                        'desc_tip'          => 'true',
-                        'description'       => __( 'This is your store contact number', 'wc-vendors' ),
-                        'type'              => 'text',
-                        'value'             => $value,
-                        'custom_attributes' => $required_attr,
+                        'id'                  => '_wcv_store_phone',
+                        'label'               => __( 'Store phone', 'wc-vendors' ),
+                        'placeholder'         => __( 'Your store phone number', 'wc-vendors' ),
+                        'desc_tip'            => 'true',
+                        'description'         => __( 'This is your store contact number', 'wc-vendors' ),
+                        'type'                => 'text',
+                        'wrapper_start'       => '<div class="all-50 small-100 tiny-100">',
+                        'wrapper_end'         => '</div>',
+                        'input_wrapper_class' => 'wcv-flex wcv-phone-input-wrapper',
+                        'append_before'       => '<select id="wcv-country-code-select" name="_wcv_store_phone_code"></select>',
+                        'value'               => $value,
+                        'custom_attributes'   => $required_attr,
                     )
                 )
             );
@@ -566,14 +591,13 @@ class WCV_Store_Form {
         $required_attr    = $required ? array( 'required' => '' ) : array();
 
         if ( ! $hide_seller_info ) {
-            $user_id           = get_current_user_id();
-            $value             = get_user_meta( $user_id, 'pv_seller_info', true );
-            $vendor_store_html = get_user_meta( $user_id, 'pv_shop_html_enabled', true );
-            $store_wide_html   = wc_string_to_bool( get_option( 'wcvendors_display_shop_description_html', 'no' ) );
-            $enable_media      = wc_string_to_bool( get_option( 'wcvendors_allow_editor_media', 'no' ) );
+            $user_id      = get_current_user_id();
+            $value        = get_user_meta( $user_id, 'pv_seller_info', true );
+            $allow_markup = wc_string_to_bool( get_option( 'wcvendors_allow_form_markup', 'no' ) );
+            $enable_media = wc_string_to_bool( get_option( 'wcvendors_allow_editor_media', 'no' ) );
 
             // If html in info is allowed then display the tinyMCE otherwise just display a text box.
-            if ( $vendor_store_html || $store_wide_html ) {
+            if ( $allow_markup ) {
 
                 if ( $required ) {
                     add_filter( 'the_editor', array( __CLASS__, 'wp_editor_required' ) );
@@ -729,6 +753,8 @@ class WCV_Store_Form {
                         'type'              => 'text',
                         'class'             => 'js_field-country',
                         'value'             => $country,
+                        'wrapper_start'     => '<div class="all-50 small-100 tiny-100">',
+                        'wrapper_end'       => '</div>',
                         'custom_attributes' => $required_attr,
                     )
                 )
@@ -774,6 +800,7 @@ class WCV_Store_Form {
                         'type'              => 'text',
                         'value'             => $address1,
                         'custom_attributes' => $required_attr,
+                        'no_margin'         => true,
                     )
                 )
             );
@@ -799,11 +826,12 @@ class WCV_Store_Form {
                 apply_filters(
                     'wcv_vendor_store_address2',
                     array(
-                        'id'          => '_wcv_store_address2',
-                        'placeholder' => __( 'Apartment, unit, suite etc. ', 'wc-vendors' ),
-                        'type'        => 'text',
-                        'label'       => '',
-                        'value'       => $address2,
+                        'id'            => '_wcv_store_address2',
+                        'placeholder'   => __( 'Apartment, unit, suite etc. ', 'wc-vendors' ),
+                        'type'          => 'text',
+                        'show_label'    => false,
+                        'value'         => $address2,
+                        'append_before' => '<div style="margin-top: 2px"></div>',
                     )
                 )
             );
@@ -868,11 +896,15 @@ class WCV_Store_Form {
                         'id'                => '_wcv_store_state',
                         'label'             => __( 'State / County', 'wc-vendors' ),
                         'placeholder'       => __( 'State / County', 'wc-vendors' ),
+                        'style'             => 'width: 100%;',
                         'value'             => $state,
-                        'class'             => 'js_field-state',
-                        'wrapper_start'     => '<div class="wcv-cols-group wcv-horizontal-gutters"><div class="all-50 small-100">',
-                        'wrapper_end'       => '</div>',
-                        'custom_attributes' => $required_attr,
+                        'class'             => 'js_field-state select',
+                        'custom_attributes' => array_merge(
+                            $required_attr,
+                            array(
+                                'data-placeholder' => __( 'Select a state...', 'wc-vendors' ),
+                            )
+                        ),
                     )
                 )
             );
@@ -899,12 +931,10 @@ class WCV_Store_Form {
                 apply_filters(
                     'wcv_vendor_store_postcode',
                     array(
-                        'id'            => '_wcv_store_postcode',
-                        'label'         => __( 'Postcode / Zip', 'wc-vendors' ),
-                        'placeholder'   => __( 'Postcode / Zip', 'wc-vendors' ),
-                        'value'         => $postcode,
-                        'wrapper_start' => '<div class="all-50 small-100">',
-                        'wrapper_end'   => '</div></div>',
+                        'id'          => '_wcv_store_postcode',
+                        'label'       => __( 'Postcode / Zip', 'wc-vendors' ),
+                        'placeholder' => __( 'Postcode / Zip', 'wc-vendors' ),
+                        'value'       => $postcode,
                     )
                 )
             );
@@ -944,6 +974,8 @@ class WCV_Store_Form {
                         'desc_tip'          => 'true',
                         'description'       => __( 'Your company / Blog URL', 'wc-vendors' ),
                         'type'              => 'url',
+                        'wrapper_start'     => '<div class="all-50 small-100 tiny-100">',
+                        'wrapper_end'       => '</div>',
                         'value'             => $value,
                         'custom_attributes' => $required_attr,
                     )
@@ -959,7 +991,13 @@ class WCV_Store_Form {
      */
     public static function wp_editor_required( $markup ) {
         if ( stripos( $markup, 'wcv-required' ) !== false ) {
-            $markup = str_replace( '<textarea', '<textarea required data-parsley-error-message="' . apply_filters( 'wcv_required_editor_message', __( 'This is required', 'wc-vendors' ) ) . '"', $markup );
+            $pattern = '/<textarea[^>]*id=["\'](.*?)["\']/m';
+            $matches = array();
+
+            preg_match( $pattern, $markup, $matches );
+
+            $error_container = isset( $matches[1] ) ? 'data-parsley-errors-container="#wp-' . $matches[1] . '-wrap"' : '';
+            $markup          = str_replace( '<textarea', '<textarea required ' . $error_container . ' data-parsley-error-message="' . apply_filters( 'wcv_required_editor_message', __( 'This is required', 'wc-vendors' ) ) . '"', $markup );
         }
 
         return $markup;

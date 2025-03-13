@@ -41,13 +41,28 @@ class WCV_Product_Controller {
     public $table_name;
 
     /**
+     * Date format
+     *
+     * @since 2.5.4
+     *
+     * @var string $date_format date format for the date picker
+     */
+    public $date_format;
+
+    /**
      * Initialize the class and set its properties.
      *
      * @since    2.5.2
      */
     public function __construct() {
         global $wpdb;
-        $this->table_name = $wpdb->prefix . 'wcv_feedback';
+        $this->table_name  = $wpdb->prefix . 'wcv_feedback';
+        $this->date_format = is_wcv_pro_active() ? get_option( 'wcvendors_dashboard_date_format', 'Y-m-d' ) : 'Y-m-d';
+
+        add_filter( 'wcvendors_import_export_buttons', array( $this, 'add_import_export_buttons' ) );
+        add_action( 'woocommerce_product_query', array( $this, 'hide_all_inactive_vendor_products' ), 10 );
+        add_filter( 'woocommerce_add_to_cart_validation', array( $this, 'add_to_cart_validation' ), 10, 2 );
+        add_action( 'woocommerce_check_cart_items', array( $this, 'remove_inactive_vendor_products_from_cart' ) );
     }
 
     /**
@@ -414,7 +429,11 @@ class WCV_Product_Controller {
 
         // // Gallery Images
         if ( isset( $_POST['product_image_gallery'] ) && '' !== $_POST['product_image_gallery'] ) {
-            update_post_meta( $product_id, '_product_image_gallery', $_POST['product_image_gallery'] );
+            $images_gallery = explode( ',', sanitize_text_field( $_POST['product_image_gallery'] ) );
+            $images_gallery = array_map( 'absint', $images_gallery );
+            $images_gallery = array_unique( $images_gallery );
+            $images_gallery = implode( ',', $images_gallery );
+            update_post_meta( $product_id, '_product_image_gallery', $images_gallery );
         } else {
             update_post_meta( $product_id, '_product_image_gallery', '' );
         }
@@ -567,7 +586,7 @@ class WCV_Product_Controller {
             // Catalog visibility.
             if ( isset( $_POST['_private_listing'] ) ) {
                 $product->set_catalog_visibility( 'hidden' );
-                update_post_meta( $post_id, '_private_listing', $_POST['_private_listing'] );
+                update_post_meta( $post_id, '_private_listing', isset( $_POST['_private_listing'] ) ? 'yes' : 'no' );
             } else {
                 $product->set_catalog_visibility( 'visible' );
                 delete_post_meta( $post_id, '_private_listing' );
@@ -638,7 +657,7 @@ class WCV_Product_Controller {
         // Set catalog visibility.
         if ( isset( $_POST['_private_listing'] ) ) {
             update_post_meta( $post_id, '_visibility', 'hidden' );
-            update_post_meta( $post_id, '_private_listing', $_POST['_private_listing'] );
+            update_post_meta( $post_id, '_private_listing', isset( $_POST['_private_listing'] ) ? 'yes' : 'no' );
         } else {
             update_post_meta( $post_id, '_visibility', 'visible' );
             delete_post_meta( $post_id, '_private_listing' );
@@ -1136,6 +1155,20 @@ class WCV_Product_Controller {
         // Store variations deleted from the UI and remove them if there is any.
         if ( ! empty( $deleted_variations ) ) {
             foreach ( $deleted_variations as $variation ) {
+                // Security check.
+                if ( ! isset( $variation->id ) || ! isset( $variation->loop ) ) {
+                    continue;
+                }
+
+                $post_type   = get_post_type( $variation->id );
+                $post_parent = wp_get_post_parent_id( $variation->id );
+                if ( \WCV_Vendor_Dashboard::check_object_permission( 'product', $post_id ) == false ) { //phpcs:ignore
+                    continue;
+                }
+                if ( 'product_variation' !== $post_type || $post_parent !== $post_id ) {
+                    continue;
+                }
+                // End security check.
                 wp_delete_post( $variation->id );
                 $variation_indexes[] = (int) $variation->loop;
             }
@@ -1216,7 +1249,7 @@ class WCV_Product_Controller {
 
                 $variation_id = wp_insert_post( $variation );
 
-                do_action( 'wcv_create_product_variation', $variation_id );
+                do_action( 'wcv_create_product_variation', $variation_id, $i );
 
             } else {
 
@@ -1236,7 +1269,7 @@ class WCV_Product_Controller {
 
                 clean_post_cache( $variation_id );
 
-                do_action( 'wcv_update_product_variation', $variation_id );
+                do_action( 'wcv_update_product_variation', $variation_id, $i );
 
             }
 
@@ -1690,11 +1723,32 @@ class WCV_Product_Controller {
     public function table_columns( $columns ) {
 
         $columns = array(
-            'ID'      => __( 'ID', 'wc-vendors' ),
-            'tn'      => __( 'Thumbnail', 'wc-vendors' ),
-            'details' => __( 'Details', 'wc-vendors' ),
-            'price'   => __( 'Price', 'wc-vendors' ),
-            'status'  => __( 'Status', 'wc-vendors' ),
+            'ID'      => array(
+                'label' => __( 'ID', 'wc-vendors' ),
+            ),
+            'tn'      => array(
+                'label'         => __( 'Thumbnail', 'wc-vendors' ),
+                'icon'          => 'wcv-icon-thumbnail',
+                'mobile_header' => false,
+                'full_span'     => true,
+            ),
+            'details' => array(
+                'label'         => __( 'Details', 'wc-vendors' ),
+                'icon'          => 'wcv-icon-details',
+                'mobile_header' => false,
+                'full_span'     => true,
+            ),
+            'price'   => array(
+                'label'         => __( 'Price', 'wc-vendors' ),
+                'icon'          => 'wcv-icon-column-total',
+                'mobile_header' => false,
+            ),
+            'status'  => array(
+                'label'         => __( 'Actions', 'wc-vendors' ),
+                'icon'          => 'wcv-icon-column-actions',
+                'mobile_header' => false,
+                'full_span'     => true,
+            ),
         );
 
         return apply_filters( 'wcv_product_table_columns', $columns );
@@ -1718,8 +1772,6 @@ class WCV_Product_Controller {
 
         $this->max_num_pages = $result_object->max_num_pages;
 
-        $categories_hide    = wc_string_to_bool( get_option( 'wcvendors_hide_product_basic_categories', 'no' ) );
-        $tags_hide          = wc_string_to_bool( get_option( 'wcvendors_hide_product_basic_tags', 'no' ) );
         $can_edit           = wc_string_to_bool( get_option( 'wcvendors_capability_products_edit', 'no' ) );
         $can_edit_approved  = wc_string_to_bool( get_option( 'wcvendors_capability_products_approved', 'no' ) );
         $disable_delete     = wc_string_to_bool( get_option( 'wcvendors_capability_product_delete', 'no' ) );
@@ -1753,23 +1805,7 @@ class WCV_Product_Controller {
                             'label' => __( 'Edit', 'wc-vendors' ),
                             'class' => '',
                             'url'   => self::get_product_edit_link( $product->get_id() ) . $page_no,
-                        )
-                    ),
-                    'duplicate' => apply_filters(
-                        'wcv_product_table_row_actions_duplicate',
-                        array(
-                            'label' => __( 'Duplicate', 'wc-vendors' ),
-                            'class' => '',
-                            'url'   => \WCV_Vendor_Dashboard::get_dashboard_page_url( 'product/duplicate/' . $product->get_id() ),
-                        )
-                    ),
-                    'delete'    => apply_filters(
-                        'wcv_product_table_row_actions_delete',
-                        array(
-                            'label'  => __( 'Delete', 'wc-vendors' ),
-                            'class'  => 'confirm_delete',
-                            'custom' => array( 'data-confirm_text' => __( 'Delete product?', 'wc-vendors' ) ),
-                            'url'    => \WCV_Vendor_Dashboard::get_dashboard_page_url( 'product/delete/' . $product->get_id() ),
+                            'icon'  => 'wcv-icon-edit',
                         )
                     ),
                     'view'      => apply_filters(
@@ -1779,6 +1815,27 @@ class WCV_Product_Controller {
                             'class'  => '',
                             'url'    => get_permalink( $product->get_id() ),
                             'target' => wc_string_to_bool( get_option( 'wcvendors_dashboard_view_product_new_window', 'yes' ) ) ? '_blank' : '_self',
+                            'icon'   => 'wcv-icon-view',
+                        )
+                    ),
+                    'duplicate' => apply_filters(
+                        'wcv_product_table_row_actions_duplicate',
+                        array(
+                            'label' => __( 'Duplicate', 'wc-vendors' ),
+                            'class' => '',
+                            'url'   => \WCV_Vendor_Dashboard::get_dashboard_page_url( 'product/duplicate/' . $product->get_id() ),
+                            'icon'  => 'wcv-icon-duplicate',
+                        )
+                    ),
+                    'delete'    => apply_filters(
+                        'wcv_product_table_row_actions_delete',
+                        array(
+                            'label'      => __( 'Delete', 'wc-vendors' ),
+                            'class'      => 'confirm_delete',
+                            'wrap_class' => 'danger',
+                            'custom'     => array( 'data-confirm_text' => __( 'Delete product?', 'wc-vendors' ) ),
+                            'url'        => \WCV_Vendor_Dashboard::get_dashboard_page_url( 'product/delete/' . $product->get_id() ),
+                            'icon'       => 'wcv-icon-trash',
                         )
                     ),
                 ),
@@ -1817,55 +1874,27 @@ class WCV_Product_Controller {
                 continue;
             }
 
-            $categories_label   = $categories_hide ? '' : apply_filters( 'wcv_product_row_category_label', __( 'Categories:', 'wc-vendors' ), $product, $product->get_id() );
-            $tags_label         = $tags_hide ? '' : apply_filters( 'wcv_product_row_tags_label', __( 'Tags:', 'wc-vendors' ), $product, $product->get_id() );
-            $stock_status       = $product->get_manage_stock() ? ( ( $product->is_in_stock() ) ? __( 'In stock', 'wc-vendors' ) . ' (' . $product->get_stock_quantity() . ')' : __( 'Out of Stock', 'wc-vendors' ) ) : '';
-            $stock_status_label = $product->get_manage_stock() ? apply_filters( 'wcv_stock_status_label', __( 'Stock status: ', 'wc-vendors' ) ) : '';
-            $product_price      = wc_get_price_to_display( $product );
-            $product_categories = $categories_hide ? '' : wc_get_product_category_list( $product->get_id() );
-            $product_tags       = $tags_hide ? '' : wc_get_product_tag_list( $product->get_id() );
+            $product_price = wc_get_price_to_display( $product );
 
             $new_row->ID          = $row->ID;
-            $new_row->tn          = get_the_post_thumbnail( $row->ID, array( 120, 120 ) );
-            $new_row->details     = apply_filters(
-                'wcv_product_row_details',
-                sprintf(
-                    '<h4>%s</h4>
-					<div class="wcv_mobile_status wcv_mobile">%s</div>
-					<div class="wcv_mobile_price wcv_mobile">%s</div>
-					<div class="cat_tags">%s %s <br />%s %s</div>',
-                    $product->get_title(),
-                    self::product_status( $row->post_status ),
-                    wc_price( $product_price . $product->get_price_suffix() ),
-                    $categories_label,
-                    $product_categories,
-                    $tags_label,
-                    $product_tags
-                ),
-                $product,
-                $product->get_id()
-            );
-            $new_row->price       = wc_price( $product_price . $product->get_price_suffix() );
-            $new_row->status      = apply_filters(
-                'wcv_product_row_status',
-                sprintf(
-                    '<span class="status %s">%s</span><br />
-					<span class="product_type %s">%s</span><br />
-					<span class="product_date">%s</span><br />
-					<span class="stock_status">%s</span>',
-                    lcfirst( self::product_status( $row->post_status ) ),
-                    self::product_status( $row->post_status ),
-                    sanitize_title_with_dashes( lcfirst( $product_type ) ),
-                    $product_type,
-                    date_i18n( get_option( 'date_format' ), strtotime( $row->post_date ) ),
-                    $stock_status_label . $stock_status
-                ),
+            $new_row->tn          = has_post_thumbnail( $row->ID ) ? get_the_post_thumbnail( $row->ID, array( 160, 160 ), array( 'style' => 'margin-bottom: 0;' ) ) : wc_placeholder_img( 'thumbnail', array( 'style' => 'margin-bottom: 0;' ) );
+            $new_row->tn         .= sprintf(
+                '<div class="wcv_mobile">
+                <h4 class="wcv-product-title">
+                <span class="wcv-product-title-text">%s</span>
+                <span class="wcv-status product-status--%s">%s</span>
+                </h4>
+                <small>%s %s</small>
+                </div>',
+                $product->get_name(),
+                'draft' === $row->post_status ? 'draft' : 'hidden',
                 self::product_status( $row->post_status ),
-                $product_type,
-                date_i18n( get_option( 'date_format' ), strtotime( $row->post_date ) ),
-                $stock_status_label . $stock_status,
-                $product
+                'publish' === $row->post_status ? __( 'Date Published:', 'wc-vendors' ) : '',
+                'publish' === $row->post_status ? $product->get_date_created()->date( $this->date_format ) : ''
             );
+            $new_row->details     = apply_filters( 'wcv_product_row_details', $this->build_row_details( $product ) );
+            $new_row->price       = wc_price( $product_price . $product->get_price_suffix() );
+            $new_row->status      = apply_filters( 'wcv_product_row_status', '', $row->post_status, $product->get_type(), $row->post_date, $product->get_stock_status(), $product );
             $new_row->row_actions = $row_actions;
             $new_row->product     = $product;
 
@@ -1886,7 +1915,7 @@ class WCV_Product_Controller {
      */
 	public function table_action_column( $column ) { // phpcs:ignore
 
-        $new_column = 'details';
+        $new_column = 'status';
 
         return apply_filters( 'wcv_product_table_action_column', $new_column );
     }
@@ -1918,6 +1947,8 @@ class WCV_Product_Controller {
                 'wrapper_end'   => '</nav>',
             )
         );
+
+        $product_counts = $this->count_products_status();
 
         $template_overrides = $this->get_product_templates();
         include apply_filters( 'wcv_product_table_actions_path', 'partials/product/wcvendors-table-actions.php' );
@@ -2017,25 +2048,29 @@ class WCV_Product_Controller {
             'value'        => '',
             'is_visible'   => apply_filters( 'woocommerce_attribute_default_visibility', 1 ),
             'is_variation' => 0,
-            'is_taxonomy'  => $taxo ? 1 : 0,
+            'is_taxonomy'  => '' !== $taxo ? 1 : 0,
         );
 
-        if ( $taxo ) {
+        if ( '' !== $taxo ) {
             $attribute_taxonomy = $wc_product_attributes[ $taxo ];
             $metabox_class[]    = 'taxonomy';
             $metabox_class[]    = $taxo;
             $attribute_label    = wc_attribute_label( $taxo );
         } else {
-            $attribute_label = '';
+            $attribute_label                     = '';
+            $metabox_class[]                     = '';
+            $attribute_taxonomy                  = new \stdClass();
+            $attribute_taxonomy->attribute_type  = 'text';
+            $attribute_taxonomy->attribute_label = '';
         }
 
-        $attribute_types = wc_get_attribute_types();
+            $attribute_types = wc_get_attribute_types();
 
-        if ( ! array_key_exists( $attribute_taxonomy->attribute_type, $attribute_types ) || ! ( 'text' === $attribute_taxonomy->attribute_type ) || ! ( 'select' === $attribute_taxonomy->attribute_type ) ) {
-            $attribute_taxonomy->attribute_type = 'select';
-        }
+            if ( ! array_key_exists( $attribute_taxonomy->attribute_type, $attribute_types ) || ! ( 'text' === $attribute_taxonomy->attribute_type ) || ! ( 'select' === $attribute_taxonomy->attribute_type ) ) {
+                $attribute_taxonomy->attribute_type = 'select';
+            }
 
-        $attribute_terms_allowed = wc_string_to_bool( get_option( 'wcvendors_allow_vendor_attribute_terms', 'no' ) );
+        $attribute_terms_allowed = wc_string_to_bool( get_option( 'wcvendors_allow_vendor_attribute_terms', 'no' ) ) && is_wcv_pro_active();
 
         include wcv_deprecated_filter( 'wcvendors_pro_product_attribute_path', '2.5.2', 'wcvendors_product_attribute_path', 'forms/partials/wcvendors-product-attribute.php' );
 
@@ -2049,7 +2084,7 @@ class WCV_Product_Controller {
      */
     public static function json_add_new_attribute() {
 
-        $attribute_terms_allowed = wc_string_to_bool( get_option( 'wcvendors_allow_vendor_attribute_terms', 'no' ) );
+        $attribute_terms_allowed = wc_string_to_bool( get_option( 'wcvendors_allow_vendor_attribute_terms', 'no' ) ) && is_wcv_pro_active();
 
         ob_start();
 
@@ -2078,7 +2113,7 @@ class WCV_Product_Controller {
                         'error' => $result->get_error_message(),
                     )
                 );
-            } else {
+        } else {
                 $term = get_term_by( 'id', $result['term_id'], $taxonomy );
                 wp_send_json(
                     array(
@@ -2227,7 +2262,7 @@ class WCV_Product_Controller {
                 $variation_data['_stock']         = '' === $variation_data['_stock'] ? '' : (int) wc_stock_amount( $variation_data['_stock'] );
                 $variation_data['_enabled']       = ( 'publish' === $variation->post_status ) ? true : false;
                 $variation_data['id']             = $variation_id;
-
+                $from_ajax                        = false;
                 include wcv_deprecated_filter( 'wcvendors_pro_product_variation_path', '2.5.2', 'wcvendors_product_variation_path', 'forms/partials/wcvendors-product-variation.php' );
                 ++$loop;
             }
@@ -2346,7 +2381,7 @@ class WCV_Product_Controller {
             }
 
             $variation = new \WC_Product_Variation( $variation_id );
-
+            $from_ajax = true;
             include wcv_deprecated_filter( 'wcvendors_pro_product_variation_path', '2.5.2', 'wcvendors_product_variation_path', 'forms/partials/wcvendors-product-variation.php' );
         }
 
@@ -2521,7 +2556,7 @@ class WCV_Product_Controller {
                 if ( ! $parent_data['height'] ) {
                     $parent_data['height'] = wc_format_localized_decimal( 0 );
                 }
-
+                $from_ajax = false;
                 include wcv_deprecated_filter( 'wcvendors_pro_product_variation_path', '2.5.2', 'wcvendors_product_variation_path', 'forms/partials/wcvendors-product-variation.php' );
 
             }
@@ -2625,7 +2660,7 @@ class WCV_Product_Controller {
      * @version  1.6.2
      * @access   public
      */
-    public function get_product_templates() {
+    public static function get_product_templates() {
 
         $template_path              = 'wc-vendors/dashboard/';
         $files                      = array();
@@ -2718,7 +2753,7 @@ class WCV_Product_Controller {
         $image        = getimagesize( $file['tmp_name'] );
 
         // Only run this code on images.
-        if ( false === strpos( $image['mime'], 'image' ) ) {
+        if ( false === $image || false === strpos( $image['mime'], 'image' ) ) {
             return $file;
         }
 
@@ -2989,5 +3024,267 @@ class WCV_Product_Controller {
         }
 
         return apply_filters( 'wcv_allowed_html_tags', $allowed_html_tags, $context );
+    }
+
+    /**
+     * Build row details for the product table.
+     *
+     * @param WC_Product $product Product object.
+     */
+    public function build_row_details( $product ) {
+
+        if ( ! is_a( $product, 'WC_Product' ) ) {
+            return;
+        }
+
+        $categories_hide = wc_string_to_bool( get_option( 'wcvendors_hide_product_basic_categories', 'no' ) );
+        $tags_hide       = wc_string_to_bool( get_option( 'wcvendors_hide_product_basic_tags', 'no' ) );
+
+        $row_data['product_title'] = $product->get_title();
+        if ( 'publish' === $product->get_status() ) {
+            $row_data['published_date'] = $product->get_date_created()->date( $this->date_format );
+        }
+        $row_data['status'] = array(
+            'class' => 'draft' === $product->get_status() ? 'draft' : 'hidden',
+            'label' => self::product_status( $product->get_status() ),
+        );
+
+        if ( $product->get_manage_stock() ) {
+            $stock_qty    = $product->get_stock_quantity();
+            $low_stock    = $product->get_low_stock_amount();
+            $stock_status = $product->get_stock_status();
+            $stock        = array(
+                'class' => '',
+                'label' => '',
+            );
+
+            switch ( $stock_status ) {
+                case 'instock':
+                    $stock['class'] = 'instock';
+                    $stock['label'] = __( 'In stock', 'wc-vendors' ) . ' (' . $stock_qty . ')';
+                    if ( $stock_qty > 0 && $stock_qty <= $low_stock ) {
+                        $stock['class'] = 'lowstock';
+                        $stock['label'] = __( 'Low stock', 'wc-vendors' ) . ' (' . $stock_qty . ')';
+                    }
+                    break;
+                case 'outofstock':
+                    $stock['class'] = 'outofstock';
+                    $stock['label'] = __( 'Out of stock', 'wc-vendors' );
+                    break;
+                case 'onbackorder':
+                    $stock['class'] = 'onbackorder';
+                    $stock['label'] = __( 'On backorder', 'wc-vendors' );
+                    break;
+            }
+
+            $row_data['stock'] = $stock;
+        }
+
+        $row_data['product_categories'] = array();
+        if ( ! $categories_hide ) {
+            $product_categories = $product->get_category_ids();
+            foreach ( $product_categories as $category_id ) {
+                $category = get_term( $category_id, 'product_cat' );
+                if ( ! is_wp_error( $category ) ) {
+                    $row_data['product_categories'][] = array(
+                        'name' => $category->name,
+                        'url'  => get_term_link( $category ),
+                    );
+                }
+            }
+        }
+
+        $row_data['product_tags'] = array();
+
+        if ( ! $tags_hide ) {
+            $product_tags = $product->get_tag_ids();
+            foreach ( $product_tags as $tag_id ) {
+                $tag = get_term( $tag_id, 'product_tag' );
+                if ( ! is_wp_error( $tag ) ) {
+                    $row_data['product_tags'][] = array(
+                        'name' => $tag->name,
+                        'url'  => get_term_link( $tag ),
+                    );
+                }
+            }
+        }
+
+        if ( '' !== $product->get_sku() ) {
+            $row_data['sku'] = $product->get_sku();
+        }
+
+        $row_data['price'] = wc_price( $product->get_price() );
+
+        ob_start();
+
+        include apply_filters( 'wcvendors_product_table_row_details', 'partials/product/wcvendors-product-table-row-details.php' );
+
+        return ob_get_clean();
+    }
+
+    /**
+     * Count products status and stock status.
+     *
+     * @since 2.5.4
+     */
+    public function count_products_status() {
+        global $wpdb;
+
+        $query = $wpdb->prepare(
+            "SELECT p.post_status, pm.meta_value as stock_status
+            FROM %i p
+            JOIN %i pm ON p.ID = pm.post_id
+            WHERE p.post_type = 'product'
+            AND pm.meta_key = '_stock_status'
+            AND p.post_author = %d
+            AND p.post_status != %s",
+            $wpdb->posts,
+            $wpdb->postmeta,
+            get_current_user_id(),
+            'auto-draft'
+        );
+
+        $results = $wpdb->get_results( $query ); //phpcs:ignore
+        $post_status_counts  = array();
+        $stock_status_counts = array();
+
+        foreach ( $results as $result ) {
+            if ( 'trash' === $result->post_status ) {
+                continue;
+            }
+
+            if ( isset( $post_status_counts[ $result->post_status ] ) ) {
+                ++$post_status_counts[ $result->post_status ];
+            } else {
+                $post_status_counts[ $result->post_status ] = 1;
+            }
+
+            if ( isset( $stock_status_counts[ $result->stock_status ] ) ) {
+                ++$stock_status_counts[ $result->stock_status ];
+            } else {
+                $stock_status_counts[ $result->stock_status ] = 1;
+            }
+        }
+
+        $counts = array(
+            'all' => count( $results ),
+        );
+
+        $counts = array_merge( $counts, $post_status_counts, $stock_status_counts );
+        $labels = array(
+            'all'         => __( 'All', 'wc-vendors' ),
+            'publish'     => __( 'Published', 'wc-vendors' ),
+            'draft'       => __( 'Draft', 'wc-vendors' ),
+            'auto-draft'  => __( 'Auto Draft', 'wc-vendors' ),
+            'pending'     => __( 'Pending', 'wc-vendors' ),
+            'private'     => __( 'Private', 'wc-vendors' ),
+            'instock'     => __( 'In stock', 'wc-vendors' ),
+            'outofstock'  => __( 'Out of stock', 'wc-vendors' ),
+            'onbackorder' => __( 'On backorder', 'wc-vendors' ),
+        );
+
+        foreach ( $counts as $key => $count ) {
+            if ( ! array_key_exists( $key, $labels ) ) {
+                continue;
+            }
+            $counts[ $key ] = array(
+                'count' => $count,
+                'label' => $labels[ $key ],
+            );
+        }
+        return $counts;
+    }
+
+    /**
+     * Modify import export buttons.
+     *
+     * @param array $buttons Row actions.
+     *
+     * @since 2.5.4
+     */
+    public function add_import_export_buttons( $buttons ) {
+        foreach ( $buttons as $key => $button ) {
+            if ( 'import' === $key ) {
+                $buttons['import']['label'] = wcv_get_icon( 'wcv-icon wcv-icon-dashboard-icon', 'wcv-icon-import' ) . $buttons['import']['label'];
+            }
+            if ( 'export' === $key ) {
+                $buttons['export']['label'] = wcv_get_icon( 'wcv-icon wcv-icon-dashboard-icon', 'wcv-icon-export' ) . $buttons['export']['label'];
+            }
+        }
+
+        return $buttons;
+    }
+
+    /**
+     * Hide all inactive vendors products.
+     *
+     * @since 2.5.4
+     *
+     * @param object $query woocommerce product query object.
+     */
+    public function hide_all_inactive_vendor_products( $query ) {
+        $vendor_shop = urldecode( get_query_var( 'vendor_shop' ) );
+        $vendor_id   = \WCV_Vendors::get_vendor_id( $vendor_shop );
+
+        if ( \WCV_Vendors::is_vendor_product_page( $vendor_id ) ) {
+            return;
+        }
+
+        $inactive_vendor_ids = get_users(
+            array(
+                'meta_key'   => '_wcv_vendor_status',
+                'meta_value' => 'inactive',
+                'fields'     => 'ID',
+            )
+        );
+
+        if ( ! empty( $inactive_vendor_ids ) ) {
+            $query->set( 'author__not_in', $inactive_vendor_ids );
+        }
+    }
+
+    /**
+     * Add to cart validation. To prevent users adding inactive vendor's products to cart.
+     *
+     * @since 2.5.4
+     *
+     * @param bool $is_valid Is valid.
+     * @param int  $product_id Product id.
+     */
+    public function add_to_cart_validation( $is_valid, $product_id ) {
+        $author_id     = get_post_field( 'post_author', $product_id );
+        $vendor_status = get_user_meta( $author_id, '_wcv_vendor_status', true );
+
+        if ( 'inactive' === $vendor_status ) {
+            wc_add_notice( __( 'This product is not available for purchase due to the vendor being inactive.', 'wc-vendors' ), 'error' );
+            return false;
+        }
+
+        return $is_valid;
+    }
+
+    /**
+     * Remove the product from the cart if the vendor is inactive.
+     *
+     * @since 2.5.4
+     */
+    public function remove_inactive_vendor_products_from_cart() {
+        $cart         = WC()->cart->get_cart();
+        $cart_updated = false;
+
+        foreach ( $cart as $cart_key => $cart_item ) {
+            $product_id    = $cart_item['product_id'];
+            $author_id     = get_post_field( 'post_author', $product_id );
+            $vendor_status = get_user_meta( $author_id, '_wcv_vendor_status', true );
+
+            if ( 'inactive' === $vendor_status ) {
+                WC()->cart->remove_cart_item( $cart_key );
+                $cart_updated = true;
+            }
+        }
+
+        if ( $cart_updated ) {
+            wc_add_notice( __( 'Some products have been removed from your cart as the vendor is inactive.', 'wc-vendors' ), 'error' );
+        }
     }
 }

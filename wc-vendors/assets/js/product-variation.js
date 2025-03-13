@@ -1,15 +1,15 @@
-/* global wcv_frontend_product_variation / copyright WooCommerce 2016
+/* global wcv_product_variation / copyright WooCommerce 2016
  */
 jQuery(function($) {
   $(document).ready(function() {
     $('select.variation_actions').select2({
-      placeholder: wcv_frontend_product_variation.variation_actions_placeholder,
+      placeholder: wcv_product_variation.variation_actions_placeholder,
       allowClear: true
     });
   });
   var debug = false;
   var parent_obj = {};
-  var existing_attributes = [];
+  var existing_attributes = {};
 
   // Allow variations sorting
   $('.wcv_variations', $('#wcv_variable_product_options')).sortable({
@@ -25,7 +25,7 @@ jQuery(function($) {
       wcv_product_variations_actions.variation_row_indexes();
     }
   });
-
+  var openVariationDivEvent = new Event('open_variations');
   /**
    *  Utilities for variations
    */
@@ -47,7 +47,7 @@ jQuery(function($) {
 
       taxonomy_dd.append(
         '<option value="">' +
-          wcv_frontend_product_variation.i18n_any_label +
+          wcv_product_variation.i18n_any_label +
           ' ' +
           taxonomy_label +
           '</option>'
@@ -65,7 +65,7 @@ jQuery(function($) {
     // Create the variations default drop down
     create_defaults_drop_down: function(taxonomy, options, taxonomy_label) {
       var name = 'default_attribute_' + taxonomy;
-      var css_class = taxonomy;
+      var css_class = 'defaut_attribute ' + taxonomy;
 
       var taxonomy_dd = $('<select></select>')
         .attr('name', name)
@@ -75,7 +75,7 @@ jQuery(function($) {
 
       taxonomy_dd.append(
         '<option value="">' +
-          wcv_frontend_product_variation.i18n_any_label +
+          wcv_product_variation.i18n_any_label +
           ' ' +
           taxonomy_label +
           '</option>'
@@ -156,14 +156,13 @@ jQuery(function($) {
           return 0;
         });
 
-        $selects.detach().appendTo($(this).find('span.variations_wrapper'));
+        $selects.detach().appendTo($(this).find('div.variations_wrapper'));
       });
     },
 
     update_default_select_positions: function() {
       var attributes = $('#wcv-variation-attributes').data('variation_attr');
-
-      var $selects = $('.variation_default_values').find(
+      var $selects = $('.variation-default-values').find(
         'select.default_attribute'
       );
 
@@ -181,7 +180,7 @@ jQuery(function($) {
         return 0;
       });
 
-      $selects.detach().appendTo('.variation_default_values');
+      $selects.detach().appendTo('.variation-default-values');
     }
   };
 
@@ -236,6 +235,9 @@ jQuery(function($) {
           .closest('.wcv_variation')
           .find('.show_if_variation_downloadable')
           .show();
+        $(this)
+          .closest('.wcv_variation')
+          .height('auto');
       }
     },
 
@@ -406,7 +408,7 @@ jQuery(function($) {
         .closest('.wcv_variation')
         .find('.variation_menu_order');
       var value = window.prompt(
-        wcv_frontend_product_variation.i18n_enter_menu_order,
+        wcv_product_variation.i18n_enter_menu_order,
         $menu_order.val()
       );
 
@@ -424,8 +426,7 @@ jQuery(function($) {
       var wrapper = $('#wcv_variable_product_options').find('.wcv_variations'),
         current_page = parseInt(wrapper.attr('data-page'), 10),
         offset = parseInt(
-          (current_page - 1) *
-            wcv_frontend_product_variation.variations_per_page,
+          (current_page - 1) * wcv_product_variation.variations_per_page,
           10
         );
 
@@ -452,15 +453,92 @@ jQuery(function($) {
      */
     setting_variation_image: null,
 
+    mediaUploader: null,
+
     /**
      * Initialize media actions
      */
     init: function() {
       $('#wcv_variable_product_options').on(
-        'click',
-        '.upload_image_button',
+        'drop',
+        '.wcv-upload-files-input',
         this.add_image
       );
+
+      $('#wcv_variable_product_options .wcv_remove').on(
+        'click',
+        this.remove_image
+      );
+
+      $('#wcv_variable_product_options').on(
+        'click',
+        '.wcv-browser-file',
+        this.add_image
+      );
+    },
+
+    uploadImage: function(file) {
+      var formData = new FormData();
+      formData.append('action', 'upload-attachment');
+      formData.append('async-upload', file);
+      formData.append(
+        '_wpnonce',
+        _wpPluploadSettings.defaults.multipart_params._wpnonce
+      );
+      let attachment_id = 0;
+      return new Promise((resolve, reject) => {
+        $.ajax({
+          url: wcv_product_variation.ajax_url,
+          type: 'POST',
+          data: formData,
+          processData: false,
+          contentType: false,
+          dataType: 'json',
+          async: false,
+          success: function(response) {
+            if (response.success) {
+              attachment_id = response.data.id;
+              resolve(attachment_id);
+            } else {
+              alert('Error uploading file');
+              reject(response);
+            }
+          },
+          error: function(error) {
+            alert('Error uploading file');
+            reject(error);
+          }
+        });
+      });
+    },
+
+    openMediaUploader: function(callback) {
+      if (wcv_product_variations_media.mediaUploader) {
+        wcv_product_variations_media.mediaUploader.open();
+        return;
+      }
+
+      wcv_product_variations_media.mediaUploader = wp.media.frames.file_frame = wp.media(
+        {
+          title: wcv_product_variation.i18n_choose_image,
+          button: {
+            text: wcv_product_variation.i18n_set_image
+          },
+          multiple: false
+        }
+      );
+
+      wcv_product_variations_media.mediaUploader.on('select', function() {
+        var attachment = wcv_product_variations_media.mediaUploader
+          .state()
+          .get('selection')
+          .first()
+          .toJSON();
+
+        callback(attachment);
+      });
+
+      wcv_product_variations_media.mediaUploader.open();
     },
 
     /**
@@ -469,83 +547,56 @@ jQuery(function($) {
      * @param {Object} event
      */
     add_image: function(event) {
-      var $button = $(this),
-        post_id = $button.attr('rel'),
-        $parent = $button.closest('.upload_image');
-      var media_uploader, json;
+      var $this = $(this),
+        $parent = $this.closest('.upload_image'),
+        $image_id = $parent.find('.upload_image_id'),
+        file = null;
+      setting_variation_image = $parent;
 
-      wcv_product_variations_media.setting_variation_image = $parent;
-
-      event.preventDefault();
-
-      if ($button.is('.wcv_remove')) {
-        $(
-          '.upload_image_id',
-          wcv_product_variations_media.setting_variation_image
-        )
-          .val('')
-          .change();
-        wcv_product_variations_media.setting_variation_image
-          .find('img')
-          .eq(0)
-          .attr(
-            'src',
-            wcv_frontend_product_variation.wcv_woocommerce_placeholder_img_src
-          );
-        wcv_product_variations_media.setting_variation_image
-          .find('.upload_image_button')
-          .removeClass('wcv_remove');
-      } else {
-        if (undefined !== media_uploader) {
-          media_uploader.open();
-          return;
-        }
-
-        media_uploader = wp.media({
-          title: wcv_frontend_product_variation.i18n_choose_image,
-          button: {
-            text: wcv_frontend_product_variation.i18n_set_image
-          },
-          states: [
-            new wp.media.controller.Library({
-              title: wcv_frontend_product_variation.i18n_choose_image,
-              filterable: 'all'
-            })
-          ]
-        });
-
-        media_uploader.on('select', function() {
-          json = media_uploader
-            .state()
-            .get('selection')
-            .first()
-            .toJSON();
-
-          if (0 > $.trim(json.url.length)) {
-            return;
-          }
-
-          attachment_url = json.sizes.thumbnail
-            ? json.sizes.thumbnail.url
-            : json.url;
-
-          $(
-            '.upload_image_id',
-            wcv_product_variations_media.setting_variation_image
-          )
-            .val(json.id)
-            .change();
-          wcv_product_variations_media.setting_variation_image
-            .find('.upload_image_button')
-            .addClass('wcv_remove');
-          wcv_product_variations_media.setting_variation_image
-            .find('img')
-            .eq(0)
-            .attr('src', attachment_url);
-        });
-
-        media_uploader.open();
+      const eventName = event.originalEvent.type;
+      if (eventName === 'drop') {
+        file = event.originalEvent.dataTransfer.files[0];
       }
+
+      if (file) {
+        wcv_product_variations_media
+          .uploadImage(file)
+          .then(attachment_id => {
+            wcv_product_variations_media.openMediaUploader(function(
+              attachment
+            ) {
+              $image_id.val(attachment_id);
+              $parent.find('img').attr('src', attachment.url);
+              $parent
+                .find('.product-variation-feat-upload ')
+                .addClass('hidden');
+              $parent.find('.upload_image_button').removeClass('hide-all');
+            });
+          })
+          .catch(error => {
+            console.error(error);
+          });
+      } else {
+        wcv_product_variations_media.openMediaUploader(function(attachment) {
+          $image_id.val(attachment.id);
+          $parent.find('img').attr('src', attachment.url);
+          $parent.find('.product-variation-feat-upload ').addClass('hidden');
+          $parent.find('.upload_image_button').removeClass('hide-all');
+        });
+      }
+    },
+
+    remove_image: function(e) {
+      e.preventDefault();
+      var $this = $(this),
+        $parent = $this.closest('.upload_image'),
+        $image_id = $parent.find('.upload_image_id');
+      $image_id.val('');
+      $parent
+        .find('img')
+        .attr('src', wcv_product_variation.wcv_woocommerce_placeholder_img_src);
+      $parent.find('.upload_image_button').addClass('hide-all');
+      $parent.find('.product-variation-feat-upload ').removeClass('hidden');
     },
 
     /**
@@ -560,6 +611,10 @@ jQuery(function($) {
    * Product variations metabox ajax methods
    */
   var wcv_product_variations_ajax = {
+    /**
+     * Adding variation position - top or bottom
+     */
+    addingPosition: 'top',
     /**
      * Initialize variations ajax methods
      */
@@ -587,22 +642,50 @@ jQuery(function($) {
         }
       );
 
+      $('.wcv_single_add_variation').on('click', function() {
+        if ($(this).hasClass('bottom')) {
+          wcv_product_variations_ajax.addingPosition = 'bottom';
+        } else {
+          wcv_product_variations_ajax.addingPosition = 'top';
+        }
+        wcv_product_variations_ajax.add_variation();
+      });
+
       $('.wcv-metaboxes-wrapper').on(
-        'click',
-        'a.do_variation_action',
+        'change',
+        'select.variation_actions',
         function() {
-          var current_select_id = 'variation_actions_single';
+          var current_select_id = $(this).attr('id');
           wcv_product_variations_ajax.do_variation_action(current_select_id);
         }
       );
 
-      $('a.variations').on('click', this.check_for_attribute_changes);
+      $(document).on('click', '.wcv-accordion-title', function() {
+        if ('variations' === $(this).data('tab')) {
+          wcv_product_variations_ajax.check_for_attribute_changes();
+        }
+      });
+
+      $(document.body).on(
+        'woocommerce_added_attribute',
+        wcv_product_variations_ajax.check_for_attribute_changes
+      );
+
+      $(document.body).on(
+        'woocommerce_removed_attribute',
+        wcv_product_variations_ajax.check_for_attribute_changes
+      );
 
       // populate after doc ready as attributes aren't loaded otherwise
       $(document).ready(function() {
-        var attributes = $('#wcv-variation-attributes').data('variation_attr');
+        const attributes = $('#wcv-variation-attributes').data(
+          'variation_attr'
+        );
         if ($.isEmptyObject(existing_attributes)) {
-          existing_attributes = $.extend({}, attributes);
+          existing_attributes = $.extend(
+            {},
+            wcv_product_variation.product_attrs
+          );
         }
       });
     },
@@ -616,18 +699,23 @@ jQuery(function($) {
         existing_attributes = $.extend({}, attributes);
       }
 
-      // Any changes
-      if (JSON.stringify(existing_attributes) != JSON.stringify(attributes)) {
+      // Compare objects
+      if (!areObjectsEqual(existing_attributes, attributes)) {
+        // Objects are different - handle changes
         if (
-          JSON.stringify(existing_attributes).length ==
-          JSON.stringify(attributes).length
+          areObjectsEqual(
+            Object.keys(existing_attributes),
+            Object.keys(attributes)
+          )
         ) {
+          // Same keys but different values
           wcv_utils.update_variation_select_positions();
           wcv_utils.update_default_select_positions();
         } else if (
-          JSON.stringify(existing_attributes).length >
-          JSON.stringify(attributes).length
+          Object.keys(existing_attributes).length >
+          Object.keys(attributes).length
         ) {
+          // Handle removed attributes
           if (
             Object.keys(existing_attributes).length ==
             Object.keys(attributes).length
@@ -663,10 +751,8 @@ jQuery(function($) {
               );
             });
           }
-        } else if (
-          JSON.stringify(existing_attributes).length <
-          JSON.stringify(attributes).length
-        ) {
+        } else {
+          // Handle added attributes
           if (
             Object.keys(existing_attributes).length ==
             Object.keys(attributes).length
@@ -704,7 +790,7 @@ jQuery(function($) {
           }
         }
 
-        // clone the new attributes to keep track
+        // Clone the new attributes to keep track
         existing_attributes = jQuery.extend({}, attributes);
       }
 
@@ -719,17 +805,32 @@ jQuery(function($) {
 
       // Update the variation count if required
       wcv_product_variations_ajax.check_total_variations();
+      document.dispatchEvent(openVariationDivEvent);
     },
 
     /**
      *	Update the Variations UI when a change has been detected
      */
     update_variations_ui: function(taxonomy, data, element_type, operator) {
-      var attributes = $('#wcv-variation-attributes').data('variation_attr');
+      const attributes = $('#wcv-variation-attributes').data('variation_attr');
 
       wcv_product_variations_ajax.block();
-
       var sort_required;
+
+      if (Object.keys(attributes).length === 0) {
+        $('.wcv_variation').each(function() {
+          $(this).remove();
+        });
+        $('.wcv_variations')
+          .attr('data-attributes', JSON.stringify(attributes))
+          .attr('data-total', 0);
+        $('.variations_notice').removeClass('hide-all');
+        $('#wcv-attr-message').removeClass('hide-all');
+        $('.wcv_single_add_variation').addClass('hide-all');
+        wcv_product_variations_counts.update_variations_count(0);
+        wcv_product_variations_ajax.unblock();
+        return false;
+      }
 
       $('.wcv_variation').each(function(position, el) {
         switch (element_type) {
@@ -792,7 +893,7 @@ jQuery(function($) {
               data['values'],
               data['label']
             );
-            $('.variation_default_values').append(drop_down);
+            $('.variation-default-values').append(drop_down);
             wcv_utils.update_variation_select_positions();
             wcv_utils.update_default_select_positions();
           }
@@ -862,12 +963,10 @@ jQuery(function($) {
         var data = {
           action: 'wcv_json_default_variation_attributes',
           attributes: $('#wcv-variation-attributes').data('variation_attr'),
-          security: wcv_frontend_product_variation.wcv_add_variation_nonce
+          security: wcv_product_variation.wcv_add_variation_nonce
         };
 
-        $.post(wcv_frontend_product_variation.ajax_url, data, function(
-          response
-        ) {
+        $.post(wcv_product_variation.ajax_url, data, function(response) {
           var default_attributes = $(response);
           $('.toolbar-variations-defaults').prepend(default_attributes);
           $('.toolbar-variations-defaults').show();
@@ -882,23 +981,38 @@ jQuery(function($) {
      */
     add_variation: function() {
       wcv_product_variations_ajax.block();
-
+      if (!parent_obj || Object.keys(parent_obj).length === 0) {
+        wcv_product_variations_ajax.populate_parent();
+      }
       var data = {
         action: 'wcv_json_add_variation',
         loop: $('.wcv_variation').length,
         parent_data: parent_obj,
         attributes: $('#wcv-variation-attributes').data('variation_attr'),
-        security: wcv_frontend_product_variation.wcv_add_variation_nonce
+        security: wcv_product_variation.wcv_add_variation_nonce
       };
 
-      $.post(wcv_frontend_product_variation.ajax_url, data, function(response) {
+      $.post(wcv_product_variation.ajax_url, data, function(response) {
         var variation = $(response);
         wcv_product_variations_ajax.load_default_attributes();
-        $('#wcv_variable_product_options')
-          .find('.wcv_variations')
-          .prepend(variation);
+        switch (wcv_product_variations_ajax.addingPosition) {
+          case 'top':
+            $('#wcv_variable_product_options')
+              .find('.wcv_variations')
+              .prepend(variation);
+            break;
+          case 'bottom':
+            $('#wcv_variable_product_options')
+              .find('.wcv_variations')
+              .append(variation);
+            break;
+        }
         $('#wcv_variable_product_options').trigger('wcv_variations_added', 1);
+        $('.wcv_single_add_variation.bottom')
+          .closest('.hide-all')
+          .removeClass('hide-all');
         wcv_product_variations_ajax.unblock();
+        document.dispatchEvent(openVariationDivEvent);
       });
 
       return false;
@@ -910,20 +1024,15 @@ jQuery(function($) {
      * @return {Bool}
      */
     remove_variation: function() {
-      if (
-        window.confirm(wcv_frontend_product_variation.i18n_remove_variation)
-      ) {
-        var $parent = $(this)
-          .parent()
-          .parent()
-          .parent()
-          .parent();
+      if (window.confirm(wcv_product_variation.i18n_remove_variation)) {
+        var $parent = $(this).closest('.wcv_variation');
         var variation_id = $parent.attr('rel');
         var loop = $parent.data('loop');
         $parent.remove();
         wcv_product_variations_ajax.add_deleted_variation(variation_id, loop);
         wcv_product_variations_counts.update_variations_count(-1);
         wcv_product_variations_ajax.check_total_variations();
+        document.dispatchEvent(openVariationDivEvent);
         return false;
       }
     },
@@ -971,13 +1080,11 @@ jQuery(function($) {
      * @return {Bool}
      */
     link_all_variations: function() {
-      if (
-        window.confirm(wcv_frontend_product_variation.i18n_link_all_variations)
-      ) {
+      if (window.confirm(wcv_product_variation.i18n_link_all_variations)) {
         wcv_product_variations_ajax.block();
         var available_variations = [];
         var existing_variations = $('.wcv_variation').length;
-
+        wcv_product_variations_ajax.populate_parent();
         // Get available variations set in the UI
         $('.wcv_variation').each(function(index, el) {
           var existing_variation = {};
@@ -1014,13 +1121,10 @@ jQuery(function($) {
           loop: $('.wcv_variation').length,
           attributes: $('#wcv-variation-attributes').data('variation_attr'),
           available_variations: available_variations,
-          security:
-            wcv_frontend_product_variation.wcv_json_link_all_variations_nonce
+          security: wcv_product_variation.wcv_json_link_all_variations_nonce
         };
 
-        $.post(wcv_frontend_product_variation.ajax_url, data, function(
-          response
-        ) {
+        $.post(wcv_product_variation.ajax_url, data, function(response) {
           var variations = $(response);
           wcv_product_variations_ajax.load_default_attributes();
           $('#wcv_variable_product_options')
@@ -1035,25 +1139,26 @@ jQuery(function($) {
             window.alert(
               variations_count +
                 ' ' +
-                wcv_frontend_product_variation.i18n_variation_added
+                wcv_product_variation.i18n_variation_added
             );
           } else if (0 === variations_count || variations_count > 1) {
             window.alert(
               variations_count +
                 ' ' +
-                wcv_frontend_product_variation.i18n_variations_added
+                wcv_product_variation.i18n_variations_added
             );
           } else {
-            window.alert(
-              wcv_frontend_product_variation.i18n_no_variations_added
-            );
+            window.alert(wcv_product_variation.i18n_no_variations_added);
           }
 
           wcv_product_variations_counts.update_variations_count(
             variations_count
           );
 
-          // $( '#wcv_variable_product_options' ).trigger( 'wcv_variations_added', variations_count );
+          $('#wcv_variable_product_options').trigger(
+            'wcv_variations_added',
+            variations_count
+          );
           wcv_product_variations_ajax.unblock();
         });
 
@@ -1130,13 +1235,9 @@ jQuery(function($) {
           return;
         case 'delete_all':
           if (
-            window.confirm(
-              wcv_frontend_product_variation.i18n_delete_all_variations
-            )
+            window.confirm(wcv_product_variation.i18n_delete_all_variations)
           ) {
-            if (
-              window.confirm(wcv_frontend_product_variation.i18n_last_warning)
-            ) {
+            if (window.confirm(wcv_product_variation.i18n_last_warning)) {
               wcv_product_variations_ajax.delete_all_variations();
             }
           }
@@ -1155,7 +1256,7 @@ jQuery(function($) {
         case 'variable_sale_price_decrease':
           if (
             (value = window.prompt(
-              wcv_frontend_product_variation.i18n_enter_a_value_fixed_or_percent
+              wcv_product_variation.i18n_enter_a_value_fixed_or_percent
             ))
           ) {
             var operator =
@@ -1176,12 +1277,12 @@ jQuery(function($) {
                 value =
                   accounting.unformat(
                     value.replace(/%/, ''),
-                    wcv_frontend_product_variation.mon_decimal_point
+                    wcv_product_variation.mon_decimal_point
                   ) + '%';
               } else {
                 value = accounting.unformat(
                   value,
-                  wcv_frontend_product_variation.mon_decimal_point
+                  wcv_product_variation.mon_decimal_point
                 );
               }
             }
@@ -1193,66 +1294,48 @@ jQuery(function($) {
           }
           break;
         case 'variable_regular_price':
-          value = window.prompt(
-            wcv_frontend_product_variation.i18n_enter_a_value
-          );
+          value = window.prompt(wcv_product_variation.i18n_enter_a_value);
           wcv_product_variations_actions.update_input(
             value,
             'variable_regular_price'
           );
           break;
         case 'variable_sale_price':
-          value = window.prompt(
-            wcv_frontend_product_variation.i18n_enter_a_value
-          );
+          value = window.prompt(wcv_product_variation.i18n_enter_a_value);
           wcv_product_variations_actions.update_input(
             value,
             'variable_sale_price'
           );
           break;
         case 'variable_stock':
-          value = window.prompt(
-            wcv_frontend_product_variation.i18n_enter_a_value
-          );
+          value = window.prompt(wcv_product_variation.i18n_enter_a_value);
           wcv_product_variations_actions.update_input(value, 'variable_stock');
           break;
         case 'variable_weight':
-          value = window.prompt(
-            wcv_frontend_product_variation.i18n_enter_a_value
-          );
+          value = window.prompt(wcv_product_variation.i18n_enter_a_value);
           wcv_product_variations_actions.update_input(value, 'variable_weight');
           break;
         case 'variable_length':
-          value = window.prompt(
-            wcv_frontend_product_variation.i18n_enter_a_value
-          );
+          value = window.prompt(wcv_product_variation.i18n_enter_a_value);
           wcv_product_variations_actions.update_input(value, 'variable_length');
           break;
         case 'variable_width':
-          value = window.prompt(
-            wcv_frontend_product_variation.i18n_enter_a_value
-          );
+          value = window.prompt(wcv_product_variation.i18n_enter_a_value);
           wcv_product_variations_actions.update_input(value, 'variable_width');
           break;
         case 'variable_height':
-          value = window.prompt(
-            wcv_frontend_product_variation.i18n_enter_a_value
-          );
+          value = window.prompt(wcv_product_variation.i18n_enter_a_value);
           wcv_product_variations_actions.update_input(value, 'variable_height');
           break;
         case 'variable_download_limit':
-          value = window.prompt(
-            wcv_frontend_product_variation.i18n_enter_a_value
-          );
+          value = window.prompt(wcv_product_variation.i18n_enter_a_value);
           wcv_product_variations_actions.update_input(
             value,
             'variable_download_limit'
           );
           break;
         case 'variable_download_expiry':
-          value = window.prompt(
-            wcv_frontend_product_variation.i18n_enter_a_value
-          );
+          value = window.prompt(wcv_product_variation.i18n_enter_a_value);
           wcv_product_variations_actions.update_input(
             value,
             'variable_download_expiry'
@@ -1260,10 +1343,10 @@ jQuery(function($) {
           break;
         case 'variable_sale_schedule':
           date_from = window.prompt(
-            wcv_frontend_product_variation.i18n_scheduled_sale_start
+            wcv_product_variation.i18n_scheduled_sale_start
           );
           date_to = window.prompt(
-            wcv_frontend_product_variation.i18n_scheduled_sale_end
+            wcv_product_variation.i18n_scheduled_sale_end
           );
 
           if (null === date_from) {
@@ -1315,20 +1398,19 @@ jQuery(function($) {
       var wrapper = $('#wcv_variable_product_options').find('.wcv_variations'),
         total = parseInt(wrapper.attr('data-total'), 10) + qty,
         displaying_num = $('.variations-pagenav .displaying-num');
-
       // Set the new total of variations
       wrapper.attr('data-total', total);
 
       if (1 === total) {
         displaying_num.text(
-          wcv_frontend_product_variation.i18n_variation_count_single.replace(
+          wcv_product_variation.i18n_variation_count_single.replace(
             '%qty%',
             total
           )
         );
       } else {
         displaying_num.text(
-          wcv_frontend_product_variation.i18n_variation_count_plural.replace(
+          wcv_product_variation.i18n_variation_count_plural.replace(
             '%qty%',
             total
           )
@@ -1365,23 +1447,28 @@ jQuery(function($) {
 
   // Meta-Boxes - Open/close
   $('.wcv_product_variations')
-    .on('click', 'h5.variation_title', function(event) {
+    .on('click', '.variation_title', function(event) {
       if ($(event.target).filter(':input, option, .wcv-sort').length) {
         return;
       }
       $(this)
-        .parent()
-        .parent()
-        .parent()
+        .closest('.wcv_variation')
         .find('.wcv-metabox-content')
         .stop()
         .slideToggle();
+      $(this)
+        .closest('.wcv_variation')
+        .toggleClass('closed');
     })
     .on('click', '.expand_all', function() {
       $(this)
         .closest('.wcv-metaboxes-wrapper')
         .find('.wcv-metabox > .wcv-metabox-content')
         .show();
+      $(this)
+        .closest('.wcv-metaboxes-wrapper')
+        .find('.wcv_variation')
+        .removeClass('closed');
       return false;
     })
     .on('click', '.close_all', function() {
@@ -1389,6 +1476,10 @@ jQuery(function($) {
         .closest('.wcv-metaboxes-wrapper')
         .find('.wcv-metabox > .wcv-metabox-content')
         .hide();
+      $(this)
+        .closest('.wcv-metaboxes-wrapper')
+        .find('.wcv_variation')
+        .addClass('closed');
       return false;
     });
 
@@ -1430,8 +1521,86 @@ jQuery(function($) {
     return false;
   });
 
+  $('#show_variation_actions').on('click', function(e) {
+    const variation_actions = $('#variation_actions_single');
+    variation_actions.toggleClass('hide-all');
+    let rotate = 90;
+
+    if (variation_actions.hasClass('hide-all')) {
+      rotate = 0;
+    } else {
+      rotate = 90;
+    }
+
+    $(this)
+      .find('.wcv-icon')
+      .css('transform', 'rotate(' + rotate + 'deg)');
+    e.preventDefault();
+  });
+
   wcv_product_variations_actions.init();
   wcv_product_variations_media.init();
   wcv_product_variations_ajax.init();
   wcv_product_variations_counts.init();
+
+  const mobileVariationSelectPos = () => {
+    const vaTitle = document.querySelectorAll('.variation_title');
+    vaTitle.forEach(vt => {
+      const variationWrapper = vt.querySelector('.variations_wrapper');
+      const variationWrapperChilds = variationWrapper.childElementCount;
+      if (variationWrapperChilds > 1) {
+        variationWrapper.classList.add('order');
+      } else {
+        variationWrapper.classList.remove('order');
+      }
+    });
+  };
+
+  if (document.querySelector('.variation_title')) {
+    mobileVariationSelectPos();
+  }
+
+  document.addEventListener('open_variations', mobileVariationSelectPos);
 });
+
+// Helper function to do deep comparison of objects
+function areObjectsEqual(obj1, obj2) {
+  // Handle null/undefined
+  if (obj1 === null || obj2 === null) {
+    return obj1 === obj2;
+  }
+
+  // Handle non-objects (including primitives and functions)
+  if (typeof obj1 !== 'object' || typeof obj2 !== 'object') {
+    return obj1 === obj2;
+  }
+
+  // Handle arrays
+  if (Array.isArray(obj1) && Array.isArray(obj2)) {
+    if (obj1.length !== obj2.length) {
+      return false;
+    }
+    return obj1.every((item, index) => areObjectsEqual(item, obj2[index]));
+  }
+
+  // Handle different types (one is array, other is object)
+  if (Array.isArray(obj1) !== Array.isArray(obj2)) {
+    return false;
+  }
+
+  const keys1 = Object.keys(obj1);
+  const keys2 = Object.keys(obj2);
+
+  // Check if they have same number of keys
+  if (keys1.length !== keys2.length) {
+    return false;
+  }
+
+  // Check each key-value pair recursively
+  return keys1.every(key => {
+    if (!Object.prototype.hasOwnProperty.call(obj2, key)) {
+      return false;
+    }
+    return areObjectsEqual(obj1[key], obj2[key]);
+  });
+}

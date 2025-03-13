@@ -17,14 +17,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class WCV_Export_Helper {
 
-    /**
-     * Whether the vendor is allowed to view orders.
-     *
-     * @var boolean
-     * @version 2.5.2
-     * @since   2.5.2
-     */
-    public $can_view_orders = false;
 
     /**
      * Whether the vendor is allowed to export orders.
@@ -89,7 +81,6 @@ class WCV_Export_Helper {
      */
     public function __construct() {
 
-        $this->can_view_orders        = wc_string_to_bool( get_option( 'wcvendors_capability_orders_enabled', 'no' ) );
         $this->can_export_csv         = wc_string_to_bool( get_option( 'wcvendors_capability_orders_export', 'no' ) );
         $this->can_view_emails        = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_email', 'no' ) );
         $this->can_view_name          = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_name', 'no' ) );
@@ -120,38 +111,27 @@ class WCV_Export_Helper {
         foreach ( $all_orders as $order_row ) {
             $vendor_order = $order_row->order;
 
-            $parent_order   = wc_get_order( $vendor_order->get_parent_id() );
-            $products       = '';
-            $needs_shipping = false;
-            $needs_to_ship  = false;
-            $downloadable   = false;
+            $parent_order        = wc_get_order( $vendor_order->get_parent_id() );
+            $products            = '';
+            $need_shipping_items = array();
 
             foreach ( $vendor_order->get_items() as $order_item_id => $item ) {
 
-                $product_id = $item->get_product_id();
-                $product    = wc_get_product( $product_id );
-
-                $needs_shipping = $product->is_virtual();
-                if ( ! $needs_shipping ) {
-                    $needs_shipping = 0;
-                }
-
-                $downloadable = ( $product->is_downloadable() ) ? true : false;
-                if ( is_null( $downloadable ) ) {
-                    $downloadable = 0;
-                }
-                $item_qty      = $item->get_quantity();
-                $item_name     = $item->get_name();
-                $products     .= "$item_qty x $item_name \r";
-                $needs_to_ship = ( $needs_shipping || ! $downloadable ) ? true : false;
+                $product_id            = $item->get_product_id();
+                $product               = wc_get_product( $product_id );
+                $need_shipping_items[] = $product->needs_shipping() ? 1 : 0;
+                $item_qty              = $item->get_quantity();
+                $item_name             = $item->get_name();
+                $products             .= "$item_qty x $item_name \r";
             }
-
-            $shippers = (array) $parent_order->get_meta( 'wc_pv_shipped' );
-            $shippers = array_filter( $shippers );
-
-            $has_shipped = in_array( get_current_user_id(), $shippers, true ) ? __( 'Yes', 'wc-vendors' ) : __( 'No', 'wc-vendors' );
-            $shipped     = ( $needs_to_ship ) ? $has_shipped : __( 'NA', 'wc-vendors' );
-            $order_date  = $parent_order->get_date_created();
+            $need_shipping_items = array_filter( $need_shipping_items );
+            $need_shipping       = count( $need_shipping_items ) > 0 ? true : false;
+            $shippers            = (array) $parent_order->get_meta( 'wc_pv_shipped' );
+            $shippers            = array_filter( $shippers );
+            $shippers            = array_map( 'intval', $shippers );
+            $has_shipped         = in_array( get_current_user_id(), $shippers, true ) ? __( 'Yes', 'wc-vendors' ) : __( 'No', 'wc-vendors' );
+            $shipped             = $need_shipping ? $has_shipped : __( 'N/A', 'wc-vendors' );
+            $order_date          = $parent_order->get_date_created();
 
             $use_shipping_address = apply_filters( 'wcv_export_orders_use_shipping_address', true );
             $shipping_name        = $parent_order->get_shipping_first_name() . ' ' . $parent_order->get_shipping_last_name();
@@ -179,7 +159,7 @@ class WCV_Export_Helper {
                 $new_row['phone'] = $parent_order->get_billing_phone();
             }
             $new_row['total']      = $order_row->total;
-            $new_row['status']     = $shipped;
+            $new_row['status']     = wp_sprintf( '%s / %s', wc_get_order_status_name( $parent_order->get_status() ), $shipped );
             $new_row['order_date'] = date_i18n( 'Y-m-d', strtotime( $order_date ) );
 
             $rows[] = $new_row;
@@ -248,7 +228,7 @@ class WCV_Export_Helper {
             'email'    => __( 'Email address', 'wc-vendors' ),
             'phone'    => __( 'Phone', 'wc-vendors' ),
             'total'    => __( 'Order Total', 'wc-vendors' ),
-            'status'   => __( 'Order Status', 'wc-vendors' ),
+            'status'   => __( 'Order Status / Shipped', 'wc-vendors' ),
             'date'     => __( 'Date', 'wc-vendors' ),
         );
 

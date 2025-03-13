@@ -1,6 +1,8 @@
 <?php
 namespace WC_Vendors\Classes\Front;
 
+use WC_Vendors;
+
 use function WC_Vendors\Classes\Includes\wcv_walk_category_dropdown_tree;
 /**
  * Form Helper Class
@@ -38,9 +40,15 @@ class WCV_Form_Helper {
         $field['name']          = isset( $field['name'] ) ? $field['name'] : $field['id'];
         $field['type']          = isset( $field['type'] ) ? $field['type'] : 'text';
         $field['show_label']    = isset( $field['show_label'] ) ? $field['show_label'] : true;
+        $field['show_tooltip']  = isset( $field['show_tooltip'] ) ? $field['show_tooltip'] : true;
+        $input_wrapper_class    = isset( $field['input_wrapper_class'] ) ? $field['input_wrapper_class'] : '';
+        $append_before          = isset( $field['append_before'] ) ? $field['append_before'] : '';
+        $append_after           = isset( $field['append_after'] ) ? $field['append_after'] : '';
         $data_type              = empty( $field['data_type'] ) ? '' : $field['data_type'];
         $html                   = '';
         $field['default']       = isset( $field['default'] ) ? $field['default'] : '';
+        $field['no_margin']     = isset( $field['no_margin'] ) ? $field['no_margin'] : false;
+        $field['custom_margin'] = isset( $field['custom_margin'] ) ? $field['custom_margin'] : false;
 
         $db_value       = get_post_meta( $post_id, $field['id'], true );
         $field['value'] = isset( $field['value'] ) ? $field['value'] : ( $db_value ? $db_value : $field['default'] );
@@ -90,17 +98,38 @@ class WCV_Form_Helper {
         }
 
         if ( 'hidden' !== $field['type'] ) {
-            echo '<div class="control-group">';
+            $custom_margin = $field['custom_margin'] && is_numeric( $field['custom_margin'] ) ? 'margin-bottom: ' . $field['custom_margin'] . 'px;' : '';
+            echo '<div class="control-group ' . esc_attr( $field['no_margin'] ? 'no-margin' : '' ) . '" style="' . esc_attr( $custom_margin ) . '">';
         }
 
-        // Change the output slightly for check boxes.
-        if ( 'checkbox' === $field['type'] ) {
+        if ( 'toggle' === $field['type'] ) {
 
-            echo '<ul class="control unstyled inline" style="padding:0; margin:0;">';
-            echo '<li><input type="checkbox" class="' . esc_attr( $field['class'] ) . ' ' . esc_attr( $field['wrapper_class'] ) . '" style="' . esc_attr( $field['style'] ) . '" name="' . esc_attr( $field['name'] ) . '" id="' . esc_attr( $field['id'] ) . '" value="' . esc_attr( $field['cbvalue'] ) . '" ' . checked( $field['value'], $field['cbvalue'], false ) . '  ' . implode( ' ', $custom_attributes ) . '/><label for="' . esc_attr( $field['id'] ) . '">' . wp_kses_post( $field['label'] ) . '</label></li>'; //phpcs:ignore
+            echo '<ul class="control unstyled inline" style="padding: 0; margin: 0; line-height: normal;">';
+            echo '<li>';
+            echo '<label class="wcv-toggle" for="' . esc_attr( $field['id'] ) . '">';
+            echo '<span class="wcv-toggle-container">';
+            echo '<input type="checkbox" class="' . esc_attr( $field['class'] ) . ' ' . esc_attr( $field['wrapper_class'] ) . '" style="' . esc_attr( $field['style'] ) . '" name="' . esc_attr( $field['name'] ) . '" id="' . esc_attr( $field['id'] ) . '" value="' . esc_attr( $field['cbvalue'] ) . '" ' . checked( $field['value'], $field['cbvalue'], false ) . '  ' . implode( ' ', $custom_attributes ) . '/>'; // phpcs:ignore
+            echo '<span class="slider"></span></span>';
+            echo wp_kses_post( $field['label'] );
+            echo '</label></li>'; //phpcs:ignore
             echo '</ul>';
 
-            if ( ! empty( $field['description'] ) ) {
+            if ( ! empty( $field['description'] ) && ! $field['show_tooltip'] ) {
+                if ( isset( $field['desc_tip'] ) && false !== $field['desc_tip'] ) {
+                    echo '<p class="tip">' . wp_kses( $field['description'], wcv_allowed_html_tags() ) . '</p>';
+                }
+            }
+        } elseif ( 'checkbox' === $field['type'] ) {
+
+            echo '<ul class="control unstyled inline" style="padding:0; margin:0;">';
+            echo '<li>';
+            echo '<label class="wcv-checkbox-container" for="' . esc_attr( $field['id'] ) . '">' . wp_kses_post( $field['label'] );
+            echo '<input type="checkbox" class="' . esc_attr( $field['class'] ) . ' ' . esc_attr( $field['wrapper_class'] ) . '" style="' . esc_attr( $field['style'] ) . '" name="' . esc_attr( $field['name'] ) . '" id="' . esc_attr( $field['id'] ) . '" value="' . esc_attr( $field['cbvalue'] ) . '" ' . checked( $field['value'], $field['cbvalue'], false ) . '  ' . implode( ' ', $custom_attributes ) . '/>'; // phpcs:ignore
+            echo '<span class="checkmark"></span>
+            </label></li>'; //phpcs:ignore
+            echo '</ul>';
+
+            if ( ! empty( $field['description'] ) && ! $field['show_tooltip'] ) {
                 if ( isset( $field['desc_tip'] ) && false !== $field['desc_tip'] ) {
                     echo '<p class="tip">' . wp_kses( $field['description'], wcv_allowed_html_tags() ) . '</p>';
                 }
@@ -108,14 +137,14 @@ class WCV_Form_Helper {
         } else {
 
             if ( $field['show_label'] ) {
-                echo '<label for="' . esc_attr( $field['id'] ) . '" class="' . esc_attr( $field['wrapper_class'] ) . '">' . wp_kses_post( $field['label'] );
+                echo '<label for="' . esc_attr( $field['id'] ) . '" class="' . esc_attr( $field['wrapper_class'] ) . '">' . wp_kses_post( $field['label'] ) . '</label>';
+                self::description_tooltip( $field );
             }
-            echo '</label>';
 
             $html .= apply_filters( 'wcv_wp_input_start_' . $field['id'], $html );
 
             if ( 'hidden' !== $field['type'] ) {
-                echo '<div class="control">';
+                echo '<div class="control ' . esc_attr( $input_wrapper_class ) . '">';
             }
 
             if ( 'decimal' === $data_type || 'price' === $data_type || 'number' === $data_type ) {
@@ -134,13 +163,36 @@ class WCV_Form_Helper {
                 }
             }
 
+            if ( ! empty( $append_before ) ) {
+                echo $append_before; // phpcs:ignore
+            }
+
+            if ( 'price' === $data_type ) {
+                $field['class']     .= ' wcv-price-input';
+                $parsley_error_el    = 'wcv-price-input-' . $field['id'];
+                $parsley_container   = 'wcv-price-input-conainer' . $field['id'];
+                $custom_attributes[] = 'data-parsley-errors-container="#' . $parsley_error_el . '"';
+                $custom_attributes[] = 'data-parsley-class-handler="#' . $parsley_container . '"';
+                echo '<div class="wcv-price-input-container" id="' . esc_attr( $parsley_container ) . '">';
+                echo '<span class="wcv-price-symbol">' . esc_html( get_woocommerce_currency_symbol() ) . '</span>';
+            }
+
             echo '<input type="' . esc_attr( $field['type'] ) . '" class="' . esc_attr( $field['class'] ) . '" style="' . esc_attr( $field['style'] ) . '" name="' . esc_attr( $field['name'] ) . '" id="' . esc_attr( $field['id'] ) . '" value="' . esc_attr( $field['value'] ) . '" placeholder="' . esc_attr( $field['placeholder'] ) . '" ' . ( implode( ' ', $custom_attributes ) ) . '  /> '; //phpcs:ignore
+
+            if ( 'price' === $data_type ) {
+                echo '</div>';
+                echo '<div  id="' . esc_attr( $parsley_error_el ) . '"></div>';
+            }
+
+            if ( ! empty( $append_after ) ) {
+                echo $append_after; // phpcs:ignore
+            }
 
             if ( 'hidden' !== $field['type'] ) {
                 echo '</div>';
             }
 
-            if ( ! empty( $field['description'] ) ) {
+            if ( ! empty( $field['description'] ) && ! $field['show_tooltip'] ) {
                 if ( isset( $field['desc_tip'] ) && false !== $field['desc_tip'] ) {
                     echo '<p class="tip">' . wp_kses( $field['description'], wcv_allowed_html_tags() ) . '</p>';
                 }
@@ -191,7 +243,11 @@ class WCV_Form_Helper {
         $field['options']          = isset( $field['options'] ) ? $field['options'] : array();
         $field['taxonomy_field']   = isset( $field['taxonomy_field'] ) ? $field['taxonomy_field'] : 'slug';
         $field['show_label']       = isset( $field['show_label'] ) ? $field['show_label'] : true;
+        $field['show_tooltip']     = isset( $field['show_tooltip'] ) ? $field['show_tooltip'] : true;
         $field['multiple']         = isset( $field['multiple'] ) && $field['multiple'] ? true : false;
+        $field['options_attr']     = isset( $field['options_attr'] ) ? $field['options_attr'] : array();
+        $field['label_icon']       = isset( $field['label_icon'] ) ? $field['label_icon'] : '';
+        $field['no_margin']        = isset( $field['no_margin'] ) ? $field['no_margin'] : false;
 
         $field_name = $field['id'];
         if ( $field['multiple'] ) {
@@ -298,10 +354,17 @@ class WCV_Form_Helper {
             echo $field['wrapper_start']; // phpcs:ignore
         }
 
-        echo '<div class="control-group">';
+        echo '<div class="control-group' . ( $field['no_margin'] ? ' no-margin' : '' ) . '">';
 
         if ( $field['show_label'] ) {
-            echo '<label for="' . esc_attr( $field['id'] ) . '">' . wp_kses_post( $field['label'] ) . '</label>';
+            // TODO: Add label icon position.
+            echo '<label for="' . esc_attr( $field['id'] ) . '">';
+            if ( isset( $field['label_icon'] ) && ! empty( $field['label_icon'] ) ) {
+                echo wp_kses( $field['label_icon'], wcv_allowed_html_tags() );
+            }
+            echo '<span class="vertical-middle">' . wp_kses_post( $field['label'] ) . '</span>';
+            echo '</label>';
+            self::description_tooltip( $field );
         }
 
         echo '<div class="control select">';
@@ -330,13 +393,21 @@ class WCV_Form_Helper {
                 } else {
                     $selected = selected( esc_attr( $field['value'] ), esc_attr( $key ), false );
                 }
-                echo '<option value="' . esc_attr( $key ) . '" ' . esc_attr( $selected ) . '>' . esc_html( $value ) . '</option>';
+
+                $option_attr = '';
+                if ( isset( $field['options_attr'][ $key ] ) && is_array( $field['options_attr'][ $key ] ) ) {
+                    foreach ( $field['options_attr'][ $key ] as $attr_key => $attr_value ) {
+                        $option_attr .= ' ' . esc_attr( $attr_key ) . '="' . esc_attr( $attr_value ) . '"';
+                    }
+                }
+
+                echo '<option value="' . esc_attr( $key ) . '" ' . esc_attr( $selected ) . $option_attr . '>' . esc_html( $value ) . '</option>'; //phpcs:ignore
             }
         }
 
         echo '</select> ';
 
-        if ( ! empty( $field['description'] ) ) {
+        if ( ! empty( $field['description'] ) && ! $field['show_tooltip'] ) {
             if ( isset( $field['desc_tip'] ) && false !== $field['desc_tip'] ) {
                 echo '<p class="tip">' . wp_kses( $field['description'], wcv_allowed_html_tags() ) . '</p>';
             }
@@ -375,6 +446,7 @@ class WCV_Form_Helper {
         $field['show_option_none'] = isset( $field['show_option_none'] ) ? $field['show_option_none'] : '';
         $field['options']          = isset( $field['options'] ) ? $field['options'] : array();
         $field['custom_tax']       = isset( $field['custom_tax'] ) ? $field['custom_tax'] : false;
+        $field['show_tooltip']     = isset( $field['show_tooltip'] ) ? $field['show_tooltip'] : true;
 
         // Custom attribute handling.
         $custom_attributes = array();
@@ -446,10 +518,11 @@ class WCV_Form_Helper {
         echo '<div class="control-group">';
 
         echo '<label for="' . esc_attr( $field['id'] ) . '">' . wp_kses_post( $field['label'] ) . '</label>';
+        self::description_tooltip( $field );
 
         echo '<div class="control select">';
 
-        if ( ! empty( $field['description'] ) ) {
+        if ( ! empty( $field['description'] ) && ! $field['show_tooltip'] ) {
             if ( isset( $field['desc_tip'] ) && false !== $field['desc_tip'] ) {
                 echo '<span data-tooltip data-tip="' . esc_attr( $field['description'] ) . '" aria-haspopup="true" class="has-tip right" title="' . esc_attr( $field['description'] ) . '"><i class="wcv-icon wcv-icon-info-circle"></i></span>';
             }
@@ -521,6 +594,7 @@ class WCV_Form_Helper {
         $field['show_option_none'] = isset( $field['show_option_none'] ) ? $field['show_option_none'] : '';
         $field['options']          = isset( $field['options'] ) ? $field['options'] : array();
         $field['value_type']       = isset( $field['value_type'] ) ? $field['value_type'] : 'value';
+        $field['show_tooltip']     = isset( $field['show_tooltip'] ) ? $field['show_tooltip'] : true;
 
         // Custom attribute handling.
         $custom_attributes = array();
@@ -540,9 +614,9 @@ class WCV_Form_Helper {
             echo $field['wrapper_start']; // phpcs:ignore
         }
 
-        echo '<label for="' . esc_attr( $field['id'] ) . '">' . wp_kses_post( $field['label'] );
-
-        if ( ! empty( $field['description'] ) ) {
+        echo '<label for="' . esc_attr( $field['id'] ) . '">' . wp_kses_post( $field['label'] ) . '</label>';
+        self::description_tooltip( $field );
+        if ( ! empty( $field['description'] ) && $field['show_tooltip'] ) {
             if ( isset( $field['desc_tip'] ) && false !== $field['desc_tip'] ) {
                 echo '<span data-tooltip data-tip="' . esc_attr( $field['description'] ) . '" aria-haspopup="true" class="has-tip right" title="' . esc_attr( $field['description'] ) . '"><i class="wcv-icon wcv-icon-info-circle"></i></span>';
             }
@@ -568,7 +642,6 @@ class WCV_Form_Helper {
         }
 
         echo '</select>';
-        echo '</label>';
 
         // container wrapper end if defined.
         if ( ! empty( $field['wrapper_start'] ) && ! empty( $field['wrapper_end'] ) ) {
@@ -594,12 +667,14 @@ class WCV_Form_Helper {
         $field['placeholder']   = isset( $field['placeholder'] ) ? $field['placeholder'] : '';
         $field['label']         = isset( $field['label'] ) ? $field['label'] : '';
         $field['class']         = isset( $field['class'] ) ? $field['class'] : 'select short';
-        $field['rows']          = isset( $field['rows'] ) ? $field['rows'] : 5;
+        $field['rows']          = isset( $field['rows'] ) ? $field['rows'] : 3;
         $field['cols']          = isset( $field['cols'] ) ? $field['cols'] : 5;
         $field['style']         = isset( $field['style'] ) ? $field['style'] : '';
         $field['wrapper_start'] = isset( $field['wrapper_start'] ) ? $field['wrapper_start'] : '';
         $field['wrapper_end']   = isset( $field['wrapper_end'] ) ? $field['wrapper_end'] : '';
         $field['value']         = isset( $field['value'] ) ? $field['value'] : get_post_meta( $post_id, $field['id'], true );
+        $field['show_tooltip']  = isset( $field['show_tooltip'] ) ? $field['show_tooltip'] : true;
+        $field['custom_margin'] = isset( $field['custom_margin'] ) ? $field['custom_margin'] : 0;
 
         // Strip tags.
         $field['value'] = ( $allow_markup ) ? $field['value'] : wp_strip_all_tags( $field['value'] );
@@ -621,16 +696,17 @@ class WCV_Form_Helper {
             echo $field['wrapper_start']; // phpcs:ignore
         }
 
-        echo '<div class="control-group">';
+        $custom_margin = $field['custom_margin'] ? 'margin-bottom: ' . $field['custom_margin'] . 'px !important;' : '';
+        echo '<div class="control-group" style="' . esc_attr( $custom_margin ) . '">';
         echo '<div class="control">';
 
         echo '<label for="' . esc_attr( $field['id'] ) . '">' . wp_kses_post( $field['label'] ) . '</label>';
-
-        echo '<textarea class="' . esc_attr( $field['class'] ) . '" style="' . esc_attr( $field['style'] ) . '"  name="' . esc_attr( $field['id'] ) . '" id="' . esc_attr( $field['id'] ) . '" placeholder="' . esc_attr( $field['placeholder'] ) . '" rows="' . esc_attr( $field['rows'] ) . '" cols="' . esc_attr( $field['cols'] ) . '" ' . esc_attr( implode( ' ', $custom_attributes ) ) . '>' . esc_textarea( $field['value'] ) . '</textarea> ';
+        self::description_tooltip( $field );
+        echo '<textarea class="' . esc_attr( $field['class'] ) . '" style="' . esc_attr( $field['style'] ) . '"  name="' . esc_attr( $field['id'] ) . '" id="' . esc_attr( $field['id'] ) . '" placeholder="' . esc_attr( $field['placeholder'] ) . '" rows="' . esc_attr( $field['rows'] ) . '" cols="' . esc_attr( $field['cols'] ) . '" ' . wp_kses_post( implode( ' ', $custom_attributes ) ) . '>' . esc_textarea( $field['value'] ) . '</textarea> ';
 
         echo '</div>';
 
-        if ( ! empty( $field['description'] ) ) {
+        if ( ! empty( $field['description'] ) && ! $field['show_tooltip'] ) {
             if ( isset( $field['desc_tip'] ) && false !== $field['desc_tip'] ) {
                 echo '<p class="tip">' . esc_html( $field['description'] ) . '</p>';
             }
@@ -738,21 +814,24 @@ class WCV_Form_Helper {
 
             do_action( 'wcv_form_product_media_uploader_before_product_media_uploader', $post_id );
 
-            echo '<div class="all-33 small-100 tiny-100">';
+            echo '<div class="all-45 small-100 tiny-100 product-feat-image-upload small-align-center tiny-align-center">';
 
-            echo '<h6>' . esc_html__( 'Featured Image', 'wc-vendors' ) . '</h6>';
+            echo '<h6 class="blue-title text-blue" style="width: 100%;">' . esc_html__( 'Featured Image', 'wc-vendors' ) . '</h6>';
             $post_thumb = has_post_thumbnail( $post_id );
 
-            echo '<div class="wcv-featuredimg" data-title="' . esc_html__( 'Select or Upload a Feature Image', 'wc-vendors' ) . '" data-button_text="' . esc_html__( 'Set Product Feature Image', 'wc-vendors' ) . '">';
+            echo '<input type="hidden" id="_featured_image_id" name="_featured_image_id" value="' . ( $post_thumb ? esc_attr( get_post_thumbnail_id( $post_id ) ) : '' ) . '" />';
+            echo '<div class="wcv-featuredimg ' . ( $post_thumb ? 'has-image' : '' ) . '" data-title="' . esc_html__( 'Select or Upload a Feature Image', 'wc-vendors' ) . '" data-button_text="' . esc_html__( 'Set Product Feature Image', 'wc-vendors' ) . '">';
             if ( $post_thumb ) {
-                $image_attributes = wp_get_attachment_image_src( get_post_thumbnail_id( $post_id ), array( 150, 150 ) );
+                $image_attributes = wp_get_attachment_image_src( get_post_thumbnail_id( $post_id ), array( 300, 300 ) );
                 echo '<img src="' . esc_attr( $image_attributes[0] ) . '" width="' . esc_attr( $image_attributes[1] ) . '" height="' . esc_attr( $image_attributes[2] ) . '">';
             }
+            echo '<a type="button" href="#" class="wcv-media-uploader-featured-delete ' . ( ! $post_thumb ? 'hidden' : '' ) . '">' . wcv_get_icon( 'wcv-icon wcv-icon-md wcv-icon-middle', 'wcv-icon-times' ) . '</a>'; // phpcs:ignore
             echo '</div>';
-            echo '<input type="hidden" id="_featured_image_id" name="_featured_image_id" value="' . ( $post_thumb ? esc_attr( get_post_thumbnail_id( $post_id ) ) : '' ) . '" />';
-
-            echo '<a class="wcv-media-uploader-featured-add ' . ( $post_thumb ? 'hidden' : '' ) . '" href="#" >' . esc_html__( 'Set featured image', 'wc-vendors' ) . '</a><br />';
-            echo '<a class="wcv-media-uploader-featured-delete ' . ( ! $post_thumb ? 'hidden' : '' ) . '" href="#" >' . esc_html__( 'Remove featured image', 'wc-vendors' ) . '</a><br />';
+            echo '<div class="file-upload-wrapper featured-image-upload-wrapper ' . ( $post_thumb ? 'hidden' : '' ) . '">';
+            echo '<small style="display: block;">&nbsp;</small>';
+            include 'partials/product/wcvendors-upload-files-input.php';
+            echo '</div>';
+            echo '<button type="button" class="wcv-media-uploader-featured-replace wcv-button wcv-button-outline bg-white text-blue ' . ( ! $post_thumb ? 'hidden' : '' ) . '" style="margin-top: 36px;">' . wcv_get_icon( 'wcv-icon wcv-setting-icon wcv-icon-left wcv-icon-middle', 'wcv-icon-replace-image' ) . '<span class="vertical-middle">' . esc_html__( 'Replace Featured Image', 'wc-vendors' ) . '</span></button>'; // phpcs:ignore
 
             echo '<span class="wcv_featured_image_msg"></span>';
 
@@ -793,13 +872,19 @@ class WCV_Form_Helper {
                         ),
                     )
                 );
-
-                echo '<div class="all-66 small-100 tiny-100" >';
-
-                echo '<h6>' . esc_html__( 'Gallery', 'wc-vendors' ) . '</h6>';
-
+                echo '<div class="wcv-flex wcv-flex-end all-55 small-100 tiny-100 product-imgs-gallery-upload small-top-space tiny-top-space" id="product-imgs-gallery-upload">';
+                echo '<div id="product-imgs-gallery-parent" style="width: 100%;">';
+                echo '<h6 class="blue-title text-blue small-align-center tiny-align-center no-margin">' . esc_html__( 'Gallery', 'wc-vendors' ) . '</h6>';
+                echo '<span style="display: block; margin-bottom: 25px; margin-top: 12px;" class="small-align-center tiny-align-center">';
+                printf(
+                    /* translators: %d: maximum number of gallery images */
+                    esc_html__( 'Add more product images here, and you can upload up to %d files max' ),
+                    esc_html( $gallery_options['max_upload'] )
+                );
+                echo '</span>';
+                $has_images = count( $attachment_ids ) > 0 ? 'has-images' : '';
                 echo '<div id="product_images_container" data-gallery_max_upload="' . esc_attr( $gallery_options['max_upload'] ) . '" data-gallery_max_notice="' . esc_attr( $gallery_options['notice'] ) . '" data-gallery_max_selected_notice="' . esc_attr( $gallery_options['max_selected_notice'] ) . '">';
-                echo '<ul class="product_images inline">';
+                echo '<ul class="product_images inline bottom-space ' . esc_attr( $has_images ) . '" id="product_images">';
 
                 if ( count( $attachment_ids ) > 0 ) {
 
@@ -809,26 +894,34 @@ class WCV_Form_Helper {
                         echo wp_get_attachment_image( $attachment_id, array( 150, 150 ) );
                         echo '<ul class="actions">';
                         echo '<li><a href="#" class="delete" title="delete"><svg class="wcv-icon wcv-icon-md">
-						<use xlink:href="' . esc_attr( WCV_ASSETS_URL ) . 'svg/wcv-icons.svg#wcv-icon-times"></use>
-				</svg></a></li>';
+						<use xlink:href="' . esc_attr( WCV_ASSETS_URL ) . 'svg/wcv-icons.svg#wcv-icon-times"></use></svg></a></li>';
                         echo '</ul>';
                         echo '</li>';
 
                     }
                 }
+
+                echo '<li class="file-upload-wrapper ' . ( count( $attachment_ids ) >= $gallery_options['max_upload'] ? 'hidden' : '' ) . ' tiny-align-center small-align-center">';
+                wc_get_template(
+                    'wcvendors-upload-files-input.php',
+                    array(
+                        'should_small' => count( $attachment_ids ) > 0,
+                        'classes'      => 'small-push-center tiny-push-center',
+                    ),
+                    'wc-vendors/partials/product/',
+                    __DIR__ . '/partials/product/'
+                );
+                echo '</li>';
                 echo '</ul>';
                 echo '<input type="hidden" id="product_image_gallery" name="product_image_gallery" value="' . ( ( count( $attachment_ids ) > 0 ) ? esc_attr( $product_image_gallery ) : '' ) . '">';
                 echo '</div>';
-                echo '<p class="wcv-media-uploader-gallery"><a href="#" data-choose="' . esc_attr( __( 'Add Images to Product Gallery', 'wc-vendors' ) ) . '" data-update="' . esc_attr( __( 'Add to gallery', 'wc-vendors' ) ) . '" data-delete="Delete image" data-text="Delete">' . esc_html__( 'Add product gallery images', 'wc-vendors' ) . '</a></p>';
-
+                echo '<small>' . esc_html__( 'Only support .jpg, .png  files', 'wc-vendors' ) . '</small>';
                 echo '<span class="wcv_gallery_msg"></span>';
-
-                echo '</div>';
 
             }
 
             echo '<div class="all-100"></div>';
-
+            echo '</div>';
             do_action( 'wcv_form_product_media_uploader_after_product_media_uploader', $post_id );
 
         }
@@ -960,15 +1053,15 @@ class WCV_Form_Helper {
         echo '<div class="wcv-file-uploader' . esc_attr( $field['image_meta_key'] ) . ' ' . esc_attr( $field['class'] ) . '">';
 
         if ( $has_image ) {
-            echo '<img src="' . esc_attr( $image_src[0] ) . '" alt="" style="max-width:100%;" />';
+            echo '<img src="' . esc_attr( $image_src[0] ) . '" alt="" style="max-width:100%; margin-bottom: 16px;" />';
         }
 
         echo '</div>';
 
         $required = '' !== $field['required'] ? 'required' : '';
 
-        echo '<a class="wcv-file-uploader-add' . esc_attr( $field['image_meta_key'] ) . ' ' . ( $has_image ? 'hidden' : '' ) . '" href="#">' . esc_html( $field['add_text'] ) . '</a> ';
-        echo '<a class="wcv-file-uploader-delete' . esc_attr( $field['image_meta_key'] ) . ' ' . ( ! $has_image ? 'hidden' : '' ) . '" href="#" >' . esc_html( $field['remove_text'] ) . '</a><br />';
+        echo '<button class="wcv-file-uploader-add' . esc_attr( $field['image_meta_key'] ) . ' ' . ( $has_image ? 'hidden' : '' ) . ' wcv-button wcv-button-outline text-blue">' . wp_kses( wcv_get_icon( 'wcv-icon wcv-icon-24 wcv-icon-middle wcv-icon-left', 'wcv-icon-photo' ), wcv_allowed_html_tags() ) . esc_html( $field['add_text'] ) . '</button> ';
+        echo '<button class="wcv-file-uploader-delete' . esc_attr( $field['image_meta_key'] ) . ' ' . ( ! $has_image ? 'hidden' : '' ) . '  wcv-button wcv-button-cancel" >' . esc_html( $field['remove_text'] ) . '</button><br />';
         echo '<input class="wcv-img-id wcv-file-uploader" name="' . esc_attr( $field['image_meta_key'] ) . '" id="' . esc_attr( $field['image_meta_key'] ) . '" type="hidden" value="' . esc_attr( $field['value'] ) . '" data-image_meta_key="' . esc_attr( $field['image_meta_key'] ) . '" data-save_button="' . esc_attr( $field['save_button'] ) . '" data-window_title="' . esc_attr( $field['window_title'] ) . '" data-type="image" data-msg-id="' . esc_attr( $field['image_meta_key'] ) . '_msg" ' . esc_attr( $required ) . ' />';
         echo '<span id="' . esc_attr( $field['image_meta_key'] ) . '_msg"></span>';
         // container wrapper end if defined.
@@ -988,9 +1081,11 @@ class WCV_Form_Helper {
      */
     public static function submit( $args ) {
 
-        $args['id']    = isset( $args['id'] ) ? $args['id'] : '';
-        $args['value'] = isset( $args['value'] ) ? $args['value'] : 'Submit';
-        $args['class'] = isset( $args['class'] ) ? $args['class'] : '';
+        $args['id']            = isset( $args['id'] ) ? $args['id'] : '';
+        $args['value']         = isset( $args['value'] ) ? $args['value'] : 'Submit';
+        $args['class']         = isset( $args['class'] ) ? $args['class'] : 'wcv-button';
+        $args['append_before'] = isset( $args['append_before'] ) ? $args['append_before'] : '';
+        $args['append_after']  = isset( $args['append_after'] ) ? $args['append_after'] : '';
 
         do_action( 'wcv_form_submit_before_' . $args['id'], $args );
 
@@ -999,7 +1094,16 @@ class WCV_Form_Helper {
             echo $args['wrapper_start']; //phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
         }
 
-        echo '<input type="submit" value="' . esc_attr( $args['value'] ) . '" class="wcv-button ' . esc_attr( $args['class'] ) . '" name="' . esc_attr( $args['id'] ) . '" id="' . esc_attr( $args['id'] ) . '">';
+        if ( ! empty( $args['append_before'] ) ) {
+            echo $args['append_before']; //phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+        }
+
+        echo '<input type="submit" value="' . esc_attr( $args['value'] ) . '" class="' . esc_attr( $args['class'] ) . '" name="' . esc_attr( $args['id'] ) . '" id="' . esc_attr( $args['id'] ) . '">';
+
+        if ( ! empty( $args['append_after'] ) ) {
+            echo $args['append_after']; //phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+        }
+
         // container wrapper end if defined.
         if ( ! empty( $args['wrapper_start'] ) && ! empty( $args['wrapper_end'] ) ) {
             echo $args['wrapper_end']; //phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
@@ -1138,7 +1242,7 @@ class WCV_Form_Helper {
     /**
      * Countries array
      *
-     * @version 2.5.2
+     * @version 2.5.4
      * @since   2.5.2
      */
     public static function countries() {
@@ -1146,7 +1250,7 @@ class WCV_Form_Helper {
             return array();
         }
 
-        if ( ! property_exists( 'WC', 'countries' ) ) {
+        if ( ! isset( WC()->countries ) ) {
             return array();
         }
 
@@ -1435,5 +1539,77 @@ class WCV_Form_Helper {
         $new_custom_attributes = array_merge( $custom_attributes, $new_validation_rules );
 
         return $new_custom_attributes;
+    }
+
+    /**
+     * Button
+     *
+     * @since      2.5.4
+     *
+     * @param      array $args The button arguments.
+     */
+    public static function button( $args ) {
+
+        $args['id']          = isset( $args['id'] ) ? $args['id'] : '';
+        $args['value']       = isset( $args['value'] ) ? $args['value'] : 'Submit';
+        $args['class']       = isset( $args['class'] ) ? $args['class'] : 'wcv-button';
+        $args['before_text'] = isset( $args['before_text'] ) ? $args['before_text'] : '';
+        $args['after_text']  = isset( $args['after_text'] ) ? $args['after_text'] : '';
+        $args['type']        = isset( $args['type'] ) ? $args['type'] : 'submit';
+        $args['button_text'] = isset( $args['button_text'] ) ? $args['button_text'] : '';
+
+        do_action( 'wcv_form_button_before_' . $args['id'], $args );
+
+        // Container wrapper start if defined start & end required otherwise no output is shown.
+        if ( ! empty( $args['wrapper_start'] ) && ! empty( $args['wrapper_end'] ) ) {
+            echo $args['wrapper_start']; //phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+        }
+
+        echo '<button type="' . esc_attr( $args['type'] ) . '" class="' . esc_attr( $args['class'] ) . '" name="' . esc_attr( $args['id'] ) . '" id="' . esc_attr( $args['id'] ) . '">';
+
+        if ( ! empty( $args['before_text'] ) ) {
+            echo $args['before_text']; //phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+        }
+
+        echo esc_html( $args['button_text'] );
+
+        if ( ! empty( $args['after_text'] ) ) {
+            echo $args['after_text']; //phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+        }
+
+        echo '</button>';
+
+        if ( 'submit' === $args['type'] ) {
+            echo '<input type="hidden" value="' . esc_attr( $args['value'] ) . '" name="' . esc_attr( $args['id'] ) . '">';
+        }
+
+        // container wrapper end if defined.
+        if ( ! empty( $args['wrapper_start'] ) && ! empty( $args['wrapper_end'] ) ) {
+            echo $args['wrapper_end']; //phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+        }
+
+        do_action( 'wcv_form_button_after_' . $args['id'], $args );
+    }
+
+    /**
+     * Build desctiption tooltip
+     *
+     * @param array $field the field options.
+     */
+    public static function description_tooltip( $field ) {
+
+        $description  = isset( $field['description'] ) ? $field['description'] : false;
+        $desc_tip     = isset( $field['desc_tip'] ) ? $field['desc_tip'] : false;
+        $show_tooltip = isset( $field['show_tooltip'] ) ? $field['show_tooltip'] : true;
+        if ( ! $description || ! $desc_tip || ! $show_tooltip ) {
+            return;
+        }
+
+        echo '<span class="wcv-tip">';
+        echo '<svg class="wcv-icon wcv-setting-icon">
+            <use xlink:href="' . esc_attr( WCV_ASSETS_URL ) . 'svg/wcv-icons.svg#wcv-icon-info"></use>
+        </svg>';
+        echo '<div class="content">' . wp_kses_post( $description ) . '<span class="arrow"></span></div>';
+        echo '</span>';
     }
 }

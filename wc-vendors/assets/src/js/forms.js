@@ -5,15 +5,15 @@ This is used to init the forms on the front end.
 (function($, Ink) {
   $(window).on('load', function() {
     validate_forms();
-
+    showPayoutMethod();
     if (!$('#_wcv_vendor_enable_store_notice').is(':checked')) {
-      $('#wp-_wcv_vendor_store_notice-wrap').hide();
+      $('#wp-_wcv_vendor_store_notice-wrap').slideUp();
     } else {
-      $('#wp-_wcv_vendor_store_notice-wrap').show();
+      $('#wp-_wcv_vendor_store_notice-wrap').slideDown();
     }
 
     $('#_wcv_vendor_enable_store_notice').click(function() {
-      $('#wp-_wcv_vendor_store_notice-wrap').toggle();
+      $('#wp-_wcv_vendor_store_notice-wrap').slideToggle();
     });
 
     $('#_wcv_shipping_type').on('change', function() {
@@ -215,12 +215,11 @@ This is used to init the forms on the front end.
     return fieldHasError;
   };
 
-  // Preferred commission payout method.
-  $('#wcv_commission_payout_method').on('change', function() {
+  const showPayoutMethod = () => {
     const selectedMethod = $('#wcv_commission_payout_method').val();
     const $paypalPayoutFields = $('#wcv-paypal-payout-fields');
     const $bankPayoutFields = $('#wcv-bank-payout-fields');
-
+    const $stripeConnectSection = $('#stripe-connect-vendor');
     switch (selectedMethod) {
       case 'paypal':
         showPayoutMethodField($paypalPayoutFields);
@@ -228,11 +227,17 @@ This is used to init the forms on the front end.
       case 'bank':
         showPayoutMethodField($bankPayoutFields);
         break;
+      case 'stripe-connect':
+        showPayoutMethodField($stripeConnectSection);
+        break;
       default:
         hideAllPayoutFields();
         break;
     }
-  });
+  };
+
+  // Preferred commission payout method.
+  $('#wcv_commission_payout_method').on('change', showPayoutMethod);
 
   $('#wcv_paypal_masspay_wallet').on('change', function() {
     showSelectedWallet();
@@ -267,5 +272,6 @@ This is used to init the forms on the front end.
 
   const hideAllPayoutFields = function() {
     $('.wcv-payout-method').hide();
+    $('.wcv_stripe_connect_container').hide();
   };
 })(jQuery, Ink.UI);

@@ -60,10 +60,10 @@ jQuery(function($) {
       if (!$.isEmptyObject(wcv_country_state_fields.states[country])) {
         var state = wcv_country_state_fields.states[country],
           $defaultOption = $('<option value=""></option>').text(
-            wcv_country_state_fields.i18n_select_state_text
+            wcv_countries_states.i18n_select_state_text
           );
 
-        $newstate = $('<select style="width: 25em;"></select>')
+        $newstate = $('<select style="100%;"></select>')
           .prop('id', input_id)
           .prop('name', input_name)
           .prop('placeholder', placeholder)
@@ -87,7 +87,9 @@ jQuery(function($) {
 
         $newstate
           .show()
-          .select2()
+          .select2({
+            width: 'resolve'
+          })
           .hide()
           .change();
       } else {

@@ -9,7 +9,8 @@ use WC_Vendors\Classes\Front\WCV_Public_Assets;
 use WC_Vendors\Classes\Front\WCV_Table_Helper;
 use WC_Vendors\Classes\Front\WCV_Reports_Controller;
 use WC_Vendors\Classes\Front\WCV_Order_Controller;
-use function WC_Vendors\Classes\Includes\wcv_get_default_product_template;
+use WC_Vendors\Classes\Front\WCV_Dashboard_Controller;
+use WC_Vendors\Classes\Front\WCV_Product_Controller;
 use function WC_Vendors\Classes\Includes\wcv_is_dashboard_page;
 /**
  * Class WCV_Vendor_Dashboard
@@ -106,6 +107,18 @@ class WCV_Vendor_Dashboard {
             add_action( 'wp_head', array( $this, 'add_vendor_dashboard_icon' ) );
         }
 
+        $checkboxes = array(
+            'wcv_vacation_mode',
+            'wcv_vacation_disable_cart',
+            'wcv_vendor_enable_store_notice',
+            'wc_vendor_enable_ga_code',
+            'wcv_enable_opening_hours',
+        );
+
+        foreach ( $checkboxes as $checkbox ) {
+            add_filter( $checkbox, array( $this, 'convert_checkbox_to_toggle' ) );
+        }
+
         add_action( 'template_redirect', array( $this, 'redirect_old_slug' ) );
     }
 
@@ -195,6 +208,7 @@ class WCV_Vendor_Dashboard {
 
             return false;
         }
+        $vertical_menu = wc_string_to_bool( get_option( 'wcvendors_use_vertical_menu', 'no' ) );
         // Include the dashboard wrapper.
         include_once wcv_deprecated_filter( 'wcvendors_pro_dashboard_open_path', '2.5.2', 'wcvendors_dashboard_open_path', 'partials/wcvendors-dashboard-open.php' );
 
@@ -223,6 +237,33 @@ class WCV_Vendor_Dashboard {
         }
 
         wcv_deprecated_action( 'wcvendors_pro_after_dashboard_nav', '2.5.2', 'wcvendors_after_dashboard_nav' );
+        $pages = $this->get_dashboard_pages();
+        foreach ( $pages as $page ) {
+            if ( $page['slug'] === $object ) {
+                $page_title = isset( $page['label'] ) ? $page['label'] : '';
+                $page_title = apply_filters( 'wcv_dashboard_page_title', $page_title, $object, $action );
+                if ( '' === $action ) {
+                    if ( isset( $page['after_label'] ) ) {
+                        echo '<div class="wcv-flex wcv-flex-wrap-reverse wcv-tab-page-heading-wrapper ' . esc_attr( $object ) . '">';
+                        echo '<h3 class="wcv-tab-page-heading">' . esc_html( $page_title ) . '</h3>';
+                        foreach ( $page['after_label'] as $after_label ) {
+                            echo wp_kses( $after_label, wcv_allowed_html_tags() );
+                        }
+                        echo '</div>';
+                    } else {
+                        echo '<div class="wcv-tab-page-heading-wrapper ' . esc_attr( $object ) . '">';
+                        echo '<h3 class="wcv-tab-page-heading">' . esc_html( $page_title ) . '</h3>';
+                        echo '</div>';
+                    }
+                }
+            }
+        }
+
+        if ( 'dashboard' === $object ) {
+            echo '<div class="wcv-gap-bottom ' . esc_attr( $object ) . '">';
+            echo '<h3 class="wcv-tab-page-heading">' . esc_html__( 'Dashboard', 'wc-vendors' ) . '</h3>';
+            echo '</div>';
+        }
 
         // if action is set send to edit page with or without object_id else list type.
         if ( 'edit' === $action ) {
@@ -283,11 +324,14 @@ class WCV_Vendor_Dashboard {
                         case 'settings':
                             $this->load_settings_page();
                             break;
-                        case 'dashboard':
-                            $this->dashboard_quick_links();
+                        case 'reports':
                             $store_report = new WCV_Reports_Controller();
                             $store_report->report_init();
                             $store_report->display();
+                            break;
+                        case 'dashboard':
+                            $dashboard_controller = new WCV_Dashboard_Controller( get_current_user_id() );
+                            $dashboard_controller->display_dashboard();
                             break;
                         default:
                             wcv_deprecated_action( 'wcv_pro_dashboard_custom_page', '2.5.2', 'wcvendors_dashboard_custom_page', $object, $object_id, $template, $custom );
@@ -319,60 +363,6 @@ class WCV_Vendor_Dashboard {
         return $dashboard_url . $page;
     }
 
-    /**
-     * Provide quick links on the dashboard to reduce click through
-     *
-     * @since    2.5.2
-     * @version  2.5.2
-     */
-    public function get_dashboard_quick_links() {
-
-        $products_disabled  = wc_string_to_bool( get_option( 'wcvendors_product_management_cap', 'no' ) );
-        $lock_edit_products = ( 'yes' === get_user_meta( get_current_user_id(), '_wcv_lock_edit_products_vendor', true ) ) ? true : false;
-        $lock_new_products  = ( 'yes' === get_user_meta( get_current_user_id(), '_wcv_lock_new_products_vendor', true ) ) ? true : false;
-
-        $quick_links      = array();
-        $add_product_link = wcv_get_default_product_template();
-        $can_submit       = wc_string_to_bool( get_option( 'wcvendors_capability_products_enabled', 'no' ) );
-
-        if ( ! $products_disabled ) {
-            $quick_links['product'] = array(
-                'url'   => apply_filters( 'wcv_add_product_url', self::get_dashboard_page_url( $add_product_link['url_path'] ) ),
-                'label' => __( 'Add product', 'wc-vendors' ),
-            );
-
-            if ( ! $can_submit ) {
-                unset( $quick_links['product'] );
-            }
-        }
-
-        if ( $lock_edit_products || $lock_new_products ) {
-            unset( $quick_links['product'] );
-        }
-
-        return apply_filters( 'wcv_dashboard_quick_links', $quick_links );
-    }
-
-    /**
-     * Provide quick links on the dashboard to reduce click through
-     *
-     * @since    2.5.2
-     */
-    public function dashboard_quick_links() {
-
-        $quick_links = $this->get_dashboard_quick_links();
-        $stats       = apply_filters( 'wcv_dashboard_usage_stats', array() );
-
-        wc_get_template(
-            'quick-links.php',
-            array(
-                'quick_links' => $quick_links,
-                'stats'       => $stats,
-            ),
-            'wc-vendors/dashboard/',
-            $this->base_dir . 'templates/dashboard/'
-        );
-    }
 
     /**
      * Available dashboard urls for front end functionality
@@ -382,19 +372,40 @@ class WCV_Vendor_Dashboard {
      */
     public function get_dashboard_pages() {
 
-        $disable_duplicate  = ! wc_string_to_bool( get_option( 'wcvendors_capability_product_duplicate', 'no' ) );
-        $lock_edit_products = get_user_meta( get_current_user_id(), '_wcv_lock_edit_products_vendor', true );
-        $can_submit         = wc_string_to_bool( get_option( 'wcvendors_capability_products_enabled', 'no' ) );
+        $disable_duplicate   = ! wc_string_to_bool( get_option( 'wcvendors_capability_product_duplicate', 'no' ) );
+        $lock_edit_products  = get_user_meta( get_current_user_id(), '_wcv_lock_edit_products_vendor', true );
+        $lock_new_products   = get_user_meta( get_current_user_id(), '_wcv_lock_new_products_vendor', true );
+        $can_submit          = wc_string_to_bool( get_option( 'wcvendors_capability_products_enabled', 'no' ) );
+        $viewstore_disabled  = wc_string_to_bool( get_option( 'wcvendors_view_store_cap', 'no' ) );
+        $can_export_orders   = wc_string_to_bool( get_option( 'wcvendors_capability_orders_export', 'no' ) );
+        $product_templates   = WCV_Product_Controller::get_product_templates();
+        $after_product_label = '';
+
+        ob_start();
+        wc_get_template(
+            'product/product-buttons.php',
+            array(
+                'template_overrides' => $product_templates,
+                'can_submit'         => $can_submit,
+                'lock_new_products'  => $lock_new_products,
+                'lock_edit_products' => $lock_edit_products,
+            ),
+            'wc-vendors/dashboard/',
+            $this->base_dir . 'templates/dashboard/'
+        );
+        $after_product_label = ob_get_clean();
 
         $this->dashboard_pages['product'] = array(
-            'slug'    => 'product',
-            'id'      => 'product',
-            'label'   => __( 'Products', 'wc-vendors' ),
-            'actions' => array(
+            'slug'        => 'product',
+            'id'          => 'product',
+            'label'       => __( 'Products', 'wc-vendors' ),
+            'actions'     => array(
                 'edit'      => __( ' Edit', 'wc-vendors' ),
                 'duplicate' => __( ' Duplicate', 'wc-vendors' ),
                 'delete'    => __( ' Delete', 'wc-vendors' ),
             ),
+            'icon'        => 'wcv-icon-tshirt',
+            'after_label' => array( $after_product_label ),
         );
 
         if ( $disable_duplicate || $lock_edit_products ) {
@@ -411,13 +422,48 @@ class WCV_Vendor_Dashboard {
             'id'      => 'order',
             'label'   => __( 'Orders', 'wc-vendors' ),
             'actions' => array(),
+            'icon'    => 'wcv-icon-orders',
         );
+
+        if ( $can_export_orders ) {
+            $this->dashboard_pages['order']['after_label'] = array(
+                '<a href="' . esc_url( add_query_arg( 'wcv_export_orders', 'true' ) ) . '" class="wcv-button wcv-button-link">',
+                wp_kses( wcv_get_icon( 'wcv-icon wcv-icon-20 wcv-icon-middle', 'wcv-icon-export' ), wcv_allowed_html_tags() ),
+                '<strong class="vertical-middle">' . esc_attr__( 'Export Orders', 'wc-vendors' ) . '</strong>',
+                '</a>',
+            );
+        }
+
+        $this->dashboard_pages['reports'] = array(
+            'slug'    => 'reports',
+            'id'      => 'reports',
+            'label'   => __( 'Reports', 'wc-vendors' ),
+            'actions' => array(),
+            'icon'    => 'wcv-icon-reports',
+        );
+
+        if ( ! $viewstore_disabled ) {
+            $store_url = apply_filters(
+                'wcv_dashboard_view_store_url',
+                array(
+                    'label' => __( 'View store', 'wc-vendors' ),
+                    'id'    => 'view-store',
+                    'slug'  => WCV_Vendors::get_vendor_shop_page( get_current_user_id() ),
+                    'icon'  => 'wcv-icon-view-store',
+                )
+            );
+            if ( wc_string_to_bool( get_option( 'wcvendors_dashboard_view_store_new_window', 'no' ) ) ) {
+                $store_url['target'] = '_blank';
+            }
+            $this->dashboard_pages['view_store'] = $store_url;
+        }
 
         $this->dashboard_pages['settings'] = array(
             'slug'    => 'settings',
             'id'      => 'settings',
             'label'   => __( 'Settings', 'wc-vendors' ),
             'actions' => array(),
+            'icon'    => 'wcv-icon-settings',
         );
 
         return wcv_deprecated_filter( 'wcv_pro_dashboard_urls', '2.5.2', 'wcv_dashboard_urls', $this->dashboard_pages );
@@ -839,7 +885,7 @@ class WCV_Vendor_Dashboard {
                         }
                     }
 
-                    if ( is_array( $page['actions'] ) ) {
+                    if ( isset( $page['actions'] ) && is_array( $page['actions'] ) ) {
 
                         foreach ( $page['actions'] as $action => $label ) {
                             // Actions Rule.
@@ -875,7 +921,6 @@ class WCV_Vendor_Dashboard {
         $coupons_disabled    = wc_string_to_bool( get_option( 'wcvendors_shop_coupon_management_cap', 'no' ) );
         $ratings_disabled    = wc_string_to_bool( get_option( 'wcvendors_ratings_management_cap', 'no' ) );
         $settings_disabled   = wc_string_to_bool( get_option( 'wcvendors_settings_management_cap', 'no' ) );
-        $viewstore_disabled  = wc_string_to_bool( get_option( 'wcvendors_view_store_cap', 'no' ) );
         $show_logout         = wc_string_to_bool( get_option( 'wcvendors_dashboard_show_logout', 'no' ) );
         $vertical_menu       = wc_string_to_bool( get_option( 'wcvendors_use_vertical_menu', 'no' ) );
 
@@ -904,22 +949,24 @@ class WCV_Vendor_Dashboard {
             array(
                 'label' => __( 'Dashboard', 'wc-vendors' ),
                 'slug'  => '',
+                'icon'  => 'wcv-icon-dashboard',
             )
         );
 
-        if ( ! $viewstore_disabled ) {
-            $store_url = apply_filters(
-                'wcv_dashboard_view_store_url',
-                array(
-                    'label' => __( 'View store', 'wc-vendors' ),
-                    'id'    => 'view-store',
-                    'slug'  => WCV_Vendors::get_vendor_shop_page( get_current_user_id() ),
-                )
-            );
-            if ( wc_string_to_bool( get_option( 'wcvendors_dashboard_view_store_new_window', 'no' ) ) ) {
-                $store_url['target'] = '_blank';
-            }
-            $pages['view_store'] = $store_url;
+        if ( isset( $pages['rating'] ) ) {
+            $pages['rating']['icon'] = 'wcv-icon-rating';
+        }
+
+        if ( isset( $pages['shop_coupon'] ) ) {
+            $pages['shop_coupon']['icon'] = 'wcv-icon-coupons';
+        }
+
+        if ( isset( $pages['commission'] ) ) {
+            $pages['commission']['icon'] = 'wcv-icon-commission';
+        }
+
+        if ( isset( $pages['wcv_refund_request'] ) ) {
+            $pages['wcv_refund_request']['icon'] = 'wcv-icon-refund';
         }
 
         if ( $show_logout ) {
@@ -929,6 +976,7 @@ class WCV_Vendor_Dashboard {
                     'label' => __( 'Logout', 'wc-vendors' ),
                     'id'    => 'logout',
                     'slug'  => wc_logout_url(),
+                    'icon'  => 'wcv-icon-logout',
                 )
             );
 
@@ -937,44 +985,68 @@ class WCV_Vendor_Dashboard {
 
         $pages          = array_merge( array( 'dashboard_home' => $dashboard_home ), $pages );
         $pages          = apply_filters( 'wcv_dashboard_pages_nav', $pages );
-        $nav_class      = apply_filters( 'wcv_dashboard_nav_class', '' );
         $menu_dir_class = ( $vertical_menu ) ? 'vertical' : 'horizontal';
-        $menu_dir_size  = ( $vertical_menu ) ? 'all-20 small-100 medium-100' : 'all-100';
+        $nav_class      = apply_filters( 'wcv_dashboard_nav_class', '' );
+        $menu_dir_size  = ( $vertical_menu ) ? 'all-25 small-100 medium-100' : 'all-100';
+        $no_icon_pages  = array_filter(
+            $pages,
+            function ( $page ) {
+                return ! isset( $page['icon'] ) && ! isset( $page['icon_url'] );
+            }
+        );
+
+        foreach ( $no_icon_pages as $key => $page ) {
+            $pages[ $key ]['icon'] = 'wcv-icon-dashboard-default';
+        }
+
+        $end_items = array_filter(
+            $pages,
+            function ( $page ) {
+                return isset( $page['id'] ) && ( 'view-store' === $page['id'] || 'settings' === $page['id'] || 'logout' === $page['id'] );
+            }
+        );
+
+        unset( $pages['view_store'] );
+        unset( $pages['settings'] );
+        unset( $pages['logout'] );
+
+        $pages = array_merge( $pages, $end_items );
 
         // Move this into a template.
-        $menu_wrapper_start = apply_filters( 'wcv_dashboard_nav_wrapper_start', '<div class="wcv-cols-group wcv-horizontal-gutters"><div class="' . $menu_dir_size . '"><nav class="wcv-navigation ' . $nav_class . ' "><ul class="menu ' . $menu_dir_class . '  black">' );
+        $menu_wrapper_start = apply_filters(
+            'wcv_dashboard_nav_wrapper_start',
+            wc_get_template_html(
+                'nav-wrapper-start.php',
+                array(
+                    'nav_class'      => $nav_class,
+                    'menu_dir_class' => $menu_dir_class,
+                    'menu_dir_size'  => $menu_dir_size,
+                    'full_width'     => count( $pages ) <= 6 ? 'full-width' : '',
+                ),
+                'wc-vendors/dashboard/',
+                $this->base_dir . 'templates/dashboard/'
+            )
+        );
 
         echo wp_kses_post( $menu_wrapper_start );
 
         foreach ( $pages as $page ) {
+            $this->generate_nav_item( $page );
+        }
+        echo '</ul>';
 
-            if ( filter_var( $page['slug'], FILTER_VALIDATE_URL ) === false ) {
-                $page_url = $this->get_dashboard_page_url( $page['slug'] );
-            } else {
-                $page_url = $page['slug'];
-            }
-
-            $class      = ( $current_page === $page['slug'] ) ? 'active' : '';
-            $id         = isset( $page['id'] ) ? $page['id'] : '';
-            $page_label = $page['label'];
-            $target     = isset( $page['target'] ) ? $page['target'] : false;
-
+        if ( ! $vertical_menu ) {
             wc_get_template(
-                'nav.php',
-                array(
-                    'page'       => $page,
-                    'page_url'   => $page_url,
-                    'target'     => $target,
-                    'page_label' => $page_label,
-                    'class'      => $class,
-                    'id'         => $id,
-                ),
+                'expand-nav.php',
+                array(),
                 'wc-vendors/dashboard/',
                 $this->base_dir . 'templates/dashboard/'
             );
-
         }
-        echo '</ul>';
+
+        printf( '<ul class="wcv-dashboard-menu %s black secondary"></ul>', esc_attr( $menu_dir_class ) );
+
+        echo '</nav>';
 
         echo '</div>';
 
@@ -985,8 +1057,54 @@ class WCV_Vendor_Dashboard {
         wcv_deprecated_action( 'wcv_pro_after_dashboard_nav_container', '2.5.2', 'wcvendors_after_dashboard_nav_container' );
 
         if ( $vertical_menu ) {
-            echo '<div class="all-80 medium-100 small-100 wcv-main-content">';
+            echo '<div class="all-75 medium-100 small-100 wcv-main-content ' . esc_attr( $menu_dir_class ) . '">';
         }
+    }
+
+    /**
+     * Generate the dashboard nav item
+     *
+     * @since 2.5.4
+     * @param array $page the page array.
+     */
+    public function generate_nav_item( $page ) {
+
+        if ( filter_var( $page['slug'], FILTER_VALIDATE_URL ) === false ) {
+            $page_url = $this->get_dashboard_page_url( $page['slug'] );
+        } else {
+            $page_url = $page['slug'];
+        }
+
+        $current_page = get_query_var( 'object' );
+        $class        = 'wcv-dashboard-nav-item';
+        $class       .= ( $current_page === $page['slug'] ) ? ' active' : '';
+        $id           = isset( $page['id'] ) ? $page['id'] : '';
+        $page_label   = $page['label'];
+        $target       = isset( $page['target'] ) ? $page['target'] : false;
+        $icon         = isset( $page['icon'] ) ? $page['icon'] : '';
+        $icon_url     = isset( $page['icon_url'] ) ? $page['icon_url'] : '';
+        $item_start   = isset( $page['item_start'] ) ? $page['item_start'] : sprintf( '<li id="dashboard-menu-item-%s" class="%s">', $id, $class );
+        $item_end     = isset( $page['item_end'] ) ? $page['item_end'] : '</li>';
+
+        wc_get_template(
+            'nav.php',
+            array(
+                'page'       => $page,
+                'page_url'   => $page_url,
+                'target'     => $target,
+                'page_label' => $page_label,
+                'class'      => $class,
+                'id'         => $id,
+                'icon'       => $icon,
+                'icon_url'   => $icon_url,
+                'sub_items'  => isset( $page['sub_items'] ) ? $page['sub_items'] : array(),
+                'dashboard'  => $this,
+                'item_start' => $item_start,
+                'item_end'   => $item_end,
+            ),
+            'wc-vendors/dashboard/',
+            $this->base_dir . 'templates/dashboard/'
+        );
     }
 
     /**
@@ -1146,6 +1264,14 @@ class WCV_Vendor_Dashboard {
         if ( $vendor_dashboard_page_id ) {
             $items['vendor-dashboard'] = __( 'Vendor Dashboard', 'wc-vendors' );
         }
+
+        // Move vendor-dashboard above logout.
+        if ( isset( $items['customer-logout'] ) ) {
+            $logout = $items['customer-logout'];
+            unset( $items['customer-logout'] );
+            $items['customer-logout'] = $logout;
+        }
+
         return $items;
     }
 
@@ -1206,5 +1332,21 @@ class WCV_Vendor_Dashboard {
                 include_once WCV_PLUGIN_DIR . 'classes/front/theme-support/class-divi.php';
                 break;
         }
+    }
+
+    /**
+     * Turn checkboxes on the settings page to toggle
+     *
+     * @param array $field Field options.
+     *
+     * @since 2.5.4
+     * @version 2.5.4 - Added
+     */
+    public function convert_checkbox_to_toggle( $field ) {
+        $field['type'] = 'toggle';
+
+        $field['custom_margin'] = 24;
+
+        return $field;
     }
 }

@@ -7,7 +7,7 @@
 $currency_symbol   = html_entity_decode( get_woocommerce_currency_symbol() );
 $policy_html       = wc_string_to_bool( get_option( 'wcvendors_allow_settings_policy_html', 'no' ) );
 $store_notice_html = wc_string_to_bool( get_option( 'wcvendors_allow_settings_store_notice', 'no' ) );
-$seller_info_html  = wc_string_to_bool( get_option( 'wcvendors_display_shop_description_html', 'no' ) );
+$shop_desc_html    = wc_string_to_bool( get_option( 'wcvendors_display_shop_description_html', 'no' ) );
 $allow_markup      = wc_string_to_bool( get_option( 'wcvendors_allow_form_markup', 'no' ) );
 $site_country      = wc_get_base_location();
 $general_fields    = array(
@@ -27,7 +27,7 @@ $general_fields    = array(
         'type'       => 'wp_editor',
         'default'    => '',
         'is_pro'     => false,
-        'use_editor' => $seller_info_html,
+        'use_editor' => $allow_markup,
     ),
     array(
         'id'         => 'shop_description',
@@ -36,7 +36,7 @@ $general_fields    = array(
         'type'       => 'wp_editor',
         'default'    => '',
         'is_pro'     => false,
-        'use_editor' => $seller_info_html,
+        'use_editor' => $shop_desc_html,
     ),
     array(
         'id'      => 'html_enabled',

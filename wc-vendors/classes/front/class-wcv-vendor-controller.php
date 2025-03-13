@@ -1,6 +1,8 @@
 <?php
 namespace WC_Vendors\Classes\Front;
 
+use WCV_Vendors;
+
 /**
  * Class WCV_Vendor_Controller
  */
@@ -22,7 +24,9 @@ class WCV_Vendor_Controller {
      * @since   2.5.2
      */
     public function __construct() {
+        $this->allow_markup = wc_string_to_bool( get_option( 'wcvendors_allow_form_markup', 'no' ) );
         add_action( 'init', array( $this, 'lock_vendor' ) );
+        add_filter( 'wcv_sc_stripe_connect_vendor_template', array( $this, 'get_stripe_connect_vendor_template' ), 20 );
     }
 
     /**
@@ -74,10 +78,11 @@ class WCV_Vendor_Controller {
      * @param array   $date_range date range to search for.
      * @param boolean $reports Whether to show reports.
      * @param boolean $pagination Whether to paginate.
+     * @param boolean $return_all Whether to return all orders.
      *
      * @return     array        $wcv_orders an array of order objects with required information for the vendor
      */
-    public static function get_orders2( $vendor_id, $date_range = null, $reports = true, $pagination = false ) {
+    public static function get_orders2( $vendor_id, $date_range = null, $reports = true, $pagination = false, $return_all = false ) {
         global $wpdb;
 
         $remove_zero_commission_due = apply_filters( 'wcv_remove_zero_commission_due', false );
@@ -85,6 +90,10 @@ class WCV_Vendor_Controller {
         $filter_by_status           = WC()->session->get( 'wcv_order_filter_status', '' );
         $wcv_order_statuses         = array_keys( wcv_get_order_statuses() );
         $order_statuses             = $filter_by_status ? $filter_by_status : $wcv_order_statuses;
+
+        if ( $return_all ) {
+            $order_statuses = $wcv_order_statuses;
+        }
 
         if ( ! $remove_zero_commission_due ) {
             $args['status'][] = 'refunded';
@@ -140,6 +149,7 @@ class WCV_Vendor_Controller {
         // phpcs:enable
 
         $all_vendor_order_ids = array_column( $wpdb->get_results( $query, ARRAY_A ), $id_column ); //phpcs:ignore
+        $all_vendor_order_ids = apply_filters( 'wcvendors_get_orders2_vendor_orders_ids', $all_vendor_order_ids, $vendor_id, $args );
 
         if ( $pagination ) {
             $orders_per_page = get_option( 'wcvendors_orders_per_page', 20 );
@@ -151,13 +161,20 @@ class WCV_Vendor_Controller {
             if ( count( $all_vendor_order_ids ) > $orders_per_page ) {
                 $args['offset'] = $offset;
             }
+
+            if ( $return_all ) {
+                $args['limit'] = -1;
+                unset( $args['offset'] );
+            }
         }
 
         $all_orders   = self::get_vendor_orders( $vendor_id, $args );
+        $all_orders   = apply_filters( 'wcvendors_get_orders2_vendor_orders', $all_orders, $vendor_id, $args );
         $total_orders = $all_orders ? self::format_order_details( $all_orders ) : array();
 
         if ( $pagination ) {
             return array(
+                'all_order_ids'     => array_unique( $all_vendor_order_ids ),
                 'total_orders'      => $total_orders,
                 'max_pages'         => $max_pages ?? 1,
                 'total_order_count' => count( $all_vendor_order_ids ),
@@ -374,6 +391,7 @@ class WCV_Vendor_Controller {
         $paypal_address    = ( isset( $_POST['_wcv_paypal_address'] ) ) ? sanitize_email( $_POST['_wcv_paypal_address'] ) : '';
         $store_name        = ( isset( $_POST['_wcv_store_name'] ) ) ? sanitize_text_field( trim( $_POST['_wcv_store_name'] ) ) : '';
         $store_phone       = ( isset( $_POST['_wcv_store_phone'] ) ) ? sanitize_text_field( trim( $_POST['_wcv_store_phone'] ) ) : '';
+        $store_phone_code  = ( isset( $_POST['_wcv_store_phone_code'] ) ) ? sanitize_text_field( trim( $_POST['_wcv_store_phone_code'] ) ) : '';
         $seller_info       = ( isset( $_POST['pv_seller_info'] ) ) ? trim( $_POST['pv_seller_info'] ) : '';
         $store_description = ( isset( $_POST['pv_shop_description'] ) ) ? trim( $_POST['pv_shop_description'] ) : '';
         $address1          = ( isset( $_POST['_wcv_store_address1'] ) ) ? sanitize_text_field( $_POST['_wcv_store_address1'] ) : '';
@@ -428,16 +446,19 @@ class WCV_Vendor_Controller {
         update_user_meta( $vendor_id, 'wcv_bank_iban', $wcv_bank_iban );
         update_user_meta( $vendor_id, 'wcv_bank_bic_swift', $wcv_bank_bic_swift );
 
+        $allow_shop_desc_html = wc_string_to_bool( get_option( 'wcvendors_display_shop_description_html', 'no' ) );
         // Store description.
         if ( isset( $store_description ) && '' !== $store_description ) {
-            update_user_meta( $vendor_id, 'pv_shop_description', $this->allow_markup ? $store_description : wp_strip_all_tags( $store_description ) );
+            $striped_store_description = $allow_shop_desc_html ? wp_kses( $store_description, wcv_allowed_html_tags() ) : wp_strip_all_tags( $store_description );
+            update_user_meta( $vendor_id, 'pv_shop_description', $striped_store_description );
         } else {
             delete_user_meta( $vendor_id, 'pv_shop_description' );
         }
 
         // Seller info.
         if ( isset( $seller_info ) && '' !== $seller_info ) {
-            update_user_meta( $vendor_id, 'pv_seller_info', $this->allow_markup ? $seller_info : wp_strip_all_tags( $seller_info ) );
+            $striped_seller_info = $this->allow_markup ? wp_kses( $seller_info, wcv_allowed_html_tags() ) : wp_strip_all_tags( $seller_info );
+            update_user_meta( $vendor_id, 'pv_seller_info', $striped_seller_info );
         } else {
             delete_user_meta( $vendor_id, 'pv_seller_info' );
         }
@@ -484,6 +505,12 @@ class WCV_Vendor_Controller {
             update_user_meta( $vendor_id, '_wcv_store_phone', $store_phone );
         } else {
             delete_user_meta( $vendor_id, '_wcv_store_phone' );
+        }
+
+        if ( ! empty( $store_phone_code ) ) {
+            update_user_meta( $vendor_id, '_wcv_store_phone_code', $store_phone_code );
+        } else {
+            delete_user_meta( $vendor_id, '_wcv_store_phone_code' );
         }
 
         // Company URL.
@@ -616,5 +643,48 @@ class WCV_Vendor_Controller {
         }
 
         return $redirect_to;
+    }
+
+    /**
+     * Get the stripe connect vendor template to control the stripe connect vendor template
+     *
+     * @param string $template the template to use.
+     *
+     * @since 2.5.4
+     */
+    public function get_stripe_connect_vendor_template( $template ) {
+        $template = WCV_TEMPLATE_BASE . 'dashboard/settings/stripe-connect.php';
+        return $template;
+    }
+
+    /**
+     * Ajax function to dismiss store setup step section and hide it
+     *
+     * @since 2.5.4
+     * @version 2.5.4
+     */
+    public function dismiss_store_setup_step_section() {
+        $nonce = isset( $_POST['nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['nonce'] ) ) : '';
+        if ( ! wp_verify_nonce( $nonce, 'wcv_dashboard' ) ) {
+            wp_send_json_error( array( 'message' => __( 'Invalid nonce', 'wc-vendors' ) ) );
+        }
+
+        $user_id = get_current_user_id();
+
+        if ( ! $user_id ) {
+            wp_send_json_error( array( 'message' => __( 'Invalid user', 'wc-vendors' ) ) );
+        }
+
+        if ( ! WCV_Vendors::is_vendor( $user_id ) ) {
+            wp_send_json_error( array( 'message' => __( 'Invalid vendor', 'wc-vendors' ) ) );
+        }
+
+        $is_dismissed = wc_string_to_bool( get_user_meta( $user_id, 'wcv_store_setup_dismissed_step', true ) );
+
+        if ( ! $is_dismissed ) {
+            update_user_meta( $user_id, 'wcv_store_setup_dismissed_step', 'yes' );
+        }
+
+        wp_send_json_success( array( 'message' => __( 'Store setup step section dismissed', 'wc-vendors' ) ) );
     }
 }

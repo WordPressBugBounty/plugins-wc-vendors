@@ -112,6 +112,13 @@ class WCV_Reports_Controller {
     public $total_orders = 0;
 
     /**
+     * Date format
+     *
+     * @var string $date_format Date format
+     */
+    public $date_format = 'Y-m-d';
+
+    /**
      * Initialize the class and set its properties.
      *
      * @since    2.5.2
@@ -121,6 +128,7 @@ class WCV_Reports_Controller {
 
         $dashboard_date_range = get_option( 'wcvendors_dashboard_date_range', 'monthly' );
         $this->default_start  = '';
+        $this->date_format    = is_wcv_pro_active() ? get_option( 'wcvendors_dashboard_date_format', 'Y-m-d' ) : 'Y-m-d';
 
         switch ( $dashboard_date_range ) {
             case 'annually':
@@ -174,6 +182,11 @@ class WCV_Reports_Controller {
      * @since    2.5.2
      */
     public function process_submit() {
+
+        if ( isset( $_GET['report-this-month'] ) && true === wc_string_to_bool( $_GET['report-this-month'] ) ) { // phpcs:ignore
+            WC()->session->set( 'wcv_dashboard_start_date', strtotime( 'first day of this month' ) );
+            WC()->session->set( 'wcv_dashboard_end_date', strtotime( 'last day of this month' ) );
+        }
 
         if ( ! isset( $_POST['wcv_dashboard_date_update'] ) ) {
             return;
@@ -398,21 +411,27 @@ class WCV_Reports_Controller {
      */
     public function date_range_form() {
 
+        $default_end_date   = gmdate( $this->date_format, strtotime( 'now' ) );
+        $default_start_date = gmdate( $this->date_format, strtotime( $this->default_start ) );
+
         // Start Date.
         WCV_Form_Helper::input(
             apply_filters(
                 'wcv_dashboard_start_date_input',
                 array(
-                    'id'                => '_wcv_dashboard_start_date_input',
-                    'label'             => __( 'Start date', 'wc-vendors' ),
-                    'class'             => 'wcv-datepicker-dashboard-filter wcv-datepicker wcv-init-picker',
-                    'value'             => gmdate( 'Y-m-d', $this->get_start_date() ),
-                    'placeholder'       => 'YYYY-MM-DD',
-                    'wrapper_start'     => '<div class="all-66 tiny-50"><div class="wcv-cols-group wcv-horizontal-gutters"><div class="all-50 tiny-100">',
-                    'wrapper_end'       => '</div>',
-                    'custom_attributes' => array(
-                        'maxlenth' => '10',
-                        'pattern'  => '[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])',
+                    'id'                  => '_wcv_dashboard_start_date_input',
+                    'label'               => __( 'Start date', 'wc-vendors' ),
+                    'class'               => 'wcv-datepicker-dashboard-filter wcv-datepicker wcv-init-picker',
+                    'value'               => gmdate( $this->date_format, $this->get_start_date() ),
+                    'placeholder'         => 'YYYY-MM-DD',
+                    'wrapper_start'       => '<div class="wcv-cols-group wcv-horizontal-gutters wcv-cols-group-narrow"><div class="all-35 tiny-50 small-50 medium-50">',
+                    'wrapper_end'         => '</div>',
+                    'append_before'       => '<span class="wcv-flex" title="toggle" data-toggle>' . wcv_get_icon( 'wcv-icon wcv-icon-24', 'wcv-icon-calendar' ) . '</span>',
+                    'input_wrapper_class' => 'wcv-datepicker-wrapper wcv-flex',
+                    'custom_attributes'   => array(
+                        'maxlenth'     => '10',
+                        'pattern'      => '[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])',
+                        'data-default' => $default_start_date,
                     ),
                 )
             )
@@ -423,31 +442,50 @@ class WCV_Reports_Controller {
             apply_filters(
                 'wcv_dashboard_end_date_input',
                 array(
-                    'id'                => '_wcv_dashboard_end_date_input',
-                    'label'             => __( 'End date', 'wc-vendors' ),
-                    'class'             => 'wcv-datepicker-dashboard-filter wcv-datepicker wcv-init-picker',
-                    'value'             => gmdate( 'Y-m-d', $this->get_end_date() ),
-                    'placeholder'       => 'YYYY-MM-DD',
-                    'wrapper_start'     => '<div class="all-50 tiny-100">',
-                    'wrapper_end'       => '</div></div></div>',
-                    'custom_attributes' => array(
-                        'maxlenth' => '10',
-                        'pattern'  => '[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])',
+                    'id'                  => '_wcv_dashboard_end_date_input',
+                    'label'               => __( 'End date', 'wc-vendors' ),
+                    'class'               => 'wcv-datepicker-dashboard-filter wcv-datepicker wcv-init-picker',
+                    'value'               => gmdate( $this->date_format, $this->get_end_date() ),
+                    'placeholder'         => 'YYYY-MM-DD',
+                    'wrapper_start'       => '<div class="all-35 tiny-50 small-50 medium-50">',
+                    'wrapper_end'         => '</div>',
+                    'append_before'       => '<span class="wcv-flex" title="toggle" data-toggle>' . wcv_get_icon( 'wcv-icon wcv-icon-24', 'wcv-icon-calendar' ) . '</span>',
+                    'input_wrapper_class' => 'wcv-datepicker-wrapper wcv-flex',
+                    'custom_attributes'   => array(
+                        'maxlenth'     => '10',
+                        'pattern'      => '[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])',
+                        'data-default' => $default_end_date,
                     ),
                 )
             )
         );
 
         // Update Button.
-        WCV_Form_Helper::submit(
+        WCV_Form_Helper::button(
             apply_filters(
                 'wcv_dashboard_update_button',
                 array(
                     'id'            => 'update_button',
                     'value'         => __( 'Update', 'wc-vendors' ),
-                    'class'         => 'expand',
-                    'wrapper_start' => '<div class="all-33"><div class="control-group"><div class="control"><label>&nbsp;&nbsp;</label>',
-                    'wrapper_end'   => '</div></div></div>',
+                    'class'         => 'wcv-button wcv-inline-flex wcv-button-link-secondary text-blue',
+                    'wrapper_start' => '<div class="all-30 medium-100 small-100 tiny-100 wcv-flex wcv-flex-end"><div class="control-group"><label class="wcv_desktop">&nbsp;&nbsp;</label><div class="control">',
+                    'wrapper_end'   => '</div></div>',
+                    'button_text'   => __( 'Update', 'wc-vendors' ),
+                    'before_text'   => wcv_get_icon( 'wcv-icon wcv-icon-24', 'wcv-icon-round-update' ) . '<span>',
+                )
+            )
+        );
+
+        WCV_Form_Helper::button(
+            apply_filters(
+                'wcv_order_filter_clear_button',
+                array(
+                    'id'            => 'clear_button_report',
+                    'button_text'   => __( 'Clear', 'wc-vendors' ),
+                    'class'         => 'wcv-button wcv-flex wcv-button-link-danger',
+                    'type'          => 'submit',
+                    'wrapper_start' => '<div class="control-group"><label class="wcv_desktop">&nbsp;&nbsp;</label><div class="control">',
+                    'wrapper_end'   => '</div></div></div></div>',
                 )
             )
         );

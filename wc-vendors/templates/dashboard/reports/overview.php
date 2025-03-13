@@ -19,7 +19,6 @@ $commission_paid_total = ( $give_tax ) ? $store_report->commission_paid + $store
 <div class="wcv_dashboard_datepicker wcv-cols-group">
 
     <div class="all-100">
-        <hr/>
         <form method="post" action="" class="wcv-form  wcv-form-exclude">
             <?php $store_report->date_range_form(); ?>
         </form>
@@ -28,64 +27,68 @@ $commission_paid_total = ( $give_tax ) ? $store_report->commission_paid + $store
 <?php do_action( 'wcvendors_after_dashboard_overview_datepicker' ); ?> 
 
 <?php do_action( 'wcvendors_before_dashboard_overview_table' ); ?> 
-<div class="wcv_dashboard_overview wcv-cols-group wcv-horizontal-gutters">
+<div class="wcv_dashboard_overview wcv-cols-group wcv-horizontal-gutters column-group ink-stacker gutters wcv-cols-group-wide">
 
-    <div class="xlarge-50 large-50 medium-100 small-100 tiny-100">
-        <h3><?php esc_html_e( 'Commission Due', 'wc-vendors' ); ?></h3>
-        <table role="grid" class="wcvendors-table wcvendors-table-recent_order wcv-table">
+    <div class="xlarge-50 large-50 medium-100 small-100 tiny-100 wcv-bottom-space">
+        <div class="wcv-section">
+            <h3><?php esc_html_e( 'Commission Due', 'wc-vendors' ); ?></h3>
+            <table role="grid" class="wcv-dashboard-table wcvendors-table-recent_order has-background">
 
-            <tbody>
-            <tr>
-                <td><?php esc_html_e( 'Products', 'wc-vendors' ); ?></td>
-                <td><?php echo wp_kses( wc_price( $store_report->commission_due ), wcv_allowed_html_tags() ); ?></td>
-            </tr>
-            <?php if ( $give_shipping ) : ?>
+                <tbody>
                 <tr>
-                    <td><?php esc_html_e( 'Shipping', 'wc-vendors' ); ?></td>
-                    <td><?php echo wp_kses( wc_price( $store_report->commission_shipping_due ), wcv_allowed_html_tags() ); ?></td>
+                    <th><?php esc_html_e( 'Products', 'wc-vendors' ); ?></th>
+                    <td><?php echo wp_kses( wc_price( $store_report->commission_due ), wcv_allowed_html_tags() ); ?></td>
                 </tr>
-            <?php endif; ?>
-            <?php if ( $give_tax ) : ?>
+                <?php if ( $give_shipping ) : ?>
+                    <tr>
+                        <th><?php esc_html_e( 'Shipping', 'wc-vendors' ); ?></th>
+                        <td><?php echo wp_kses( wc_price( $store_report->commission_shipping_due ), wcv_allowed_html_tags() ); ?></td>
+                    </tr>
+                <?php endif; ?>
+                <?php if ( $give_tax ) : ?>
+                    <tr>
+                        <th><?php esc_html_e( 'Tax', 'wc-vendors' ); ?></th>
+                        <td><?php echo wp_kses( wc_price( $store_report->commission_tax_due ), wcv_allowed_html_tags() ); ?></td>
+                    </tr>
+                <?php endif; ?>
                 <tr>
-                    <td><?php esc_html_e( 'Tax', 'wc-vendors' ); ?></td>
-                    <td><?php echo wp_kses( wc_price( $store_report->commission_tax_due ), wcv_allowed_html_tags() ); ?></td>
+                    <th><strong><?php esc_html_e( 'Totals', 'wc-vendors' ); ?></strong></th>
+                    <td><?php echo wp_kses( wc_price( $commission_due_total ), wcv_allowed_html_tags() ); ?></td>
                 </tr>
-            <?php endif; ?>
-            <tr>
-                <td><strong><?php esc_html_e( 'Totals', 'wc-vendors' ); ?></strong></td>
-                <td><?php echo wp_kses( wc_price( $commission_due_total ), wcv_allowed_html_tags() ); ?></td>
-            </tr>
-            </tbody>
+                </tbody>
 
-        </table>
+            </table>
+        </div>
     </div>
 
-    <div class="xlarge-50 large-50 medium-100 small-100 tiny-100">
-        <h3><?php esc_html_e( 'Commission Paid', 'wc-vendors' ); ?></h3>
-        <table role="grid" class="wcvendors-table wcvendors-table-recent_order wcv-table">
-            <tbody>
-            <tr>
-                <td><?php esc_html_e( 'Products', 'wc-vendors' ); ?></td>
-                <td><?php echo wp_kses( wc_price( $store_report->commission_paid ), wcv_allowed_html_tags() ); ?></td>
-            </tr>
-            <?php if ( $give_shipping ) : ?>
+    <div class="xlarge-50 large-50 medium-100 small-100 tiny-100 wcv-bottom-space">
+        <div class="wcv-section">
+            <h3><?php esc_html_e( 'Commission Paid', 'wc-vendors' ); ?></h3>
+            <table role="grid" class="wcv-dashboard-table wcvendors-table-recent_order has-background">
+                <tbody>
                 <tr>
-                    <td><?php esc_html_e( 'Shipping', 'wc-vendors' ); ?></td>
-                    <td><?php echo wp_kses( wc_price( $store_report->commission_shipping_paid ), wcv_allowed_html_tags() ); ?></td>
+                    <th><?php esc_html_e( 'Products', 'wc-vendors' ); ?></th>
+                    <td><?php echo wp_kses( wc_price( $store_report->commission_paid ), wcv_allowed_html_tags() ); ?></td>
                 </tr>
-            <?php endif; ?>
-            <?php if ( $give_tax ) : ?>
+                <?php if ( $give_shipping ) : ?>
+                    <tr>
+                        <th><?php esc_html_e( 'Shipping', 'wc-vendors' ); ?></th>
+                        <td><?php echo wp_kses( wc_price( $store_report->commission_shipping_paid ), wcv_allowed_html_tags() ); ?></td>
+                    </tr>
+                <?php endif; ?>
+                <?php if ( $give_tax ) : ?>
+                    <tr>
+                        <th><?php esc_html_e( 'Tax', 'wc-vendors' ); ?></th>
+                        <td><?php echo wp_kses( wc_price( $store_report->commission_tax_paid ), wcv_allowed_html_tags() ); ?></td>
+                    </tr>
+                <?php endif; ?>
                 <tr>
-                    <td><?php esc_html_e( 'Tax', 'wc-vendors' ); ?></td>
-                    <td><?php echo wp_kses( wc_price( $store_report->commission_tax_paid ), wcv_allowed_html_tags() ); ?></td>
+                    <th><strong><?php esc_html_e( 'Totals', 'wc-vendors' ); ?></strong></th>
+                    <td><?php echo wp_kses( wc_price( $commission_paid_total ), wcv_allowed_html_tags() ); ?></td>
                 </tr>
-            <?php endif; ?>
-            <tr>
-                <td><strong><?php esc_html_e( 'Totals', 'wc-vendors' ); ?></strong></td>
-                <td><?php echo wp_kses( wc_price( $commission_paid_total ), wcv_allowed_html_tags() ); ?></td>
-            </tr>
-            </tbody>
-        </table>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 <?php do_action( 'wcvendors_after_dashboard_overview_table' ); ?>

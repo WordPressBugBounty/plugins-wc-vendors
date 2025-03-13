@@ -1,6 +1,8 @@
 <?php
 namespace WC_Vendors\Classes\Front;
 
+use WC_Vendors;
+
 use function WC_Vendors\Classes\Includes\wcv_is_vendors_shipping_enabled;
 /**
  * Hanldes the public assets
@@ -54,6 +56,7 @@ class WCV_Public_Assets {
         self::$base_url = WCV_ASSETS_URL;
         self::$version  = WCV_VERSION;
         self::$suffix   = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
+        add_filter( 'script_loader_tag', array( $this, 'dequeue_script' ), 10, 2 );
     }
 
     /**
@@ -61,16 +64,16 @@ class WCV_Public_Assets {
      */
     public static function enqueue_styles() {
         global $post;
-        $is_dashboard_page = ( is_a( $post, 'WP_Post' ) && has_shortcode( $post->post_content, 'wcv_dashboard_nav' ) ) || ( is_a( $post, 'WP_Post' ) && has_shortcode( $post->post_content, 'wcv_vendor_dashboard' ) )
+        $is_dashboard_page   = ( is_a( $post, 'WP_Post' ) && has_shortcode( $post->post_content, 'wcv_dashboard_nav' ) ) || ( is_a( $post, 'WP_Post' ) && has_shortcode( $post->post_content, 'wcv_vendor_dashboard' ) )
         || ( is_a( $post, 'WP_Post' ) && has_shortcode( $post->post_content, 'wcv_pro_dashboard_nav' ) ) || ( is_a( $post, 'WP_Post' ) && has_shortcode( $post->post_content, 'wcv_pro_dashboard' ) );
-
+        $is_dashboard_page   = apply_filters( 'wcvendors_enqueue_style_is_dashboard_page', $is_dashboard_page );
         $is_vendor_list_page = is_a( $post, 'WP_Post' ) && has_shortcode( $post->post_content, 'wcv_vendorslist' );
+        $is_vendor_list_page = apply_filters( 'wcvendors_enqueue_style_is_vendor_list_page', $is_vendor_list_page );
 
-        wp_enqueue_style( 'dashicons' );
         wcv_enqueue_style(
             'wcv_frontend_style',
             WCV_ASSETS_URL . 'css/wcv-frontend.css',
-            array(),
+            array( 'dashicons' ),
             WCV_VERSION,
             'all',
             $is_dashboard_page || $is_vendor_list_page
@@ -120,7 +123,7 @@ class WCV_Public_Assets {
         wcv_enqueue_style(
             'wcv-dashboard',
             wcv_deprecated_filter( 'wcv_pro_dashboard_style', '2.5.2', 'wcv_dashboard_style', self::$base_url . 'css/dashboard.css' ),
-            array(),
+            array( 'wcv-ink' ),
             self::$version,
             'all',
             $is_dashboard_page && is_user_logged_in()
@@ -140,7 +143,7 @@ class WCV_Public_Assets {
 
         $is_dashboard_page = ( is_a( $post, 'WP_Post' ) && has_shortcode( $post->post_content, 'wcv_dashboard_nav' ) ) || ( is_a( $post, 'WP_Post' ) && has_shortcode( $post->post_content, 'wcv_vendor_dashboard' ) )
         || ( is_a( $post, 'WP_Post' ) && has_shortcode( $post->post_content, 'wcv_pro_dashboard_nav' ) ) || ( is_a( $post, 'WP_Post' ) && has_shortcode( $post->post_content, 'wcv_pro_dashboard' ) );
-
+        $is_dashboard_page = apply_filters( 'wcvendors_enqueue_script_is_dashboard_page', $is_dashboard_page );
         // Parsley JS - http://parsleyjs.org/.
         wcv_enqueue_script(
             'parsley',
@@ -152,9 +155,13 @@ class WCV_Public_Assets {
             $is_dashboard_page
         );
 
-        wp_enqueue_media();
-        wp_enqueue_script( 'jquery-ui-core' );
-        wp_enqueue_script( 'jquery-ui-sortable' );
+        if ( $is_dashboard_page ) {
+            wp_enqueue_media();
+            wp_enqueue_script( 'jquery-ui-core' );
+            wp_enqueue_script( 'jquery-ui-sortable' );
+            wp_enqueue_script( 'jquery-ui-datepicker' );
+            wp_enqueue_script( 'jquery-ui-slider' );
+        }
 
         wcv_enqueue_script( 'ink-js', self::$base_url . 'lib/ink-3.1.10/dist/js/ink-all.js', array(), '1.11.4', true, array(), $is_dashboard_page );
 
@@ -180,14 +187,16 @@ class WCV_Public_Assets {
             'wcv_product_totals_chart_base_fill_color'  => apply_filters( 'wcv_product_totals_chart_base_fill_color', get_option( 'wcv_product_totals_chart_base_fill_color' ) ),
 
             'wcv_product_totals_chart_base_hover_color' => apply_filters( 'wcv_product_totals_chart_base_hover_color', get_option( 'wcv_product_totals_chart_base_hover_color' ) ),
+            'pie_use_random_colors'                     => apply_filters( 'wcv_product_totals_chart_use_random_colors', get_option( 'wcv_product_totals_chart_use_random_colors', 'no' ) ),
+            'is_pro_active'                             => is_wcv_pro_active(),
 
         );
-        // ChartJS 1.0.2.
+        // ChartJS 4.4.4.
         wcv_enqueue_script(
             'chartjs',
-            self::$base_url . 'lib/chartjs/Chart.js',
+            self::$base_url . 'lib/chartjs/Chart.min.js',
             array( 'jquery' ),
-            '1.0.2',
+            '4.4.4',
             true,
             array(
                 'chartjs_colors' => $chartjs_colors,
@@ -196,10 +205,20 @@ class WCV_Public_Assets {
         );
 
         // WCV chart init.
-        wcv_enqueue_script( 'wcvendors-charts', self::$base_url . 'js/wcvendors-charts' . self::$suffix . '.js', array( 'chartjs' ), self::$version, true, array(), $is_dashboard_page );
-
-        wp_enqueue_script( 'jquery-ui-datepicker' );
-        wp_enqueue_script( 'jquery-ui-slider' );
+        wcv_enqueue_script(
+            'wcvendors-charts',
+            self::$base_url . 'js/wcvendors-charts' . self::$suffix . '.js',
+            array( 'chartjs' ),
+            self::$version,
+            true,
+            array(
+                'chartjs_colors' => $chartjs_colors,
+                'chart_i18n'     => array(
+                    'total_orders_text' => __( 'Total Orders', 'wc-vendors' ),
+                ),
+            ),
+            $is_dashboard_page
+        );
 
         $datepicker_localization = self::get_datepicker_localization();
         // Load datepicker flatpickr.
@@ -291,7 +310,6 @@ class WCV_Public_Assets {
         );
 
         wcv_enqueue_script( 'wcv-frontend-product', self::$base_url . '/js/product' . self::$suffix . '.js', array( 'jquery-ui-core', 'select2' ), WCV_VERSION, true, array( 'wcv_frontend_product' => $product_params ), $is_dashboard_page );
-
         // Product Variation.
         $product_variation_params = array(
             'ajax_url'                            => admin_url( 'admin-ajax.php' ),
@@ -325,8 +343,63 @@ class WCV_Public_Assets {
             'variation_actions_placeholder'       => esc_js( __( 'Select action', 'wc-vendors' ) ),
         );
 
+        $product_id = get_query_var( 'object_id' );
+
+        if ( $product_id ) {
+            $product = wc_get_product( $product_id );
+            if ( is_a( $product, 'WC_Product' ) && 'variable' === $product->get_type() ) {
+                $product_attrs   = $product->get_attributes( 'edit' );
+                $formatted_attrs = array();
+
+                foreach ( $product_attrs as $attribute ) {
+                    if ( $attribute->is_taxonomy() ) {
+                        $taxonomy = $attribute->get_taxonomy_object();
+                        $terms    = wp_get_post_terms( $product_id, $attribute->get_name(), array( 'fields' => 'all' ) );
+
+                        $values = array();
+                        foreach ( $terms as $term ) {
+                            $values[ $term->slug ] = $term->name;
+                        }
+
+                        $label = isset( $taxonomy->labels->singular_name ) ? $taxonomy->labels->singular_name : $attribute->get_name();
+
+                        $formatted_attrs[ $attribute->get_name() ] = array(
+                            'values'   => $values,
+                            'position' => $attribute->get_position(),
+                            'name'     => $attribute->get_name(),
+                            'label'    => $label,
+                        );
+                    } else {
+                        $values = $attribute->get_options();
+                        if ( is_array( $values ) ) {
+                            $formatted_values = array();
+                            foreach ( $values as $value ) {
+                                $value                                        = trim( $value );
+                                $formatted_values[ sanitize_title( $value ) ] = $value;
+                            }
+                        } else {
+                            $values           = array_map( 'trim', explode( '|', $values ) );
+                            $formatted_values = array();
+                            foreach ( $values as $value ) {
+                                $formatted_values[ sanitize_title( $value ) ] = $value;
+                            }
+                        }
+
+                        $formatted_attrs[ $attribute->get_name() ] = array(
+                            'values'   => $formatted_values,
+                            'position' => $attribute->get_position(),
+                            'name'     => $attribute->get_name(),
+                            'label'    => $attribute->get_name(),
+                        );
+                    }
+                }
+
+                $product_variation_params['product_attrs'] = $formatted_attrs;
+            }
+        }
+
         wcv_enqueue_script(
-            'wcv-frontend-product-variation',
+            'wcv-product-variation',
             self::$base_url . '/js/product-variation' . self::$suffix . '.js',
             array(
                 'jquery',
@@ -336,7 +409,7 @@ class WCV_Public_Assets {
             ),
             WCV_VERSION,
             true,
-            array( 'wcv_frontend_product_variation' => $product_variation_params ),
+            array( 'wcv_product_variation' => $product_variation_params ),
             $is_dashboard_page
         );
 
@@ -471,7 +544,7 @@ class WCV_Public_Assets {
         );
         $country_state_args = array(
             'countries'              => wp_json_encode( array_merge( WC()->countries->get_allowed_country_states(), WC()->countries->get_shipping_country_states() ) ),
-            'i18n_select_state_text' => esc_attr__( 'Select an option&hellip;', 'wc-vendors' ),
+            'i18n_select_state_text' => esc_attr__( 'Select a state&hellip;', 'wc-vendors' ),
         );
 
         wcv_enqueue_script(
@@ -488,6 +561,23 @@ class WCV_Public_Assets {
             ),
             $is_dashboard_page
         );
+
+        $wc_vendors_dashboard_args = apply_filters(
+            'wcvendors_dashboard_scripts_args',
+            array(
+                'wcvendor_dashboard' => array(
+                    'mark_unshipped_confirm' => __( 'Are you sure the item was unshipped?', 'wc-vendors' ),
+                    'option_none_text'       => __( 'None', 'wc-vendors' ),
+                    'countries_phone_codes'  => require WCV_PLUGIN_DIR . 'classes/includes/wcv-countries-phone-code.php',
+                    'product_meta_tabs'      => \WC_Vendors\Classes\Front\Forms\WCV_Product_Form::get_product_meta_tabs(),
+                    'icon_url'               => WCV_ASSETS_URL . 'svg/wcv-icons.svg',
+                    'dashboard_nonce'        => wp_create_nonce( 'wcv_dashboard' ),
+                    'ajax_url'               => admin_url( 'admin-ajax.php' ),
+                ),
+            )
+        );
+
+        wcv_enqueue_script( 'wcv-navigation', self::$base_url . 'js/wcv-navigation' . self::$suffix . '.js', array( 'jquery', 'ink-js' ), WCV_VERSION, true, $wc_vendors_dashboard_args, $is_dashboard_page );
     }
 
     /**
@@ -610,5 +700,24 @@ class WCV_Public_Assets {
                 return apply_filters( 'wcv_tag_separator_defaults', array( ',', ' ' ) );
         }
         return apply_filters( 'wcv_tag_separator_defaults', $separator );
+    }
+
+    /**
+     * Dequeue script
+     *
+     * @param string $tag The script tag.
+     * @param string $handle The script handle.
+     */
+    public function dequeue_script( $tag, $handle ) {
+        $handles = array(
+            'wcvendors-pro-charts',
+            'wcv-frontend-product-variation',
+        );
+
+        if ( in_array( $handle, $handles, true ) ) {
+            $tag = '';
+        }
+
+        return $tag;
     }
 }

@@ -114,7 +114,8 @@ class WCV_Admin_API extends WCV_API {
      */
     public function save_settings( $request ) {
 
-        $changes       = $request->get_params( 'changes' );
+        $changes = $request->get_param( 'changes' );
+
         $vendor_id     = (int) $request->get_param( 'id' );
         $vendor_status = get_user_meta( $vendor_id, '_wcv_vendor_status', true );
         $is_user       = get_userdata( $vendor_id );
@@ -160,10 +161,10 @@ class WCV_Admin_API extends WCV_API {
         global $wpdb;
 
         $count_user_sql = "SELECT
-            COUNT( CASE WHEN umt1.meta_value = 'active' AND ( umt2.meta_key = '{$wpdb->prefix}capabilities' AND umt2.meta_value LIKE '%vendor%') THEN 1 END ) AS active,
-            COUNT( CASE WHEN umt1.meta_value = 'inactive' AND ( umt2.meta_key = '{$wpdb->prefix}capabilities' AND (umt2.meta_value NOT LIKE '%pending_vendor%' AND umt2.meta_value LIKE '%vendor%' )) THEN 1 END ) AS inactive,
-            COUNT( CASE WHEN umt2.meta_key = '{$wpdb->prefix}capabilities' AND umt2.meta_value LIKE '%vendor%' THEN 1 END ) AS vendor,
-            COUNT( CASE WHEN umt2.meta_key = '{$wpdb->prefix}capabilities' AND umt2.meta_value LIKE '%pending_vendor%' THEN 1 END ) AS pending
+            COUNT( CASE WHEN umt1.meta_value = 'active' AND ( umt2.meta_key = '{$wpdb->prefix}capabilities' AND umt2.meta_value LIKE '%\"vendor\"%') THEN 1 END ) AS active,
+            COUNT( CASE WHEN umt1.meta_value = 'inactive' AND ( umt2.meta_key = '{$wpdb->prefix}capabilities' AND (umt2.meta_value NOT LIKE '%\"pending_vendor\"%' AND umt2.meta_value LIKE '%\"vendor\"%' )) THEN 1 END ) AS inactive,
+            COUNT( CASE WHEN umt2.meta_key = '{$wpdb->prefix}capabilities' AND umt2.meta_value LIKE '%\"vendor\"%' THEN 1 END ) AS vendor,
+            COUNT( CASE WHEN umt2.meta_key = '{$wpdb->prefix}capabilities' AND umt2.meta_value LIKE '%\"pending_vendor\"%' THEN 1 END ) AS pending
             FROM {$wpdb->usermeta} AS umt1
             INNER JOIN {$wpdb->usermeta} as umt2 ON umt1.user_id = umt2.user_id
             WHERE umt1.meta_key = '_wcv_vendor_status' AND umt2.meta_key = '{$wpdb->prefix}capabilities'
@@ -234,8 +235,8 @@ class WCV_Admin_API extends WCV_API {
 
         return array(
             array_map( 'absint', $results ), // SQL query results.
-			(int) $wpdb->get_var( 'SELECT FOUND_ROWS()' ), // Total results.
-		);
+            (int) $wpdb->get_var( 'SELECT FOUND_ROWS()' ), // Total results.
+        );
     }
 
     /**
@@ -319,7 +320,7 @@ class WCV_Admin_API extends WCV_API {
         }
 
         $is_user = get_userdata( $vendor_id );
-        if ( ( ! WCV_Vendors::is_vendor( $vendor_id ) && ! WCV_Vendors::is_pending( $vendor_id ) || ! $is_user ) ) {
+        if ( ( ! WCV_Vendors::is_vendor( $vendor_id ) && ! WCV_Vendors::is_pending( $vendor_id ) ) || ! $is_user ) {
             return new WP_REST_Response(
                 array(
                     'success' => false,
@@ -344,9 +345,9 @@ class WCV_Admin_API extends WCV_API {
                 break;
             default:
                 $result = array(
-					'success' => false,
-					'message' => __( 'Invalid action.', 'wc-vendors' ),
-				);
+                    'success' => false,
+                    'message' => __( 'Invalid action.', 'wc-vendors' ),
+                );
                 break;
         }
 
@@ -453,10 +454,11 @@ class WCV_Admin_API extends WCV_API {
         $vendor->remove_role( 'pending_vendor' );
         wcv_set_primary_vendor_role( $vendor );
         update_user_meta( $vendor_id, '_wcv_vendor_status', 'active' );
+        do_action( 'wcvendors_approve_vendor', $vendor );
         return new WP_REST_Response(
             array(
-				'success' => true,
-				'message' => __( 'Vendor approved.', 'wc-vendors' ),
+                'success' => true,
+                'message' => __( 'Vendor approved.', 'wc-vendors' ),
             ),
             200
         );
@@ -487,6 +489,7 @@ class WCV_Admin_API extends WCV_API {
             $vendor->add_role( $role );
         }
         delete_user_meta( $vendor_id, '_wcv_vendor_status' );
+        do_action( 'wcvendors_deny_vendor', $vendor );
         return new WP_REST_Response(
             array(
                 'success' => true,

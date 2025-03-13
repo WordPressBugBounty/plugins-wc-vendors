@@ -19,4 +19,4 @@
 
 <div class="wcvendors-pro-dashboard-wrapper <?php echo esc_attr( $dashboard_wrapper_class ); ?>">
 
-    <div class="wcv-grid">
+    <div class="wcv-grid <?php echo $vertical_menu ? 'vertical' : 'horizontal'; ?>">

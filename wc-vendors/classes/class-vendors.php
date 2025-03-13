@@ -43,6 +43,10 @@ class WCV_Vendors {
         }
 
         $this->add_filters_to_prevent_email_sending();
+
+        // Update vendor approved date.
+        add_action( 'remove_user_role', array( $this, 'remove_vendor_date_meta' ), 10, 2 );
+        add_action( 'add_user_role', array( $this, 'update_vendor_date_meta' ), 10, 2 );
     }
 
     /**
@@ -191,6 +195,13 @@ class WCV_Vendors {
                 }
 
                 $product_id = ! empty( $order_item->get_variation_id() ) ? $order_item->get_variation_id() : $order_item->get_product_id();
+
+                // Check if product exists.
+                $product = wc_get_product( $product_id );
+
+                if ( ! $product instanceof \WC_Product ) {
+                    continue;
+                }
 
                 $vendor_id = self::get_vendor_from_product( $product_id );
 
@@ -764,6 +775,11 @@ class WCV_Vendors {
 
         foreach ( $items as $item_id => $item ) {
             if ( isset( $item['product_id'] ) && 0 !== $item['product_id'] ) {
+                // check if product exists.
+                $product = wc_get_product( $item['product_id'] );
+                if ( ! $product instanceof \WC_Product ) {
+                    continue;
+                }
                 // check if product is from vendor.
                 $product_author = get_post_field( 'post_author', $item['product_id'] );
                 if ( self::is_vendor( $product_author ) ) {
@@ -1440,5 +1456,48 @@ class WCV_Vendors {
         }
 
         return self::create_child_orders( $order_id );
+    }
+
+
+    /**
+     * Remove vendor date meta
+     *
+     * @param int    $user_id The user id.
+     * @param string $role The role.
+     */
+    public function remove_vendor_date_meta( $user_id, $role ) {
+
+        switch ( $role ) {
+            case 'vendor':
+                delete_user_meta( $user_id, '_wcv_approve_date' );
+                break;
+            case 'pending_vendor':
+                delete_user_meta( $user_id, '_wcv_apply_date' );
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
+     * Update vendor date meta
+     *
+     * @param int    $user_id The user id.
+     * @param string $role The role.
+     */
+    public function update_vendor_date_meta( $user_id, $role ) {
+        if ( 'vendor' === $role ) {
+            $is_meta_exits = get_user_meta( $user_id, '_wcv_approve_date', true );
+            if ( ! $is_meta_exits ) {
+                wcv_update_approve_date( $user_id );
+            }
+        }
+
+        if ( 'pending_vendor' === $role ) {
+            $is_meta_exits = get_user_meta( $user_id, '_wcv_apply_date', true );
+            if ( ! $is_meta_exits ) {
+                wcv_update_apply_date( $user_id );
+            }
+        }
     }
 }

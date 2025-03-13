@@ -343,8 +343,37 @@ if ( ! function_exists( 'wcv_get_vendor_avatar' ) ) {
     function wcv_get_vendor_avatar( $vendor_id ) {
         $avatar_source = get_option( 'wcvendors_display_vendors_avatar_source', 'mystery' );
         $avatar_size   = apply_filters( 'wcvendors_vendor_avatar_size', 200 );
-
+        if ( 'gravatar' === $avatar_source ) {
+            $avatar_source = '';
+        }
         $vendor_avatar = get_avatar( $vendor_id, $avatar_size, $avatar_source, '', array( 'class' => 'wcv-avatar' ) );
         return apply_filters( 'wcvendors_vendor_avatar', $vendor_avatar, $vendor_id, $avatar_size, $avatar_source );
+    }
+}
+
+
+if ( ! function_exists( 'wcv_update_approve_date' ) ) {
+    /**
+     * Update the approve date for a vendor
+     *
+     * @param int $vendor_id The vendor id.
+     */
+    function wcv_update_approve_date( $vendor_id ) {
+        $time_zone     = wp_timezone_string();
+        $approved_date = ( new DateTime( 'now', new DateTimeZone( $time_zone ) ) )->format( 'Y-m-d H:i:s' );
+        update_user_meta( $vendor_id, '_wcv_approve_date', $approved_date );
+    }
+}
+
+if ( ! function_exists( 'wcv_update_apply_date' ) ) {
+    /**
+     * Update the apply date for a vendor
+     *
+     * @param int $vendor_id The vendor id.
+     */
+    function wcv_update_apply_date( $vendor_id ) {
+        $time_zone  = wp_timezone_string();
+        $apply_date = ( new DateTime( 'now', new DateTimeZone( $time_zone ) ) )->format( 'Y-m-d H:i:s' );
+        update_user_meta( $vendor_id, '_wcv_apply_date', $apply_date );
     }
 }

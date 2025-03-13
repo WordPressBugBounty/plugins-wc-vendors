@@ -26,12 +26,25 @@ $post_status               = ( isset( $product ) && null !== $product ) ? $post_
  */
 ?>
 
-<h2><?php echo esc_html( $page_title ); ?></h2>
+<h2 class="wcv-tab-page-heading wcv-gap-bottom wcv-mobile-no-gap"><?php echo esc_html( $page_title ); ?></h2>
 
 <?php do_action( 'wcvendors_before_product_form' ); ?>
 
 <!-- Product Edit Form -->
 <form method="post" action="" id="wcv-product-edit" class="wcv-form">
+
+    <div class="all-100">
+        <?php do_action( 'wcv_before_product_media', $object_id ); ?>
+        <!-- Media uploader -->
+        <div class="wcv-product-media wcv-gap-bottom">
+            <div class="wcv-flex wcv-product-media-wrapper" style="gap: 24px;">
+            <?php do_action( 'wcv_before_media', $object_id ); ?>
+            <?php WCV_Form_Helper::product_media_uploader( $object_id ); ?>
+            <?php do_action( 'wcv_after_media', $object_id ); ?>
+            </div>
+        </div>
+        <?php do_action( 'wcv_after_product_media', $object_id ); ?>
+    </div>
 
     <!-- Basic Product Details -->
     <div class="wcv-product-basic wcv-product">
@@ -42,47 +55,36 @@ $post_status               = ( isset( $product ) && null !== $product ) ? $post_
         <?php WCV_Product_Form::description( $object_id, $product_description ); ?>
         <!-- Product Short Description -->
         <?php WCV_Product_Form::short_description( $object_id, $product_short_description ); ?>
-        <!-- Product Categories -->
-        <?php WCV_Product_Form::categories( $object_id ); ?>
-        <!-- Product Tags -->
-        <?php WCV_Product_Form::tags( $object_id, true ); ?>
+        <div class="wcv-cols-group wcv-horizontal-gutters">
+            <div class="all-50 small-100 tiny-100">
+                <!-- Product Categories -->
+                <?php WCV_Product_Form::categories( $object_id ); ?>
+            </div>
+            <div class="all-50 small-100 tiny-100">
+                <!-- Product Tags -->
+                <?php WCV_Product_Form::tags( $object_id, true ); ?>
+            </div>
+        </div>
         <?php do_action( 'wcv_after_product_details', $object_id ); ?>
     </div>
 
-    <div class="all-100">
-        <?php do_action( 'wcv_before_product_media', $object_id ); ?>
-        <!-- Media uploader -->
-        <div class="wcv-product-media">
-            <?php do_action( 'wcv_before_media', $object_id ); ?>
-            <?php WCV_Form_Helper::product_media_uploader( $object_id ); ?>
-            <?php do_action( 'wcv_after_media', $object_id ); ?>
-
-        </div>
-        <?php do_action( 'wcv_after_product_media', $object_id ); ?>
-    </div>
-
-    <hr/>
+    <div style="height: 1px;background: #D5D4DC; margin-top:20px; margin-bottom:60px;" class="wcv_desktop"></div>
+    <div style="margin:40px 0;" class="wcv_mobile"></div>
 
     <div class="all-100">
         <?php do_action( 'wcv_before_product_type', $object_id ); ?>
         <!-- Product Type -->
-        <div class="wcv-product-type">
+        <div class="wcv-product-type wcv-gap-bottom">
             <?php WCV_Product_Form::product_type( $object_id ); ?>
         </div>
         <?php do_action( 'wcv_after_product_type', $object_id ); ?>
     </div>
 
     <div class="all-100">
-        <div class="wcv-tabs top" data-prevent-url-change="true">
-
-            <?php do_action( 'wcv_before_product_meta_tabs', $object_id ); ?>
-
-            <?php WCV_Product_Form::product_meta_tabs(); ?>
-
-            <?php do_action( 'wcv_before_general_tab', $object_id ); ?>
+        <div class="wcv-accordions top" data-prevent-url-change="true" id="product-meta-accordion" data-type="">
 
             <!-- General Product Options -->
-            <div class="wcv-product-general tabs-content" id="general">
+            <div class="wcv-product-general tabs-content hide-all" id="general">
 
                 <?php do_action( 'wcvendors_product_options_general_product_data_before', $object_id ); ?>
 
@@ -94,13 +96,11 @@ $post_status               = ( isset( $product ) && null !== $product ) ? $post_
                 <div class="show_if_simple show_if_external">
                     <!-- Price and Sale Price -->
                     <?php WCV_Product_Form::prices( $object_id ); ?>
+                    <?php do_action( 'wcv_after_product_prices', $object_id ); ?>
                 </div>
 
-                <div class="show_if_simple show_if_variable">
-                    <?php do_action( 'wcvendors_after_tax_field', $object_id ); ?>
-                </div>
-
-                <div class="show_if_downloadable" id="files_download">
+                <div class="show_if_downloadable" id="files_download" style="margin-top: 40px;">
+                    <h6 class="blue-title text-blue small-align-center tiny-align-center"><?php esc_html_e( 'Downloadable Files', 'wc-vendors' ); ?></h6>
                     <!-- Downloadable files -->
                     <?php WCV_Product_Form::download_files( $object_id ); ?>
                     <!-- Download Limit -->
@@ -110,10 +110,17 @@ $post_status               = ( isset( $product ) && null !== $product ) ? $post_
                     <!-- Download Type -->
                     <?php WCV_Product_Form::download_type( $object_id ); ?>
                 </div>
-
+                <?php if ( wc_tax_enabled() ) : ?>
                 <div class="show_if_simple show_if_external show_if_variable">
                     <!-- Tax -->
-                    <?php WCV_Product_Form::tax( $object_id ); ?>
+                    <div class="wcv-cols-group wcv-horizontal-gutters">
+                        <?php WCV_Product_Form::tax( $object_id ); ?>
+                    </div>
+                </div>
+                <?php endif; ?>
+
+                <div class="show_if_simple show_if_variable">
+                    <?php do_action( 'wcvendors_after_tax_field', $object_id ); ?>
                 </div>
 
                 <?php do_action( 'wcv_product_options_general_product_data', $object_id ); ?>
@@ -125,7 +132,7 @@ $post_status               = ( isset( $product ) && null !== $product ) ? $post_
             <?php do_action( 'wcv_before_inventory_tab', $object_id ); ?>
 
             <!-- Inventory -->
-            <div class="wcv-product-inventory inventory_product_data tabs-content" id="inventory">
+            <div class="wcv-product-inventory inventory_product_data tabs-content hide-all" id="inventory">
 
                     <!-- SKU  -->
                 <?php WCV_Product_Form::sku( $object_id ); ?>
@@ -156,7 +163,7 @@ $post_status               = ( isset( $product ) && null !== $product ) ? $post_
             <?php do_action( 'wcv_before_shipping_tab', $object_id ); ?>
 
             <!-- Shipping  -->
-            <div class="wcv-product-shipping shipping_product_data tabs-content" id="shipping">
+            <div class="wcv-product-shipping shipping_product_data tabs-content hide-all" id="shipping">
                 <div class="hide_if_grouped hide_if_external">
 
                     <?php do_action( 'wcv_product_options_shipping_rates', $object_id ); ?>
@@ -181,7 +188,7 @@ $post_status               = ( isset( $product ) && null !== $product ) ? $post_
             <?php do_action( 'wcv_before_linked_tab', $object_id ); ?>
 
             <!-- Upsells and grouping -->
-            <div class="wcv-product-upsells tabs-content" id="linked_product">
+            <div class="wcv-product-upsells tabs-content hide-all" id="linked_product">
 
                 <div class="show_if_grouped hide_if_external">
                     <?php WCV_Product_Form::grouped_products( $object_id, $product ); ?>
@@ -203,7 +210,7 @@ $post_status               = ( isset( $product ) && null !== $product ) ? $post_
 
             <?php do_action( 'wcv_before_attributes_tab', $object_id ); ?>
 
-            <div class="wcv_product_attributes tabs-content" id="attributes">
+            <div class="wcv_product_attributes tabs-content hide-all" id="attributes">
 
                 <div class="attributes-validation-error"></div>
 
@@ -219,7 +226,7 @@ $post_status               = ( isset( $product ) && null !== $product ) ? $post_
 
             <?php do_action( 'wcvendors_before_advanced_tab', $object_id ); ?>
 
-            <div class="wcv_product_advanced tabs-content" id="advanced">
+            <div class="wcv_product_advanced tabs-content hide-all" id="advanced">
 
                 <div class="attributes-validation-error"></div>
 
@@ -242,7 +249,7 @@ $post_status               = ( isset( $product ) && null !== $product ) ? $post_
 
             <?php do_action( 'wcv_before_variations_tab', $object_id ); ?>
 
-            <div class="wcv_product_variations tabs-content" id="variations">
+            <div class="wcv_product_variations tabs-content hide-all" id="variations">
 
                 <?php WCV_Product_Form::product_variations( $object_id ); ?>
 
@@ -256,7 +263,7 @@ $post_status               = ( isset( $product ) && null !== $product ) ? $post_
 
             <?php do_action( 'wcv_before_seo_tab', $object_id ); ?>
 
-            <div class="wcv_product_seo tabs-content" id="seo">
+            <div class="wcv_product_seo tabs-content hide-all" id="seo">
 
                 <?php WCV_Product_Form::product_seo( $object_id ); ?>
 
@@ -267,8 +274,10 @@ $post_status               = ( isset( $product ) && null !== $product ) ? $post_
             <?php do_action( 'wcv_after_seo_tab', $object_id ); ?>
 
             <?php WCV_Product_Form::form_data( $object_id, $post_status ); ?>
-            <?php WCV_Product_Form::save_button( $action_title ); ?>
-            <?php WCV_Product_Form::draft_button( __( 'Save Draft', 'wc-vendors' ) ); ?>
+            <div class="wcv-button-group small">
+                <?php WCV_Product_Form::save_button( $action_title ); ?>
+                <?php WCV_Product_Form::draft_button( __( 'Save Draft', 'wc-vendors' ) ); ?>
+            </div>
 
             <?php do_action( 'wcv_after_product_meta_tabs', $object_id ); ?>
         </div>

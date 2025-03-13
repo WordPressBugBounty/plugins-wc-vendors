@@ -230,15 +230,16 @@ class Usage {
      * @return array Effectiveness data.
      */
     private function _get_effectiveness_data() {
-        $start_period = gmdate( 'Y-m-d', strtotime( 'monday last week' ) - DAY_IN_SECONDS );
-        $end_period   = gmdate( 'Y-m-d', strtotime( 'saturday last week' ) );
+        $timezone     = new DateTimeZone( wp_timezone_string() ); // Get the WordPress timezone.
+        $start_period = ( new DateTime( 'monday last week', $timezone ) )->setTime( 0, 0, 0 )->format( 'Y-m-d H:i:s' );
+        $end_period   = ( new DateTime( 'sunday last week', $timezone ) )->setTime( 23, 59, 59 )->format( 'Y-m-d H:i:s' );
         $data         = array( 'currency' => get_option( 'woocommerce_currency' ) );
 
         $total_orders = $this->_get_total_orders( $start_period, $end_period );
         $total_sales  = $total_orders['total_sales'];
         $commission   = $this->_get_commission_data( $start_period, $end_period, $total_sales );
-        $vendor       = $this->_get_vendor_data();
-        $updated_at   = gmdate( 'Y-m-d H:i:s' );
+        $vendor       = $this->_get_vendor_data( $start_period, $end_period );
+        $updated_at   = ( new DateTime( 'now', $timezone ) )->format( 'Y-m-d H:i:s' );
 
         $data = array_merge(
             $data,
@@ -323,19 +324,47 @@ class Usage {
      * Get vendor data for the period.
      *
      * @since 2.5.0
+     * @version 2.5.4 - Add time period to vendor data.
+     *
+     * @param string $start_period Start date of the period.
+     * @param string $end_period   End date of the period.
      *
      * @return array Vendor data for the period.
      */
-    private function _get_vendor_data() {
+    private function _get_vendor_data( $start_period, $end_period ) {
         global $wpdb;
 
         $vendors = $wpdb->get_row(
             $wpdb->prepare(
-                "SELECT COUNT( CASE WHEN umt1.meta_key = 'wp_capabilities' AND umt1.meta_value LIKE  %s  THEN 1 END ) AS vendor,
-                COUNT( CASE WHEN umt1.meta_key = 'wp_capabilities' AND umt1.meta_value LIKE %s  THEN 1 END ) AS pending
-                FROM {$wpdb->usermeta} umt1",
-                '%vendor%',
-                '%pending_vendor%'
+                "SELECT 
+                    COUNT(DISTINCT CASE 
+                        WHEN umt1.meta_key = %s 
+                        AND umt1.meta_value LIKE %s
+                        AND (
+                            umt2.meta_key = '_wcv_approve_date' 
+                            AND umt2.meta_value BETWEEN %s AND %s
+                        )
+                        THEN umt1.user_id 
+                    END) AS vendor,
+                    COUNT(DISTINCT CASE 
+                        WHEN umt1.meta_key = %s 
+                        AND umt1.meta_value LIKE %s
+                        AND (
+                            umt2.meta_key = '_wcv_apply_date' 
+                            AND umt2.meta_value BETWEEN %s AND %s
+                        )
+                        THEN umt1.user_id 
+                    END) AS pending
+                FROM wp_usermeta umt1
+                LEFT JOIN wp_usermeta umt2 ON umt1.user_id = umt2.user_id;",
+                $wpdb->prefix . 'capabilities',
+                '%"vendor"%',
+                $start_period,
+                $end_period,
+                $wpdb->prefix . 'capabilities',
+                '%"pending_vendor"%',
+                $start_period,
+                $end_period,
             )
         );
 
@@ -432,6 +461,7 @@ class Usage {
         }
 
         $tracking_server_url = defined( 'WCV_TRACKING_SERVER_URL' ) && ! empty( WCV_TRACKING_SERVER_URL ) ? WCV_TRACKING_SERVER_URL : 'https://usg.rymeraplugins.com';
+        $data                = $this->_get_data();
 
         $response = wp_remote_post(
             trailingslashit( $tracking_server_url ) . 'v1/wcv-checkin/',
@@ -441,7 +471,7 @@ class Usage {
                 'redirection' => 5,
                 'httpversion' => '1.1',
                 'sslverify'   => false,
-                'body'        => $this->_get_data(),
+                'body'        => $data,
                 'user-agent'  => 'WCVF/' . WCV_VERSION . '; ' . get_bloginfo( 'url' ),
             )
         );

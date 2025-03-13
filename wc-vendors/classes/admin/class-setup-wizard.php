@@ -284,7 +284,6 @@ class WCVendors_Admin_Setup_Wizard {
 		$products_enabled  = get_option( 'wcvendors_capability_products_enabled', 'yes' );
 		$live_products     = get_option( 'wcvendors_capability_products_edit', 'yes' );
 		$products_approval = get_option( 'wcvendors_capability_products_live', 'yes' );
-		$orders_enabled    = get_option( 'wcvendors_capability_orders_enabled', 'yes' );
 		$export_orders     = get_option( 'wcvendors_capability_orders_export', 'yes' );
 		$view_order_notes  = get_option( 'wcvendors_capability_order_read_notes', 'yes' );
 		$add_order_notes   = get_option( 'wcvendors_capability_order_update_notes', 'yes' );
@@ -302,7 +301,6 @@ class WCVendors_Admin_Setup_Wizard {
 		$products_enabled  = isset( $_POST['wcv_capability_products_enabled'] ) ? sanitize_text_field( $_POST['wcv_capability_products_enabled'] ) : '';
 		$live_products     = isset( $_POST['wcv_capability_products_edit'] ) ? sanitize_text_field( $_POST['wcv_capability_products_edit'] ) : '';
 		$products_approval = isset( $_POST['wcv_capability_products_live'] ) ? sanitize_text_field( $_POST['wcv_capability_products_live'] ) : '';
-		$orders_enabled    = isset( $_POST['wcv_capability_orders_enabled'] ) ? sanitize_text_field( $_POST['wcv_capability_orders_enabled'] ) : '';
 		$export_orders     = isset( $_POST['wcv_capability_orders_export'] ) ? sanitize_text_field( $_POST['wcv_capability_orders_export'] ) : '';
 
         $view_order_notes = isset( $_POST['wcv_capability_order_read_notes'] ) ? sanitize_text_field( $_POST['wcv_capability_order_read_notes'] ) : '';
@@ -311,7 +309,6 @@ class WCVendors_Admin_Setup_Wizard {
 		update_option( 'wcvendors_capability_products_enabled', $products_enabled );
 		update_option( 'wcvendors_capability_products_edit', $live_products );
 		update_option( 'wcvendors_capability_products_live', $products_approval );
-		update_option( 'wcvendors_capability_orders_enabled', $orders_enabled );
 		update_option( 'wcvendors_capability_orders_export', $export_orders );
 		update_option( 'wcvendors_capability_order_read_notes', $view_order_notes );
 		update_option( 'wcvendors_capability_order_update_notes', $add_order_notes );

@@ -11,14 +11,16 @@
  * @package    WCVendors_Pro
  * @subpackage WCVendors_Pro/public/partials/helpers/table
  */
+
+$table_class = apply_filters( "wcvendors_table_{$this->id}_class", 'wcv-table wcvendors-table has-background' );
 ?>
 
 <?php if ( $this->container_wrap ) : ?>
-    <div class="wcv-cols-group wcv-horizontal-gutters">
+    <div class="wcv-cols-group wcv-horizontal-gutters wcv-gap-bottom">
     <div class="all-100">
 <?php endif; ?>
 
-    <table role="grid" class="wcvendors-table wcvendors-table-<?php echo esc_attr( $this->id ); ?> wcv-table">
+    <table role="grid" class="wcvendors-table-<?php echo esc_attr( $this->id ); ?> <?php echo esc_attr( $table_class ); ?>">
 
         <?php $this->display_columns(); ?>
         <?php $this->display_rows(); ?>

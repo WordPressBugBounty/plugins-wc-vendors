@@ -18,14 +18,16 @@ use WC_Vendors\Classes\Front\WCV_Form_Helper;
                 apply_filters(
                     'wcv_commission_start_date_input',
                     array(
-                        'id'                => '_wcv_commission_start_date_input',
-                        'label'             => __( 'Start date', 'wc-vendors' ),
-                        'class'             => 'wcv-datepicker-dashboard-filter no_limit wcv-datepicker wcv-init-picker',
-                        'value'             => gmdate( 'Y-m-d', $this->get_start_date() ),
-                        'placeholder'       => 'YYYY-MM-DD',
-                        'wrapper_start'     => '<div class="all-66 small-100"><div class="wcv-cols-group wcv-horizontal-gutters"><div class="all-50 small-100">',
-                        'wrapper_end'       => '</div>',
-                        'custom_attributes' => array(
+                        'id'                  => '_wcv_commission_start_date_input',
+                        'label'               => __( 'Start date', 'wc-vendors' ),
+                        'class'               => 'wcv-datepicker-dashboard-filter no_limit wcv-datepicker wcv-init-picker',
+                        'value'               => gmdate( 'Y-m-d', $this->get_start_date() ),
+                        'placeholder'         => 'YYYY-MM-DD',
+                        'wrapper_start'       => '<div class="all-66 small-100"><div class="wcv-cols-group wcv-horizontal-gutters"><div class="all-50 small-100">',
+                        'wrapper_end'         => '</div>',
+                        'append_before'       => '<span class="wcv-flex" title="toggle" data-toggle>' . wcv_get_icon( 'wcv-icon wcv-icon-24', 'wcv-icon-calendar' ) . '</span>',
+                        'input_wrapper_class' => 'wcv-datepicker-wrapper wcv-flex',
+                        'custom_attributes'   => array(
                             'data-default' => gmdate( 'Y-m-d', $this->get_default_start_date() ),
                             'maxlenth'     => '10',
                             'pattern'      => '[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])',
@@ -39,14 +41,16 @@ use WC_Vendors\Classes\Front\WCV_Form_Helper;
                 apply_filters(
                     'wcv_commission_end_date_input',
                     array(
-                        'id'                => '_wcv_commission_end_date_input',
-                        'label'             => __( 'End date', 'wc-vendors' ),
-                        'class'             => 'wcv-datepicker-dashboard-filter no_limit wcv-datepicker wcv-init-picker',
-                        'value'             => gmdate( 'Y-m-d', $this->get_end_date() ),
-                        'placeholder'       => 'YYYY-MM-DD',
-                        'wrapper_start'     => '<div class="all-50 small-100">',
-                        'wrapper_end'       => '</div></div></div>',
-                        'custom_attributes' => array(
+                        'id'                  => '_wcv_commission_end_date_input',
+                        'label'               => __( 'End date', 'wc-vendors' ),
+                        'class'               => 'wcv-datepicker-dashboard-filter no_limit wcv-datepicker wcv-init-picker',
+                        'value'               => gmdate( 'Y-m-d', $this->get_end_date() ),
+                        'placeholder'         => 'YYYY-MM-DD',
+                        'wrapper_start'       => '<div class="all-50 small-100">',
+                        'wrapper_end'         => '</div></div></div>',
+                        'append_before'       => '<span class="wcv-flex" title="toggle" data-toggle>' . wcv_get_icon( 'wcv-icon wcv-icon-24', 'wcv-icon-calendar' ) . '</span>',
+                        'input_wrapper_class' => 'wcv-datepicker-wrapper wcv-flex',
+                        'custom_attributes'   => array(
                             'data-default' => gmdate( 'Y-m-d', strtotime( apply_filters( 'wcv_commission_end_date', 'now' ) ) ),
                             'maxlenth'     => '10',
                             'pattern'      => '[0-9]{4}-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])',

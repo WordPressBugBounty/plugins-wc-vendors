@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     <input type="hidden" name="order_id" value="<?php echo esc_attr( $order_id ); ?>">
 
     <input
-        class="btn btn-large btn-block"
+        class="wcv-button"
         type="submit"
         name="submit_comment"
         value="<?php esc_attr_e( 'Add comment', 'wc-vendors' ); ?>"

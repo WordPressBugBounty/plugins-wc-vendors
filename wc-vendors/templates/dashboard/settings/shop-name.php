@@ -10,15 +10,15 @@
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
-	exit;
+    exit;
 }
 ?>
 
 <div class="pv_shop_name_container">
-	<p><b><?php _e( 'Shop Name', 'wc-vendors' ); ?></b><br/>
-		<?php _e( 'Your shop name is public and must be unique.', 'wc-vendors' ); ?><br/>
+    <p><b><?php esc_html_e( 'Shop Name', 'wc-vendors' ); ?></b><br/>
+        <?php esc_html_e( 'Your shop name is public and must be unique.', 'wc-vendors' ); ?><br/>
 
-		<input type="text" name="pv_shop_name" id="pv_shop_name" placeholder="Your shop name"
-		       value="<?php echo get_user_meta( $user_id, 'pv_shop_name', true ); ?>"/>
-	</p>
+        <input type="text" name="pv_shop_name" id="pv_shop_name" placeholder="Your shop name"
+                value="<?php echo esc_attr( get_user_meta( $user_id, 'pv_shop_name', true ) ); ?>"/>
+    </p>
 </div>

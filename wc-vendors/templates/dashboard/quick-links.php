@@ -6,16 +6,16 @@
  */
 ?>
 
-<div class="wcv-cols-group wcv-horizontal-gutters">
-    <div class="all-40 small-100">
+<div class="wcv-cols-group wcv-horizontal-gutters dashboard">
+    <div class="all-100 small-100 quick-link-wrapper">
         <?php do_action( 'wcv_dashboard_before_quick_actions' ); ?>
         <?php foreach ( $quick_links as $qlink => $details ) : ?>
-            <a href="<?php echo esc_attr( $details['url'] ); ?>" class="button quick-link-btn <?php echo esc_attr( $qlink ); ?>"><?php echo esc_html( $details['label'] ); ?></a>
+            <a href="<?php echo esc_attr( $details['url'] ); ?>" class="quick-link-btn <?php echo esc_attr( $qlink ); ?>"><?php echo esc_html( $details['label'] ); ?></a>
         <?php endforeach; ?>
         <?php do_action( 'wcv_dashboard_after_quick_actions' ); ?>
     </div>
     <?php if ( ! empty( $stats ) ) : ?>
-    <div class="all-60 small-100 wcv-usage-stats align-right">
+    <div class="all-100 small-100 wcv-usage-stats align-left">
         <?php do_action( 'wcv_dashboard_before_usage_statistics' ); ?>
 
         <?php foreach ( $stats as $key => $stat ) : ?>

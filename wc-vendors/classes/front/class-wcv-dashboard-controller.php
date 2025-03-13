@@ -1,0 +1,701 @@
+<?php
+namespace WC_Vendors\Classes\Front;
+
+use WC_Vendors;
+use WCV_Vendors;
+
+use function WC_Vendors\Classes\Includes\wcv_get_default_product_template;
+/**
+ * Dashboard Controller for new Dashboard tab
+ *
+ * @version 2.5.4
+ * @since   2.5.4
+ *
+ * @package WCV_Vendors
+ */
+class WCV_Dashboard_Controller {
+
+    /**
+     * Vendor ID
+     *
+     * @var int $vendor_id Vendor ID.
+     */
+    private $vendor_id;
+
+    /**
+     * Orders
+     *
+     * @var array $orders Orders.
+     */
+    private $orders;
+
+    /**
+     * Start date
+     *
+     * @var string $start_date Start date.
+     */
+    private $start_date;
+
+    /**
+     * End date
+     *
+     * @var string $end_date End date.
+     */
+    private $end_date;
+
+
+    /**
+     * Last month start date
+     *
+     * @var string $last_month_start_date Last month start date.
+     */
+    private $last_month_start_date;
+
+    /**
+     * Last month end date
+     *
+     * @var string $last_month_end_date Last month end date.
+     */
+    private $last_month_end_date;
+
+
+    /**
+     * Pending shipping orders
+     *
+     * @var array $pending_shipping_orders Pending shipping orders.
+     */
+    private $pending_shipping_orders;
+
+    /**
+     * Decimal number
+     *
+     * @var int $decimal_number Decimal number.
+     */
+    public $decimal_number = 2;
+
+    /**
+     * Decimal separator
+     *
+     * @var string $decimal_separator Decimal separator.
+     */
+    public $decimal_separator = ',';
+
+    /**
+     * Thousand separator
+     *
+     * @var string $thousand_separator Thousand separator.
+     */
+    public $thousand_separator = '.';
+
+    /**
+     * Constructor
+     *
+     * @param int $vendor_id Vendor ID.
+     */
+    public function __construct( $vendor_id = 0 ) {
+        if ( ! $vendor_id ) {
+            $vendor_id = get_current_user_id();
+        }
+
+        $this->vendor_id          = $vendor_id;
+        $this->decimal_number     = apply_filters( 'wcvendors_dashboard_snapshot_decimal_number', $this->decimal_number );
+        $this->decimal_separator  = apply_filters( 'wcvendors_dashboard_snapshot_decimal_separator', wc_get_price_decimal_separator() );
+        $this->thousand_separator = apply_filters( 'wcvendors_dashboard_snapshot_thousand_separator', wc_get_price_thousand_separator() );
+
+        $timezone                    = wp_timezone();
+        $now                         = new \DateTime( 'now', $timezone );
+        $this->start_date            = ( clone $now )->modify( 'first day of this month' )->format( 'Y-m-d' );
+        $this->end_date              = ( clone $now )->format( 'Y-m-d' );
+        $this->last_month_start_date = ( clone $now )->modify( 'first day of last month' )->format( 'Y-m-d' );
+        $last_month_end_date         = ( clone $now )->modify( '-1 month' )->format( 'Y-m-d' );
+
+        // Check if last month has the same date as end_date, if not assign it to the last day of last month.
+        $last_day_of_last_month    = ( clone $now )->modify( 'last day of last month' )->format( 'Y-m-d' );
+        $this->last_month_end_date = ( $last_month_end_date === $this->end_date ) ? $last_month_end_date : $last_day_of_last_month;
+
+        $this->orders                  = $this->get_orders();
+        $this->pending_shipping_orders = $this->get_pending_shipping_orders();
+    }
+
+    /**
+     * Get orders
+     */
+    public function get_orders() {
+        $this_month_orders_args = array(
+            'date_created' => $this->start_date . '...' . $this->end_date,
+        );
+        $last_month_orders_args = array(
+            'date_created' => $this->last_month_start_date . '...' . $this->last_month_end_date,
+        );
+
+        $this_month_orders = WCV_Vendor_Controller::get_vendor_orders( $this->vendor_id, $this_month_orders_args );
+        $last_month_orders = WCV_Vendor_Controller::get_vendor_orders( $this->vendor_id, $last_month_orders_args );
+
+        $dashboard_orders = array(
+            'this_month' => $this_month_orders,
+            'last_month' => $last_month_orders,
+        );
+
+        return apply_filters( 'wcvendors_dashboard_orders', $dashboard_orders );
+    }
+
+    /**
+     * Calculate order sales snapshot
+     */
+    public function calculate_order_sales_snapshot() {
+        $total_orders            = count( $this->orders['this_month'] );
+        $last_month_total_orders = count( $this->orders['last_month'] );
+
+        $percentage_change = 0;
+
+        if ( $last_month_total_orders > 0 ) {
+            $percentage_change = number_format( ( ( $total_orders - $last_month_total_orders ) / $last_month_total_orders ) * 100, $this->decimal_number, $this->decimal_separator, $this->thousand_separator );
+        }
+
+        $snapshot = array(
+            'gross_sales'       => $this->get_gross_sales(),
+            'gross_commissions' => $this->get_total_commission(),
+            'total_orders'      => array(
+                'this_month' => $total_orders,
+                'last_month' => $last_month_total_orders,
+                'percentage' => $percentage_change,
+            ),
+        );
+
+        return apply_filters( 'wcvendors_dashboard_sales_snapshot', $snapshot );
+    }
+
+    /**
+     * Get gross sales
+     */
+    public function get_gross_sales() {
+
+        $total_sales            = 0;
+        $last_month_sales_total = 0;
+        $orders                 = array_merge( $this->orders['this_month'], $this->orders['last_month'] );
+
+        if ( empty( $orders ) ) {
+            return array(
+                'this_month' => 0,
+                'last_month' => 0,
+                'percentage' => '0',
+            );
+        }
+
+        foreach ( $this->orders['this_month'] as $order ) {
+            $total_sales += $order->get_total();
+        }
+
+        foreach ( $this->orders['last_month'] as $order ) {
+            $last_month_sales_total += $order->get_total();
+        }
+
+        $percentage = 0;
+
+        if ( $last_month_sales_total > 0 ) {
+            $percentage = number_format( ( ( $total_sales - $last_month_sales_total ) / $last_month_sales_total ) * 100, $this->decimal_number, $this->decimal_separator, $this->thousand_separator );
+        }
+
+        $gross_sales = array(
+            'this_month' => $total_sales,
+            'last_month' => $last_month_sales_total,
+            'percentage' => $percentage,
+        );
+
+        return apply_filters( 'wcvendors_dashboard_gross_sales', $gross_sales );
+    }
+
+    /**
+     * Get total commission
+     */
+    public function get_total_commission() {
+        global $wpdb;
+        $this_month_orders = $this->orders['this_month'];
+        $last_month_orders = $this->orders['last_month'];
+
+        $this_month_order_id = array_map(
+            function ( $order ) {
+            return $order->get_parent_id();
+            },
+            $this_month_orders
+        );
+
+        $last_month_order_id = array_map(
+            function ( $order ) {
+            return $order->get_parent_id();
+            },
+            $last_month_orders
+        );
+
+        $parent_order_ids = array_merge( $this_month_order_id, $last_month_order_id );
+
+        $total_commission            = 0;
+        $last_month_total_commission = 0;
+
+        if ( empty( $parent_order_ids ) ) {
+            return array(
+                'this_month' => 0,
+                'last_month' => 0,
+                'percentage' => '0',
+            );
+        }
+
+        $placeholders = implode( ',', array_fill( 0, count( $parent_order_ids ), '%d' ) );
+        $query        = $wpdb->prepare(
+            "SELECT order_id, total_due, total_shipping, tax
+            FROM {$wpdb->prefix}pv_commission WHERE order_id IN ( $placeholders ) AND vendor_id = %d", // phpcs:ignore
+            array_merge( $parent_order_ids, array( $this->vendor_id ) )
+        );
+
+        $commission_rows = $wpdb->get_results( $query ); // phpcs:ignore
+
+        foreach ( $commission_rows as $commission_row ) {
+            if ( in_array( (int) $commission_row->order_id, $this_month_order_id, true ) ) {
+                $total_commission += $commission_row->total_due + $commission_row->total_shipping + $commission_row->tax;
+            }
+
+            if ( in_array( (int) $commission_row->order_id, $last_month_order_id, true ) ) {
+                $last_month_total_commission += $commission_row->total_due + $commission_row->total_shipping + $commission_row->tax;
+            }
+        }
+
+        $percentage = 0;
+
+        if ( $last_month_total_commission > 0 ) {
+            $percentage = number_format( ( ( $total_commission - $last_month_total_commission ) / $last_month_total_commission ) * 100, $this->decimal_number, $this->decimal_separator, $this->thousand_separator );
+        }
+
+        $commissions = array(
+            'this_month' => $total_commission,
+            'last_month' => $last_month_total_commission,
+            'percentage' => $percentage,
+        );
+
+        return apply_filters( 'wcvendors_dashboard_total_commission', $commissions );
+    }
+
+    /**
+     * Get welcome message
+     *
+     * @return string Welcome message.
+     *
+     * @since 2.5.4
+     * @version 2.5.4
+     */
+    public function get_welcome_message() {
+        $vendor_display_name = get_user_by( 'id', $this->vendor_id )->display_name;
+        $welcome_message     = sprintf(
+            '%s, %s!',
+            __( 'Welcome', 'wcvendors' ),
+            $vendor_display_name
+        );
+
+        return apply_filters( 'wcvendors_dashboard_welcome_message', $welcome_message );
+    }
+
+    /**
+     * Get store setup steps
+     *
+     * @return array Store setup steps.
+     *
+     * @since 2.5.4
+     * @version 2.5.4
+     */
+    public function get_store_setup_steps() {
+        $completed_steps = $this->check_completed_steps();
+
+        $steps = array(
+            'store'    => array(
+                'title'       => __( 'Customize your Store Front', 'wcvendors' ),
+                'description' => __( 'Fill in a store description, set images, and other important information for your customers to know.', 'wcvendors' ),
+                'link'        => \WCV_Vendor_Dashboard::get_dashboard_page_url( 'settings' ),
+                'icon'        => 'wcv-icon-setup-store',
+                'is_complete' => $completed_steps['store'],
+                'id'          => 'store',
+            ),
+            'products' => array(
+                'title'       => __( 'Add Products', 'wcvendors' ),
+                'description' => __( 'Give your customers something to buy! Add products to your store to kick start sales.', 'wcvendors' ),
+                'link'        => ! $completed_steps['products'] ? \WCV_Vendor_Dashboard::get_dashboard_page_url( 'product/edit' ) : \WCV_Vendor_Dashboard::get_dashboard_page_url( 'product' ),
+                'icon'        => 'wcv-icon-setup-products',
+                'is_complete' => $completed_steps['products'],
+                'id'          => 'products',
+            ),
+            'payout'   => array(
+                'title'       => __( 'Connect Payout Method', 'wcvendors' ),
+                'description' => __( 'Select your preferred payout method to ensure you get commissions delivered.', 'wcvendors' ),
+                'link'        => \WCV_Vendor_Dashboard::get_dashboard_page_url( 'settings#payment' ),
+                'icon'        => 'wcv-icon-setup-payout',
+                'is_complete' => $completed_steps['payout'],
+                'id'          => 'payout',
+            ),
+            'social'   => array(
+                'title'       => __( 'Add your Socials', 'wcvendors' ),
+                'description' => __( 'Link your social media to engage customers. Keep them updated across all platforms.', 'wcvendors' ),
+                'link'        => \WCV_Vendor_Dashboard::get_dashboard_page_url( 'settings#social' ),
+                'icon'        => 'wcv-icon-setup-social',
+                'is_complete' => $completed_steps['social'],
+                'id'          => 'social',
+            ),
+        );
+
+        usort(
+            $steps,
+            function ( $a, $b ) {
+            return $b['is_complete'] - $a['is_complete'];
+            }
+        );
+
+        return apply_filters( 'wcvendors_dashboard_setup_steps', $steps );
+    }
+
+    /**
+     * Display Dashboard
+     */
+    public function display_dashboard() {
+        $is_pro_active       = is_wcv_pro_active();
+        $welcome_message     = $this->get_welcome_message();
+        $store_setup_steps   = $this->get_store_setup_steps();
+        $sales_snapshot      = $this->calculate_order_sales_snapshot();
+        $latest_orders       = $this->get_latest_orders();
+        $latest_reviews      = $is_pro_active ? $this->get_ratings() : array();
+        $chart_data          = $this->get_total_orders_chart_data();
+        $vendor_id           = get_current_user_id();
+        $should_show_ratings = apply_filters( 'wcvendors_dashboard_should_show_ratings', false );
+        $this->dashboard_quick_links();
+
+        wc_get_template(
+            'dashboard-tab-content.php',
+            array(
+                'welcome_message'         => $welcome_message,
+                'store_setup_steps'       => $store_setup_steps,
+                'sales_snapshot'          => $sales_snapshot,
+                'latest_orders'           => $latest_orders,
+                'pending_shipping_orders' => $this->pending_shipping_orders,
+                'latest_reviews'          => $latest_reviews,
+                'chart_data'              => $chart_data,
+                'is_pro_active'           => $is_pro_active,
+                'is_dismissed'            => wc_string_to_bool( get_user_meta( $vendor_id, 'wcv_store_setup_dismissed_step', true ) ),
+                'should_show_ratings'     => $should_show_ratings,
+            ),
+            'wcvendors/dashboard/',
+            plugin_dir_path( WCV_PLUGIN_FILE ) . 'templates/dashboard/'
+        );
+    }
+
+    /**
+     * Get latest orders
+     */
+    public function get_latest_orders() {
+
+        global $wpdb;
+
+        $commission_table = $wpdb->prefix . 'pv_commission';
+
+        $order_ids = $wpdb->get_col(
+            $wpdb->prepare(
+                'SELECT order_id FROM %i WHERE vendor_id = %d AND status = %s ORDER BY order_id DESC LIMIT 7',
+                $commission_table,
+                $this->vendor_id,
+                'due'
+            )
+        );
+
+        if ( empty( $order_ids ) ) {
+            return array();
+        }
+
+        $orders = wc_get_orders(
+            array(
+                'post__in' => $order_ids,
+            )
+        );
+
+        $formated_orders = array();
+        $status          = wc_get_order_statuses();
+
+        foreach ( $orders as $order ) {
+            $shipped              = (array) $order->get_meta( 'wc_pv_shipped' );
+            $items                = $order->get_items();
+            $vendor_product_count = 0;
+            foreach ( $items as $item ) {
+                $prod_or_variation_id = $item['variation_id'] > 0 ? $item['variation_id'] : $item['product_id'];
+                $post_author          = get_post_field( 'post_author', $prod_or_variation_id );
+                if ( (int) $post_author === $this->vendor_id ) {
+                    $vendor_product_count += $item['quantity'];
+                }
+            }
+            $order_status      = in_array( $this->vendor_id, $shipped, true ) ? 'Shipped' : $status[ "wc-{$order->get_status()}" ];
+            $formated_orders[] = array(
+                'order_id'   => $order->get_id(),
+                'customer'   => $order->get_billing_first_name() . ' ' . $order->get_billing_last_name(),
+                'view_order' => $order->get_view_order_url(),
+                'status'     => $order_status,
+                'total_prod' => $vendor_product_count,
+            );
+        }
+
+        return apply_filters( 'wcvendors_dashboard_latest_orders', $formated_orders );
+    }
+
+    /**
+     * Get pending shipping orders
+     *
+     * @return array Pending shipping orders.
+     */
+    public static function get_pending_shipping_orders() {
+        global $wpdb;
+        $vendor_id          = get_current_user_id();
+        $default_start_date = gmdate( 'Y-m-d', strtotime( 'first day of this month' ) );
+        $default_end_date   = gmdate( 'Y-m-d', strtotime( 'today' ) );
+        $start_date         = WC()->session->get( 'wcv_order_start_date', strtotime( $default_start_date ) );
+        $end_date           = WC()->session->get( 'wcv_order_end_date', strtotime( $default_end_date ) );
+
+        if ( ! $vendor_id ) {
+            return array();
+        }
+
+        $commission_table   = $wpdb->prefix . 'pv_commission';
+        $vendor_order_query = $wpdb->prepare(
+            'SELECT order_id FROM %i WHERE vendor_id = %d
+            AND time BETWEEN %s AND %s',
+            $commission_table,
+            $vendor_id,
+            gmdate( 'Y-m-d', $start_date ),
+            gmdate( 'Y-m-d', $end_date ),
+        );
+
+        $parent_order_ids = $wpdb->get_col( $vendor_order_query ); // phpcs:ignore
+        $parent_order_ids = array_unique( $parent_order_ids );
+
+        if ( empty( $parent_order_ids ) ) {
+            return array();
+        }
+
+        $limit = -1;
+
+        $query_args = array(
+            'post__in'     => $parent_order_ids,
+            'limit'        => $limit,
+            'date_created' => gmdate( 'Y-m-d', $start_date ) . '...' . gmdate( 'Y-m-d', $end_date ),
+        );
+
+        $parents_orders = wc_get_orders( $query_args );
+
+        $pending_shipping_orders = array();
+        foreach ( $parents_orders as $order ) {
+            $shipped = (array) $order->get_meta( 'wc_pv_shipped' );
+            $shipped = array_map( 'intval', $shipped );
+            if ( ! in_array( $vendor_id, $shipped, true ) ) {
+                $pending_shipping_orders[] = $order;
+            }
+        }
+
+        return apply_filters( 'wcvendors_dashboard_pending_shipping_orders', $pending_shipping_orders );
+    }
+
+    /**
+     * Get ratings
+     */
+    public function get_ratings() {
+        global $wpdb;
+        $wcv_rating_table = $wpdb->prefix . 'wcv_feedback';
+
+        $sql_query = $wpdb->prepare(
+            'SELECT order_id, rating_title, comments, customer_id, rating, postdate FROM %i WHERE vendor_id = %d ORDER BY postdate DESC LIMIT 5',
+            $wcv_rating_table,
+            $this->vendor_id
+        );
+
+        $reviews = $wpdb->get_results( $sql_query ); // phpcs:ignore
+        $product_reviews = array();
+        foreach ( $reviews as $review ) {
+            $user      = get_user_by( 'id', $review->customer_id );
+            $user_name = '';
+            if ( ! $user ) {
+                $user_name = __( 'Guest', 'wc-vendors' );
+            } else {
+                $user_name = $user->display_name;
+            }
+            $product_reviews[] = array(
+                'rating'   => $this->genrate_star_rating( $review->rating ),
+                'customer' => $user_name,
+                'review'   => $review->rating_title,
+                'order_id' => $review->order_id,
+            );
+        }
+        return apply_filters( 'wcvendors_dashboard_latest_reviews', $product_reviews );
+    }
+
+    /**
+     * Generate star rating
+     *
+     * @param int $rating Rating.
+     *
+     * @return string Star rating.
+     */
+    public function genrate_star_rating( $rating ) {
+        $stars = '';
+        ob_start();
+            wc_get_template(
+                'rating-stars.php',
+                array( 'rating' => $rating ),
+                'wcvendors/dashboard/',
+                plugin_dir_path( WCV_PLUGIN_FILE ) . 'templates/dashboard/'
+            );
+        $stars = ob_get_clean();
+        return $stars;
+    }
+
+    /**
+     * Get total orders chart data
+     */
+    public function get_total_orders_chart_data() {
+        $total_orders   = $this->orders['this_month'];
+        $data           = array();
+        $labels         = array();
+        $values         = array();
+        $max            = gmdate( 'j', strtotime( $this->end_date ) );
+        $current_m      = gmdate( 'M', strtotime( $this->end_date ) );
+        $orders_by_date = array();
+        foreach ( $total_orders as $order ) {
+            $order_date = $order->get_date_created()->format( 'j' );
+            if ( ! isset( $orders_by_date[ $order_date ] ) ) {
+                $orders_by_date[ $order_date ] = 0;
+            }
+            ++$orders_by_date[ $order_date ];
+        }
+
+        ksort( $orders_by_date );
+
+        foreach ( $orders_by_date as $date => $value ) {
+            $data[] = array(
+                'y' => $value,
+                'x' => "{$current_m}. {$date}",
+            );
+        }
+
+        return apply_filters( 'wcvendors_dashboard_total_orders_chart_data', $data );
+    }
+
+        /**
+         * Provide quick links on the dashboard to reduce click through
+         *
+         * @since    2.5.2
+         * @version  2.5.2
+         */
+    public function get_dashboard_quick_links() {
+
+        $products_disabled  = wc_string_to_bool( get_option( 'wcvendors_product_management_cap', 'no' ) );
+        $orders_disabled    = wc_string_to_bool( get_option( 'wcvendors_order_management_cap', 'no' ) );
+        $lock_edit_products = ( 'yes' === get_user_meta( get_current_user_id(), '_wcv_lock_edit_products_vendor', true ) ) ? true : false;
+        $lock_new_products  = ( 'yes' === get_user_meta( get_current_user_id(), '_wcv_lock_new_products_vendor', true ) ) ? true : false;
+
+        $quick_links      = array();
+        $add_product_link = wcv_get_default_product_template();
+        $can_submit       = wc_string_to_bool( get_option( 'wcvendors_capability_products_enabled', 'no' ) );
+
+        if ( ! $orders_disabled ) {
+            $quick_links['order'] = array(
+                'url'   => add_query_arg( array( 'order_status' => 'awating_shipping' ), \WCV_Vendor_Dashboard::get_dashboard_page_url( 'order' ) ),
+                'label' => __( 'View Pending Orders', 'wc-vendors' ),
+            );
+        }
+
+        if ( ! $products_disabled ) {
+            $quick_links['product'] = array(
+                'url'   => apply_filters( 'wcv_add_product_url', \WCV_Vendor_Dashboard::get_dashboard_page_url( $add_product_link['url_path'] ) ),
+                'label' => __( 'Add product', 'wc-vendors' ),
+            );
+
+            if ( ! $can_submit ) {
+                unset( $quick_links['product'] );
+            }
+        }
+
+        if ( $lock_edit_products || $lock_new_products ) {
+            unset( $quick_links['product'] );
+        }
+
+        $quick_links['this_month_report'] = array(
+            'url'   => add_query_arg( array( 'report-this-month' => 'true' ), \WCV_Vendor_Dashboard::get_dashboard_page_url( 'reports' ) ),
+            'label' => __( 'Sales Report: This month', 'wc-vendors' ),
+        );
+
+        return apply_filters( 'wcv_dashboard_quick_links', $quick_links );
+    }
+
+    /**
+     * Provide quick links on the dashboard to reduce click through
+     *
+     * @since    2.5.2
+     */
+    public function dashboard_quick_links() {
+
+        $quick_links = $this->get_dashboard_quick_links();
+        $stats       = apply_filters( 'wcv_dashboard_usage_stats', array() );
+
+        wc_get_template(
+            'quick-links.php',
+            array(
+                'quick_links' => $quick_links,
+                'stats'       => $stats,
+            ),
+            'wc-vendors/dashboard/',
+            plugin_dir_path( WCV_PLUGIN_FILE ) . 'templates/dashboard/'
+        );
+    }
+
+    /**
+     * Check completed steps
+     *
+     * @since 2.5.4
+     */
+    public static function check_completed_steps() {
+        $vendor_id               = get_current_user_id();
+        $is_pro_active           = is_wcv_pro_active();
+        $is_allow_submit_product = wc_string_to_bool( get_option( 'wcvendors_capability_products_enabled', 'no' ) );
+        $is_disable_product_cap  = wc_string_to_bool( get_option( 'wcvendors_product_management_cap', 'no' ) ) && $is_pro_active;
+        $is_disbale_settings_cap = wc_string_to_bool( get_option( 'wcvendors_settings_management_cap', 'no' ) ) && $is_pro_active;
+        $vendor_products         = get_posts(
+            array(
+                'post_type'      => 'product',
+                'posts_per_page' => 1,
+                'author'         => $vendor_id,
+            )
+        );
+        $store_banner_id         = get_user_meta( $vendor_id, '_wcv_store_banner_id', true );
+        $store_icon              = get_user_meta( $vendor_id, '_wcv_store_icon_id', true );
+        $shop_desc               = get_user_meta( $vendor_id, 'pv_shop_description', true );
+        $is_connect_to_stripe    = ! empty( get_user_meta( $vendor_id, '_stripe_connect_user_id', true ) ) && class_exists( 'WC_Vendors_Stripe_Connect_Gateway' );
+        $is_set_payout_method    = ! empty( get_user_meta( $vendor_id, 'wcv_commission_payout_method', true ) );
+        $socials_settings        = array(
+            get_user_meta( $vendor_id, '_wcv_twitter_username', true ),
+            get_user_meta( $vendor_id, '_wcv_instagram_username', true ),
+            get_user_meta( $vendor_id, '_wcv_facebook_url', true ),
+            get_user_meta( $vendor_id, '_wcv_linkedin_url', true ),
+            get_user_meta( $vendor_id, '_wcv_youtube_url', true ),
+            get_user_meta( $vendor_id, '_wcv_pinterest_url', true ),
+            get_user_meta( $vendor_id, '_wcv_snapchat_username', true ),
+            get_user_meta( $vendor_id, '_wcv_telegram_username', true ),
+        );
+
+        $is_product_completed = ! empty( $vendor_products );
+        $is_payout_completed  = $is_set_payout_method || $is_connect_to_stripe;
+        $is_social_completed  = ! empty( array_filter( $socials_settings ) ) || ! $is_pro_active;
+        $is_store_completed   = ! empty( $shop_desc );
+
+        if ( $is_pro_active ) {
+            $is_store_completed = ( ! empty( $store_banner_id ) || ! empty( $store_icon ) ) || $is_store_completed;
+        }
+
+        $completed_steps = array(
+            'store'    => $is_store_completed || $is_disbale_settings_cap,
+            'products' => $is_product_completed || ! $is_allow_submit_product || $is_disable_product_cap,
+            'payout'   => $is_payout_completed || $is_disbale_settings_cap,
+            'social'   => $is_social_completed || $is_disbale_settings_cap,
+        );
+
+        return apply_filters( 'wcvendors_dashboard_completed_steps', $completed_steps );
+    }
+}

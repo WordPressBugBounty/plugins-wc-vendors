@@ -161,7 +161,7 @@ jQuery(function($) {
             json.caption +
             '" title="' +
             json.title +
-            '" style="max-width: 100%;" />'
+            '" style="max-width: 100%; margin-bottom: 16px;" />'
         );
         return;
       }
@@ -322,6 +322,9 @@ jQuery(function($) {
       if (e.$element.hasClass('select2-hidden-accessible')) {
         return e.$element.parent().find('.select2-selection');
       }
+      if (e.$element.hasClass('wcv-datepicker')) {
+        return e.$element.closest('.wcv-datepicker-wrapper');
+      }
       return e;
     },
     errorsContainer: function(e) {
@@ -330,6 +333,9 @@ jQuery(function($) {
       }
       if (e.$element.hasClass('select2-hidden-accessible')) {
         return e.$element.parent();
+      }
+      if (e.$element.hasClass('wcv-datepicker')) {
+        return e.$element.closest('.control-group');
       }
       return e;
     }
@@ -372,6 +378,10 @@ jQuery(function($) {
     $startDateInput.val($startDateInput.data('default'));
     $endDateInput.val($endDateInput.data('default'));
 
+    $('#_wcv_shipping_status_input').val('');
+
+    $('#_wcv_order_status_input').val('');
+
     $('.wcv-order-header .wcv-form').submit();
   });
   // commission form date picker clear button
@@ -382,6 +392,15 @@ jQuery(function($) {
     $startDateInput.val($startDateInput.data('default'));
     $endDateInput.val($endDateInput.data('default'));
     $('.wcv-commission-header .wcv-form').submit();
+  });
+
+  $('#clear_button_report').click(function(e) {
+    e.preventDefault();
+    var $startDateInput = $('#_wcv_dashboard_start_date_input'),
+      $endDateInput = $('#_wcv_dashboard_end_date_input');
+    $startDateInput.val($startDateInput.data('default'));
+    $endDateInput.val($endDateInput.data('default'));
+    $('.wcv-form').submit();
   });
 
   // PayPal Payout Option change

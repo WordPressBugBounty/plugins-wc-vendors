@@ -62,6 +62,7 @@ $post_status               = ( isset( $product ) && null !== $product ) ? $post-
 
     <!-- Price and Sale Price -->
     <?php WCV_Product_Form::prices( $object_id ); ?>
+    <?php do_action( 'wcv_after_product_prices', $object_id ); ?>
 
     <!-- Tax -->
     <?php WCV_Product_Form::tax( $object_id ); ?>

@@ -15,17 +15,26 @@
     data-taxonomy="<?php echo esc_attr( $taxo ); ?>"
     class="woocommerce_attribute wcv-metabox closed <?php echo esc_attr( implode( ' ', $metabox_class ) ); ?>"
     rel="<?php echo esc_attr( $position ); ?>">
-    <h5>
-        <strong class="attribute_name"><?php echo esc_html( $attribute_label ); ?></strong>
-        <a href="#" class="remove_row delete" style="float:right;"><?php esc_html_e( 'Remove', 'wc-vendors' ); ?></a>
-        <i class='wcv-icon wcv-icon-angle-down'></i>
-    </h5>
+    <div class="wcv-flex wcv-attr-header" style="cursor: pointer;">
+        <h3 class="no-margin attribute_name"><?php echo esc_html( $attribute_label ); ?></h3>
+        <div class="align-right">
+            <a href="#" class="remove_row delete">
+                <svg class="wcv-icon wcv-icon-24 wcv-icon-middle">
+                    <use xlink:href="<?php echo WCV_ASSETS_URL; // phpcs:ignore ?>svg/wcv-icons.svg?t=<?php echo esc_attr( time() ); ?>#wcv-icon-trash"></use>
+                </svg>
+                <span class="vertical-middle hide-small hide-tiny"><?php esc_html_e( 'Remove', 'wc-vendors' ); ?></span>
+            </a>
+            <span class="caret left-space">
+                <?php echo wp_kses( wcv_get_icon( 'wcv-icon wcv-icon-sm wcv-icon-middle', 'wcv-icon-caret-down' ), wcv_allowed_html_tags() ); ?>
+            </span>
+        </div>
+    </div>
 
-    <div class="wcv_attribute_data wcv-metabox-content">
+    <div class="wcv_attribute_data wcv-metabox-content top-space" style="display: none;">
 
-        <div class="wcv-column-group wcv-horizontal-gutters" style="border-bottom: 1px solid #ccc; margin-bottom: 5px;">
-            <div class="all-30">
-                <div class="control-group" data-index_value="<?php echo esc_attr( $i ); ?>">
+        <div class="wcv-column-group wcv-horizontal-gutters">
+            <div class="all-50 small-100">
+                <div class="control-group no-margin" data-index_value="<?php echo esc_attr( $i ); ?>">
                     <?php if ( $attribute['is_taxonomy'] ) : ?>
                         <input type="hidden" name="attribute_names[<?php echo esc_attr( $i ); ?>]"
                                 value="<?php echo esc_attr( $taxo ); ?>"/>
@@ -39,27 +48,33 @@
                     <input type="hidden" name="attribute_is_taxonomy[<?php echo esc_attr( $i ); ?>]"
                             value="<?php echo $attribute['is_taxonomy'] ? 1 : 0; ?>"/>
 
-                    <ul class="control unstyled inline">
-                        <li>
+                    <div style="display: flex; gap: 6px; flex-direction: column; margin-top: 24px;">
+                        <div>
+                            <label class="wcv-checkbox-container">
                             <input type="checkbox" class="checkbox" <?php checked( $attribute['is_visible'], 1 ); ?>
                                     name="attribute_visibility[<?php echo esc_attr( $i ); ?>]" value="1"/>
-                            <label><?php esc_html_e( 'Visible on the product page', 'wc-vendors' ); ?></label>
-                        </li>
-                        <li class="enable_variation show_if_variable">
-                            <input type="checkbox"
-                                    class="checkbox wcv_variation_checkbox" <?php checked( $attribute['is_variation'], 1 ); ?>
-                                    id="attribute_variation_<?php echo esc_attr( $i ); ?>"
-                                    name="attribute_variation[<?php echo esc_attr( $i ); ?>]" value="1"/>
-                            <label><?php esc_html_e( 'Used for variations', 'wc-vendors' ); ?></label>
-                        </li>
-                    </ul>
+                                <?php esc_html_e( 'Visible on the product page', 'wc-vendors' ); ?>
+                                <span class="checkmark"></span>
+                            </label>
+                        </div>
+                        <div class="enable_variation show_if_variable">
+                            <label class="wcv-checkbox-container">
+                                <input type="checkbox"
+                                        class="checkbox wcv_variation_checkbox" <?php checked( $attribute['is_variation'], 1 ); ?>
+                                        id="attribute_variation_<?php echo esc_attr( $i ); ?>"
+                                        name="attribute_variation[<?php echo esc_attr( $i ); ?>]" value="1"/>
+                                <?php esc_html_e( 'Used for variations', 'wc-vendors' ); ?>
+                                <span class="checkmark"></span>
+                            </label>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="all-70">
-                <div class="control-group">
-                    <label><?php esc_html_e( 'Value(s)', 'wc-vendors' ); ?>:</label>
-                    <div class="control" data-index_value="<?php echo esc_attr( $i ); ?>" data-taxonomy="<?php echo esc_attr( $taxo ); ?>"
+            <div class="all-50 small-100" style="margin-top: 24px;">
+                <div class="control-group no-margin">
+                    <label style="text-transform: none;"><?php esc_html_e( 'Value(s)', 'wc-vendors' ); ?>:</label>
+                    <div class="control align-right" data-index_value="<?php echo esc_attr( $i ); ?>" data-taxonomy="<?php echo esc_attr( $taxo ); ?>"
                         data-label="<?php echo esc_html( $attribute_label ); ?>">
                         <?php if ( $attribute['is_taxonomy'] ) : ?>
                             <?php if ( 'select' === $attribute_taxonomy->attribute_type ) : ?>
@@ -82,14 +97,13 @@
                                     }
                                     ?>
                                 </select>
-                                <button class="button select_all_attributes"><?php esc_html_e( 'Select all', 'wc-vendors' ); ?></button>
-                                <button class="button select_no_attributes"><?php esc_html_e( 'Select none', 'wc-vendors' ); ?></button>
-
+                                <button class="wcv-button wcv-button-blue-underline select_all_attributes align-right"><strong><?php esc_html_e( 'Select All', 'wc-vendors' ); ?></strong></button>
+                                <button class="wcv-button wcv-button-blue-underline select_no_attributes"><strong><?php esc_html_e( 'Select None', 'wc-vendors' ); ?></strong></button>
                                 <?php if ( $attribute_terms_allowed ) : ?>
 
-                                    <button class="button add_new_attribute"
+                                    <button class="wcv-button wcv-button-blue-underline add_new_attribute"
                                             data-selectid="attribute_values_<?php echo esc_attr( $i ); ?>"
-                                            style="float:right;"><?php esc_html_e( 'Add new', 'wc-vendors' ); ?></button>
+                                            style="float:right;"><strong><?php esc_html_e( 'Add new', 'wc-vendors' ); ?></strong></button>
 
                                 <?php endif; ?>
 
@@ -120,5 +134,5 @@
         </div>
 
     </div>
-    <hr style="clear: both;"/>
+    <div style="clear: both;"></div>
 </div>

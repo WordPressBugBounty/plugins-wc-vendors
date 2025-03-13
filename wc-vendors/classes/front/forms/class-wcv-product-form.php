@@ -108,6 +108,7 @@ class WCV_Product_Form {
                         'data-parsley-maxlength'     => '100',
                         'data-parsley-error-message' => __( 'Product name is required or too long.', 'wc-vendors' ),
                     ),
+                    'custom_margin'     => 60,
                 )
             )
         );
@@ -131,9 +132,9 @@ class WCV_Product_Form {
             if ( wc_string_to_bool( get_option( 'wcvendors_allow_product_html', 'no' ) ) ) {
 
                 if ( $required ) {
-                    add_filter( 'the_editor', 'WCV_Store_Form::wp_editor_required' );
-                    add_filter( 'tiny_mce_before_init', 'WCV_Store_Form::wp_tinymce_required' );
-                    add_filter( 'teeny_mce_before_init', 'WCV_Store_Form::wp_tinymce_required' );
+                    add_filter( 'the_editor', array( WCV_Store_Form::class, 'wp_editor_required' ) );
+                    add_filter( 'tiny_mce_before_init', array( WCV_Store_Form::class, 'wp_tinymce_required' ) );
+                    add_filter( 'teeny_mce_before_init', array( WCV_Store_Form::class, 'wp_tinymce_required' ) );
                 }
 
                 $required_class = $required ? 'wcv-required' : '';
@@ -180,6 +181,7 @@ class WCV_Product_Form {
                             'value'             => $product_description,
                             'placeholder'       => __( 'Please add a full description of your product here', 'wc-vendors' ),
                             'custom_attributes' => $custom_attributes,
+                            'custom_margin'     => 60,
                         )
                     )
                 );
@@ -205,9 +207,9 @@ class WCV_Product_Form {
             if ( wc_string_to_bool( get_option( 'wcvendors_allow_product_html', 'no' ) ) ) {
 
                 if ( $required ) {
-                    add_filter( 'the_editor', 'WCV_Store_Form::wp_editor_required' );
-                    add_filter( 'tiny_mce_before_init', 'WCV_Store_Form::wp_tinymce_required' );
-                    add_filter( 'teeny_mce_before_init', 'WCV_Store_Form::wp_tinymce_required' );
+                    add_filter( 'the_editor', array( WCV_Store_Form::class, 'wp_editor_required' ) );
+                    add_filter( 'tiny_mce_before_init', array( WCV_Store_Form::class, 'wp_tinymce_required' ) );
+                    add_filter( 'teeny_mce_before_init', array( WCV_Store_Form::class, 'wp_tinymce_required' ) );
                 }
 
                 $required_class = $required ? 'wcv-required' : '';
@@ -255,6 +257,7 @@ class WCV_Product_Form {
                             'placeholder'       => __( 'Please add a brief description of your product here', 'wc-vendors' ),
                             'value'             => $product_short_description,
                             'custom_attributes' => $custom_attributes,
+                            'custom_margin'     => 60,
                         )
                     )
                 );
@@ -284,7 +287,7 @@ class WCV_Product_Form {
                 array(
                     'id'    => 'product_save_button',
                     'value' => $button_text,
-                    'class' => '',
+                    'class' => 'wcv-button wcv-button-blue top-space',
                 )
             )
         );
@@ -305,7 +308,7 @@ class WCV_Product_Form {
                 array(
                     'id'    => 'draft_button',
                     'value' => $button_text,
-                    'class' => '',
+                    'class' => 'wcv-button wcv-button-outline text-blue top-space',
                 )
             )
         );
@@ -327,8 +330,10 @@ class WCV_Product_Form {
                 self::categories_dropdown( $post_id, true );
             } elseif ( get_option( 'wcvendors_category_display', 'select' ) === 'single_select' ) {
                 self::categories_dropdown( $post_id, false );
-            } else {
+            } elseif ( is_wcv_pro_active() ) {
                 self::categories_checklist( $post_id );
+            } else {
+                self::categories_dropdown( $post_id, true );
             }
         }
     }
@@ -620,19 +625,18 @@ class WCV_Product_Form {
             }
         }
 
-        $type_box  = '<div class="wcv-cols-group wcv-horizontal-gutters"><div class="all-50 small-100">';
-        $type_box .= '<div class="control-group">';
-        $type_box .= '<label>' . __( 'Product type', 'wc-vendors' ) . '</label>';
+        $type_box  = '<div class="wcv-cols-group wcv-horizontal-gutters"><div class="all-50 small-50 tiny-60">';
         $type_box .= '<div class="control select">';
-        $type_box .= '<select id="product-type" name="product-type" class="select2">';
+        $type_box .= '<div class="product-type-wrapper">';
+        $type_box .= '<select id="product-type" name="product-type" class="select">';
 
         foreach ( $product_type_selector as $value => $label ) {
             $type_box .= '<option value="' . esc_attr( $value ) . '" ' . selected( $product_type, $value, false ) . '>' . esc_html( $label ) . '</option>';
         }
 
         $type_box .= '</select>';
+        $type_box .= '</div>'; // product-type-wrapper.
         $type_box .= '</div>'; // control.
-        $type_box .= '</div>'; // control-group.
         $type_box .= '</div>'; // grid.
 
         $product_type_options = apply_filters(
@@ -664,12 +668,12 @@ class WCV_Product_Form {
             }
         }
 
-        $type_box .= '<div class="all-50 small-100">';
-        $type_box .= '<div class="control-group"> <br />';
+        $type_box .= '<div class="all-50 small-100 tiny-100">';
+        $type_box .= '<div class="control-group no-margin">';
 
         // Only output the list if there is options.
         if ( ! empty( $product_type_options ) ) {
-            $type_box .= '<ul class="control unstyled inline" style="padding: 0; margin:0;">';
+            $type_box .= '<ul class="align-right small-align-left wcv-flex wcv-flex-end wcv-m-flex-space product_type_options" style="padding: 0; gap: 24px;">';
 
             foreach ( $product_type_options as $key => $option ) {
 
@@ -684,7 +688,13 @@ class WCV_Product_Form {
                     $selected_value = 'yes' === ( isset( $option['default'] ) ? $option['default'] : 'no' );
                 }
 
-                $type_box .= '<li class="' . esc_attr( $option['wrapper_class'] ) . ' "><input type="checkbox" name="' . esc_attr( $option['id'] ) . '" id="' . esc_attr( $option['id'] ) . '" ' . checked( $selected_value, true, false ) . ' /><label for="' . esc_attr( $option['id'] ) . '" class="' . esc_attr( $option['wrapper_class'] ) . ' " data-tip="' . esc_attr( $option['description'] ) . '">' . esc_html( $option['label'] ) . '</label></li>';
+                $style = isset( $option['style'] ) ? esc_attr( $option['style'] ) : '';
+
+                $type_box .= '<li class="' . esc_attr( $option['wrapper_class'] ) . ' " style="' . $style . '">
+                <label for="' . esc_attr( $option['id'] ) . '" class="' . esc_attr( $option['wrapper_class'] ) . ' wcv-checkbox-container" data-tip="' . esc_attr( $option['description'] ) . '">' . esc_html( $option['label'] ) . '
+                <input type="checkbox" name="' . esc_attr( $option['id'] ) . '" id="' . esc_attr( $option['id'] ) . '" ' . checked( $selected_value, true, false ) . ' />
+                <span class="checkmark"></span>
+                </label></li>';
             }
 
             $type_box .= '</ul>';
@@ -779,7 +789,7 @@ class WCV_Product_Form {
             $custom_attributes = array();
             $custom_attributes = array_merge( $custom_attributes, $required_field );
 
-            $wrapper_start = 'yes' !== get_option( 'wcvendors_hide_product_general_sale_price', 'no' ) ? '<div class="wcv-cols-group wcv-horizontal-gutters"><div class="all-50 small-100">' : '<div class="all-100">';
+            $wrapper_start = 'yes' !== get_option( 'wcvendors_hide_product_general_sale_price', 'no' ) ? '<div class="wcv-cols-group wcv-horizontal-gutters"><div class="all-50 small-50">' : '<div class="all-100">';
 
             WCV_Form_Helper::input(
                 apply_filters(
@@ -792,6 +802,7 @@ class WCV_Product_Form {
                         'wrapper_start'     => $wrapper_start,
                         'wrapper_end'       => '</div>',
                         'custom_attributes' => $custom_attributes,
+                        'no_margin'         => true,
                     )
                 )
             );
@@ -815,7 +826,8 @@ class WCV_Product_Form {
             ) : array();
             $custom_attributes = array();
             $custom_attributes = array_merge( $custom_attributes, $required_field );
-
+            $calendar_icon     = wcv_get_icon( 'wcv-icon wcv-icon-24 wcv-icon-middle', 'wcv-icon-calendar-line' );
+            $sechude_text      = __( 'Schedule', 'wc-vendors' );
             // Special Price - ends columns and row.
             WCV_Form_Helper::input(
                 apply_filters(
@@ -826,10 +838,12 @@ class WCV_Product_Form {
                         'data_type'         => 'price',
                         'label'             => __( 'Sale Price', 'wc-vendors' ) . ' (' . get_woocommerce_currency_symbol() . ')',
                         'desc_tip'          => 'true',
-                        'description'       => '<a href="#" class="sale_schedule right">' . __( 'Schedule', 'wc-vendors' ) . '</a>',
-                        'wrapper_start'     => '<div class="all-50 small-100">',
+                        'description'       => '<a href="#" class="sale_schedule right">' . $calendar_icon . '<span class="vertical-middle">' . $sechude_text . '</span></a>',
+                        'wrapper_start'     => '<div class="all-50 small-50">',
                         'wrapper_end'       => '</div></div>',
                         'custom_attributes' => $custom_attributes,
+                        'show_tooltip'      => false,
+                        'no_margin'         => true,
                     )
                 )
             );
@@ -843,15 +857,17 @@ class WCV_Product_Form {
                 apply_filters(
                     'wcv_product_sale_price_date_from',
                     array(
-                        'post_id'           => $post_id,
-                        'id'                => '_sale_price_dates_from',
-                        'label'             => __( 'From', 'wc-vendors' ),
-                        'class'             => 'wcv-datepicker wcv-init-picker',
-                        'value'             => esc_attr( $sale_price_dates_from ),
-                        'placeholder'       => ( '' === $sale_price_dates_from ) ? __( 'From&hellip; YYYY-MM-DD', 'wc-vendors' ) : '',
-                        'wrapper_start'     => '<div class="wcv-cols-group wcv-horizontal-gutters"><div class="all-50 small-100 sale_price_dates_fields">',
-                        'wrapper_end'       => '</div>',
-                        'custom_attributes' => array(
+                        'post_id'             => $post_id,
+                        'id'                  => '_sale_price_dates_from',
+                        'label'               => __( 'From', 'wc-vendors' ),
+                        'class'               => 'wcv-datepicker wcv-init-picker',
+                        'value'               => esc_attr( $sale_price_dates_from ),
+                        'placeholder'         => ( '' === $sale_price_dates_from ) ? __( 'From&hellip; YYYY-MM-DD', 'wc-vendors' ) : '',
+                        'wrapper_start'       => '<div class="wcv-cols-group wcv-horizontal-gutters"><div class="all-50 sale_price_dates_fields">',
+                        'wrapper_end'         => '</div>',
+                        'input_wrapper_class' => 'wcv-datepicker-wrapper wcv-flex',
+                        'append_before'       => '<span class="wcv-flex" title="toggle" data-toggle>' . wcv_get_icon( 'wcv-icon wcv-icon-24', 'wcv-icon-calendar' ) . '</span>',
+                        'custom_attributes'   => array(
                             'data-close-text' => __( 'Close', 'wc-vendors' ),
                             'data-clean-text' => __( 'Clear', 'wc-vendors' ),
                             'data-of-text'    => __( ' of ', 'wc-vendors' ),
@@ -860,26 +876,30 @@ class WCV_Product_Form {
                 )
             );
 
+            $cancel_icon = wcv_get_icon( 'wcv-icon wcv-icon-sm wcv-icon-middle wcv-icon-left', 'wcv-icon-times' );
             WCV_Form_Helper::input(
                 apply_filters(
                     'wcv_product_sale_price_date_to',
                     array(
-                        'post_id'           => $post_id,
-                        'id'                => '_sale_price_dates_to',
-                        'label'             => __( 'To', 'wc-vendors' ),
-                        'class'             => 'wcv-datepicker wcv-init-picker',
-                        'placeholder'       => ( '' === $sale_price_dates_to ) ? __( 'To&hellip; YYYY-MM-DD', 'wc-vendors' ) : '',
-                        'wrapper_start'     => '<div class="all-50 small-100 sale_price_dates_fields">',
-                        'wrapper_end'       => '</div></div>',
-                        'value'             => esc_attr( $sale_price_dates_to ),
-                        'desc_tip'          => true,
-                        'description'       => __( 'The sale will end at the beginning of the set date.', 'wc-vendors' ) . '<a href="#" class="cancel_sale_schedule right">' . __( 'Cancel', 'wc-vendors' ) . '</a>',
-                        'custom_attributes' => array(
+                        'post_id'             => $post_id,
+                        'id'                  => '_sale_price_dates_to',
+                        'label'               => __( 'To', 'wc-vendors' ),
+                        'class'               => 'wcv-datepicker wcv-init-picker',
+                        'placeholder'         => ( '' === $sale_price_dates_to ) ? __( 'To&hellip; YYYY-MM-DD', 'wc-vendors' ) : '',
+                        'wrapper_start'       => '<div class="all-50 sale_price_dates_fields">',
+                        'wrapper_end'         => '</div></div>',
+                        'value'               => esc_attr( $sale_price_dates_to ),
+                        'desc_tip'            => true,
+                        'append_before'       => '<span class="wcv-flex" title="toggle" data-toggle>' . wcv_get_icon( 'wcv-icon wcv-icon-24', 'wcv-icon-calendar' ) . '</span>',
+                        'input_wrapper_class' => 'wcv-datepicker-wrapper wcv-flex',
+                        'description'         => __( 'The sale will end at the beginning of the set date.', 'wc-vendors' ) . '<a href="#" class="cancel_sale_schedule right">' . $cancel_icon . '<span class="vertical-middle">' . __( 'Cancel', 'wc-vendors' ) . '</span></a>',
+                        'custom_attributes'   => array(
                             'data-start-date' => '',
                             'data-close-text' => __( 'Close', 'wc-vendors' ),
                             'data-clean-text' => __( 'Clear', 'wc-vendors' ),
                             'data-of-text'    => __( ' of ', 'wc-vendors' ),
                         ),
+                        'show_tooltip'        => false,
                     )
                 )
             );
@@ -928,7 +948,7 @@ class WCV_Product_Form {
 
         if ( 'yes' !== get_option( 'wcvendors_hide_product_basic_attributes', 'no' ) ) {
 
-            $attribute_terms_allowed = wc_string_to_bool( get_option( 'wcvendors_allow_vendor_attribute_terms', 'no' ) );
+            $attribute_terms_allowed = wc_string_to_bool( get_option( 'wcvendors_allow_vendor_attribute_terms', 'no' ) ) && is_wcv_pro_active();
 
             include_once wcv_deprecated_filter( 'wcvendors_pro_product_form_product_attributes_path', '2.5.2', 'wcvendors_product_form_product_attributes_path', 'partials/wcvendors-attributes.php' );
         }
@@ -1055,6 +1075,7 @@ class WCV_Product_Form {
                             'music'       => __( 'Music', 'wc-vendors' ),
                         ),
                         'custom_attributes' => $custom_attributes,
+                        'no_margin'         => false,
                     )
                 )
             );
@@ -1139,6 +1160,7 @@ class WCV_Product_Form {
                         'label'             => __( 'Private listing, hide this product from the catalog.', 'wc-vendors' ),
                         'type'              => 'checkbox',
                         'custom_attributes' => $custom_attributes,
+                        'no_margin'         => true,
                     )
                 )
             );
@@ -1239,7 +1261,8 @@ class WCV_Product_Form {
                             'post_id'           => $post_id,
                             'id'                => '_tax_status',
                             'label'             => __( 'Tax status', 'wc-vendors' ),
-                            'wrapper_start'     => '<div class="all-100">',
+                            'wrapper_start'     => '<div class="all-50">',
+                            'style'             => 'width: 100%;',
                             'wrapper_end'       => '</div>',
                             'custom_attributes' => $custom_attributes,
                             'options'           => array(
@@ -1247,6 +1270,7 @@ class WCV_Product_Form {
                                 'shipping' => __( 'Shipping only', 'wc-vendors' ),
                                 'none'     => _x( 'None', 'Tax status', 'wc-vendors' ),
                             ),
+                            'no_margin'         => true,
                         )
                     )
                 );
@@ -1270,8 +1294,10 @@ class WCV_Product_Form {
                             'id'            => '_tax_class',
                             'label'         => __( 'Tax class', 'wc-vendors' ),
                             'options'       => $classes_options,
-                            'wrapper_start' => '<div class="all-100">',
+                            'style'         => 'width: 100%;',
+                            'wrapper_start' => '<div class="all-50">',
                             'wrapper_end'   => '</div>',
+                            'no_margin'     => true,
                         )
                     )
                 );
@@ -1407,6 +1433,7 @@ class WCV_Product_Form {
                         'wrapper_start'     => '<div class="all-100">',
                         'wrapper_end'       => '</div>',
                         'desc_tip'          => true,
+                        'style'             => 'width: 100%;',
                         'description'       => __( 'If managing stock, this controls whether or not backorders are allowed. If enabled, stock quantity can go below 0.', 'wc-vendors' ),
                         'custom_attributes' => $custom_attributes,
                         'options'           => array(
@@ -1447,6 +1474,7 @@ class WCV_Product_Form {
                         'wrapper_start'     => '<div class="all-100 stock_status_field hide_if_variable hide_if_external hide_if_grouped">',
                         'wrapper_end'       => '</div>',
                         'desc_tip'          => true,
+                        'style'             => 'width: 100%;',
                         'description'       => __( 'Controls whether or not the product is listed as "in stock" or "out of stock" on the frontend.', 'wc-vendors' ),
                         'custom_attributes' => $custom_attributes,
                         'options'           => array(
@@ -1493,6 +1521,7 @@ class WCV_Product_Form {
                         'description'       => __( 'Enable this to only allow one of this item to be bought in a single order', 'wc-vendors' ),
                         'type'              => 'checkbox',
                         'custom_attributes' => $custom_attributes,
+                        'no_margin'         => true,
                     )
                 )
             );
@@ -1603,8 +1632,10 @@ class WCV_Product_Form {
                             'placeholder'       => __( 'Length', 'wc-vendors' ),
                             'type'              => 'text',
                             'data_type'         => 'decimal',
-                            'wrapper_start'     => '<div class="wcv-cols-group wcv-horizontal-gutters"><div class="all-33">',
+                            'wrapper_start'     => '<div class="wcv-cols-group wcv-horizontal-gutters wcv-cols-group-medium"><div class="all-33">',
                             'wrapper_end'       => '</div>',
+                            'desc_tip'          => true,
+                            'description'       => __( 'Dimensions in decimal form.', 'wc-vendors' ),
                             'custom_attributes' => $length_custom_attributes,
                         )
                     )
@@ -1647,8 +1678,6 @@ class WCV_Product_Form {
                             'data_type'         => 'decimal',
                             'wrapper_start'     => '<div class="all-33">',
                             'wrapper_end'       => '</div></div>',
-                            'desc_tip'          => true,
-                            'description'       => __( 'Dimensions in decimal form.', 'wc-vendors' ),
                             'custom_attributes' => $height_custom_attributes,
                         )
                     )
@@ -1698,6 +1727,7 @@ class WCV_Product_Form {
                         'taxonomy_args'    => array(
                             'hide_empty' => 0,
                         ),
+                        'no_margin'        => true,
                     )
                 )
             );
@@ -1804,6 +1834,7 @@ class WCV_Product_Form {
                         'custom_attributes' => $custom_attributes,
                         'multiple'          => true,
                         'options'           => $crosssell_ids,
+                        'no_margin'         => true,
                     )
                 )
             );
@@ -1861,61 +1892,55 @@ class WCV_Product_Form {
     }
 
     /**
-     *  Output Product meta tab information
+     * Get product meta tabs for new accordion layout
      *
-     * @version 2.5.2
-     * @version 2.5.2 - Addressed issue with WooCommerce shipping detection
+     * @since 2.5.4
+     *
+     * @return array $product_meta_tabs Array of product meta tabs.
      */
-    public static function product_meta_tabs() {
-
+    public static function get_product_meta_tabs() {
         $wcv_product_panel = get_option( 'wcvendors_capability_product_data_tabs', array() );
-        $css_classes       = apply_filters( 'wcv_product_meta_tabs_class', array( 'tabs-nav' ) );
-        $shipping_methods  = WC()->shipping() ? WC()->shipping->load_shipping_methods() : array();
-
-        $product_meta_tabs = apply_filters(
-            'wcv_product_meta_tabs',
-            array(
-                'general'        => array(
-                    'label'  => __( 'General', 'wc-vendors' ),
-                    'target' => 'general',
-                    'class'  => array( 'hide_if_grouped hide_if_variable' ),
-                ),
-                'inventory'      => array(
-                    'label'  => __( 'Inventory', 'wc-vendors' ),
-                    'target' => 'inventory',
-                    'class'  => array( 'show_if_simple', 'show_if_variable', 'show_if_grouped' ),
-                ),
-                'shipping'       => array(
-                    'label'  => __( 'Shipping', 'wc-vendors' ),
-                    'target' => 'shipping',
-                    'class'  => array( 'hide_if_virtual', 'hide_if_grouped', 'hide_if_external' ),
-                ),
-                'linked_product' => array(
-                    'label'  => __( 'Linked Products', 'wc-vendors' ),
-                    'target' => 'linked_product',
-                    'class'  => array(),
-                ),
-                'attribute'      => array(
-                    'label'  => __( 'Attributes', 'wc-vendors' ),
-                    'target' => 'attributes',
-                    'class'  => array(),
-                ),
-                'advanced'       => array(
-                    'label'  => __( 'Advanced', 'wc-vendors' ),
-                    'target' => 'advanced',
-                    'class'  => array(),
-                ),
-                'seo'            => array(
-                    'label'  => __( 'SEO', 'wc-vendors' ),
-                    'target' => 'seo',
-                    'class'  => array(),
-                ),
-                'variations'     => array(
-                    'label'  => __( 'Variations', 'wc-vendors' ),
-                    'target' => 'variations',
-                    'class'  => array( 'show_if_variable' ),
-                ),
-            )
+        $product_meta_tabs = array(
+            'general'        => array(
+                'label'  => __( 'General', 'wc-vendors' ),
+                'target' => 'general',
+                'class'  => array( 'hide_if_grouped' ),
+            ),
+            'inventory'      => array(
+                'label'  => __( 'Inventory', 'wc-vendors' ),
+                'target' => 'inventory',
+                'class'  => array( 'show_if_simple', 'show_if_variable', 'show_if_grouped' ),
+            ),
+            'shipping'       => array(
+                'label'  => __( 'Shipping', 'wc-vendors' ),
+                'target' => 'shipping',
+                'class'  => array( 'hide_if_virtual', 'hide_if_grouped', 'hide_if_external' ),
+            ),
+            'linked_product' => array(
+                'label'  => __( 'Linked Products', 'wc-vendors' ),
+                'target' => 'linked_product',
+                'class'  => array(),
+            ),
+            'attributes'     => array(
+                'label'  => __( 'Attributes', 'wc-vendors' ),
+                'target' => 'attributes',
+                'class'  => array(),
+            ),
+            'advanced'       => array(
+                'label'  => __( 'Advanced', 'wc-vendors' ),
+                'target' => 'advanced',
+                'class'  => array(),
+            ),
+            'seo'            => array(
+                'label'  => __( 'SEO', 'wc-vendors' ),
+                'target' => 'seo',
+                'class'  => array(),
+            ),
+            'variations'     => array(
+                'label'  => __( 'Variations', 'wc-vendors' ),
+                'target' => 'variations',
+                'class'  => array( 'show_if_variable' ),
+            ),
         );
 
         foreach ( $wcv_product_panel as $panel ) {
@@ -1956,6 +1981,27 @@ class WCV_Product_Form {
             unset( $product_meta_tabs['attribute'] );
             unset( $product_meta_tabs['variations'] );
         }
+
+        $tabs = apply_filters( 'wcv_product_meta_tabs', $product_meta_tabs );
+        if ( isset( $tabs['simple_auction'] ) ) {
+            $tabs['auction'] = $tabs['simple_auction'];
+            unset( $tabs['simple_auction'] );
+        }
+        return $tabs;
+    }
+
+    /**
+     *  Output Product meta tab information
+     *
+     * @version 2.5.2
+     * @version 2.5.2 - Addressed issue with WooCommerce shipping detection
+     */
+    public static function product_meta_tabs() {
+
+        $css_classes      = apply_filters( 'wcv_product_meta_tabs_class', array( 'tabs-nav' ) );
+        $shipping_methods = WC()->shipping() ? WC()->shipping->load_shipping_methods() : array();
+
+        $product_meta_tabs = self::get_product_meta_tabs();
 
         $css_class = implode( ' ', $css_classes );
 
@@ -2067,8 +2113,8 @@ class WCV_Product_Form {
                         'placeholder'   => __( 'Purchase Note', 'wc-vendors' ),
                         'type'          => 'text',
                         'value'         => $product_purchase_note,
-                        'wrapper_start' => '<div class="control-group"><div class="all-100 small-100">',
-                        'wrapper_end'   => '</div></div>',
+                        'wrapper_start' => '<div class="all-100 small-100">',
+                        'wrapper_end'   => '</div>',
                         'rows'          => '4',
                     )
                 )
@@ -2103,8 +2149,8 @@ class WCV_Product_Form {
                         'desc_tip'      => true,
                         'description'   => __( 'Custom ordering the products on your store', 'wc-vendors' ),
                         'value'         => $product_menu_order,
-                        'wrapper_start' => '<div class="control-group"><div class="all-100 small-100">',
-                        'wrapper_end'   => '</div></div>',
+                        'wrapper_start' => '<div class="all-100 small-100">',
+                        'wrapper_end'   => '</div>',
                     )
                 )
             );

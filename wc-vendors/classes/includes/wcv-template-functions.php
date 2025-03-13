@@ -251,7 +251,7 @@ if ( ! function_exists( 'wcv_get_vendor_sold_by' ) ) {
         $sold_by           = wcv_get_sold_by_link( $vendor_id, 'wcvendors_cart_sold_by_meta' );
 
         $vendor_sold_by = sprintf(
-            apply_filters( 'wcvendors_cart_sold_by_meta_template', '%1$s %2$s %3$s', get_the_ID(), $vendor_id ),
+            apply_filters( 'wcvendors_cart_sold_by_meta_template', '%1$s%2$s %3$s', get_the_ID(), $vendor_id ),
             apply_filters( 'wcvendors_cart_sold_by_meta', $sold_by_label, get_the_ID(), $vendor_id ),
             apply_filters( 'wcvendors_cart_sold_by_meta_separator', $sold_by_separator, get_the_ID(), $vendor_id ),
             $sold_by
@@ -326,19 +326,38 @@ if ( ! function_exists( 'wcv_vendor_list_loop' ) ) {
      * @param array $vendors array of vendors.
      */
     function wcv_vendor_list_loop( $vendors ) {
+        if ( is_object( $vendors ) ) {
+            $vendors = array( $vendors );
+        }
+
         ob_start();
+
         foreach ( $vendors as $vendor ) {
 
+            if ( is_int( $vendor ) ) {
+                $vendor = get_user_by( 'id', $vendor );
+            }
+
+            if ( ! $vendor ) {
+                continue;
+            }
+
+            if ( ! WCV_Vendors::is_vendor( $vendor->ID ) ) {
+                continue;
+            }
+
             $vendor_avatar = wcv_get_vendor_avatar( $vendor->ID );
-            $store_phone   = get_user_meta( $vendor->ID, '_wcv_store_phone', true );
-            $store_address = get_user_meta( $vendor->ID, '_wcv_store_address1', true );
+            $store_phone   = isset( $vendor->_wcv_store_phone ) ? $vendor->_wcv_store_phone : '';
+            $store_address = isset( $vendor->_wcv_store_address1 ) ? $vendor->_wcv_store_address1 : '';
+            $shop_name     = isset( $vendor->pv_shop_name ) ? $vendor->pv_shop_name : '';
+            $shop_desc     = isset( $vendor->pv_shop_description ) ? $vendor->pv_shop_description : '';
             wc_get_template(
                 'vendor-list-loop.php',
                 array(
                     'shop_link'        => WCV_Vendors::get_vendor_shop_page( $vendor->ID ),
-                    'shop_name'        => $vendor->pv_shop_name,
+                    'shop_name'        => $shop_name ? $shop_name : get_userdata( $vendor->ID )->display_name,
                     'vendor_id'        => $vendor->ID,
-                    'shop_description' => $vendor->pv_shop_description,
+                    'shop_description' => $shop_desc ? $shop_desc : '',
                     'avatar'           => $vendor_avatar,
                     'phone'            => $store_phone ? $store_phone : __( 'Not available', 'wc-vendors' ),
                     'address'          => $store_address ? $store_address : __( 'Not available', 'wc-vendors' ),
@@ -382,5 +401,27 @@ if ( ! function_exists( 'wcv_vendor_list_filter' ) ) {
             $output,
             wcv_allowed_html_tags()
         );
+    }
+}
+
+if ( ! function_exists( 'wcv_get_icon' ) ) {
+    /**
+     * Get the svg icon
+     *
+     * @param string $wrapper_class - wrapper class.
+     * @param string $id - id.
+     * @return string
+     */
+    function wcv_get_icon( $wrapper_class = '', $id = '' ) {
+        $time          = filemtime( WCV_PLUGIN_DIR . 'assets/svg/wcv-icons.svg' );
+        $icon_file_url = WCV_ASSETS_URL . 'svg/wcv-icons.svg?t=' . $time;
+        $icon          = sprintf(
+            '<svg class="%s"><use xlink:href="%s#%s"></use></svg>',
+            esc_attr( $wrapper_class ),
+            esc_url( $icon_file_url ),
+            esc_attr( $id )
+        );
+
+        return $icon;
     }
 }

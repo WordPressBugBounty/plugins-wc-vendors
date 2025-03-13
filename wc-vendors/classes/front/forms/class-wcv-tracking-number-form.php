@@ -81,7 +81,7 @@ class WCV_Tracking_Number_Form {
                         'type'  => 'hidden',
                         'id'    => '_wcv_order_id',
                         'value' => $order_id,
-                        'class' => '',
+                        'class' => 'wcv-button',
                     )
                 )
             )
@@ -122,6 +122,7 @@ class WCV_Tracking_Number_Form {
                             'required' => '',
 
                         ),
+                        'no_margin'         => false,
                     )
                 )
             )
@@ -147,11 +148,14 @@ class WCV_Tracking_Number_Form {
                 wp_parse_args(
                     $args,
                     array(
-                        'id'          => '_wcv_date_shipped_' . $order_id,
-                        'label'       => __( 'Date shipped', 'wc-vendors' ),
-                        'class'       => 'wcv_date_shipped wcv-datepicker wcv-init-picker wcv_shipped_date _wcv_date_shipped_' . $order_id,
-                        'value'       => $date_shipped,
-                        'placeholder' => 'YYYY-MM-DD',
+                        'id'                  => '_wcv_date_shipped_' . $order_id,
+                        'label'               => __( 'Date shipped', 'wc-vendors' ),
+                        'class'               => 'wcv_date_shipped wcv-datepicker wcv-init-picker wcv_shipped_date _wcv_date_shipped_' . $order_id,
+                        'value'               => $date_shipped,
+                        'append_before'       => '<span class="wcv-flex" title="toggle" data-toggle>' . wcv_get_icon( 'wcv-icon wcv-icon-24', 'wcv-icon-calendar' ) . '</span>',
+                        'input_wrapper_class' => 'wcv-datepicker-wrapper wcv-flex',
+                        'placeholder'         => 'YYYY-MM-DD',
+                        'no_margin'           => true,
                     )
                 )
             )
@@ -178,12 +182,14 @@ class WCV_Tracking_Number_Form {
                 wp_parse_args(
                     $args,
                     array(
-                        'id'         => '_wcv_shipping_provider_' . $order_id,
-                        'label'      => __( 'Shipping provider', 'wc-vendors' ),
-                        'value'      => $shipping_provider,
-                        'class'      => 'wcv_shipping_provider wcv-select2',
-                        'value_type' => 'key',
-                        'options'    => WCV_Order_Controller::shipping_providers(),
+                        'id'            => '_wcv_shipping_provider_' . $order_id,
+                        'label'         => __( 'Shipping provider', 'wc-vendors' ),
+                        'value'         => $shipping_provider,
+                        'class'         => 'wcv_shipping_provider wcv-select2',
+                        'value_type'    => 'key',
+                        'options'       => WCV_Order_Controller::shipping_providers(),
+                        'wrapper_start' => '<div class="control-group">',
+                        'wrapper_end'   => '</div>',
                     )
                 )
             )
@@ -209,7 +215,7 @@ class WCV_Tracking_Number_Form {
                     array(
                         'id'    => 'tracking_number_save_button',
                         'value' => $button_text,
-                        'class' => '',
+                        'class' => 'wcv-button',
                     )
                 )
             )

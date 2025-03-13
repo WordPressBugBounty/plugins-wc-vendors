@@ -282,53 +282,55 @@ if ( ! function_exists( 'wcv_allowed_html_tags' ) ) {
     function wcv_allowed_html_tags() {
         $html_allowed_tags   = wp_kses_allowed_html( 'post' );
         $wcv_additional_tags = array(
-            'a'      => array(
+            'a'          => array(
                 'href'  => array(),
                 'title' => array(),
                 'class' => array(),
                 'id'    => array(),
                 'style' => array(),
             ),
-            'label'  => array(
+            'label'      => array(
                 'for'   => array(),
                 'class' => array(),
                 'id'    => array(),
             ),
-            'div'    => array(
+            'div'        => array(
                 'class' => array(),
                 'id'    => array(),
                 'style' => array(),
             ),
-            'br'     => array(),
-            'strong' => array(),
-            'select' => array(
+            'br'         => array(),
+            'strong'     => array(
+                'class' => array(),
+            ),
+            'select'     => array(
                 'class' => array(),
                 'id'    => array(),
                 'name'  => array(),
                 'value' => array(),
                 'style' => array(),
             ),
-            'option' => array(
+            'option'     => array(
                 'value'    => array(),
                 'selected' => array(),
             ),
-            'ul'     => array(
+            'ul'         => array(
                 'class' => array(),
                 'id'    => array(),
                 'style' => array(),
             ),
-            'ol'     => array(
+            'ol'         => array(
                 'class' => array(),
                 'id'    => array(),
                 'style' => array(),
             ),
-            'form'   => array(
+            'form'       => array(
                 'action' => array(),
                 'method' => array(),
                 'class'  => array(),
                 'id'     => array(),
             ),
-            'input'  => array(
+            'input'      => array(
                 'type'        => array(),
                 'name'        => array(),
                 'value'       => array(),
@@ -336,17 +338,17 @@ if ( ! function_exists( 'wcv_allowed_html_tags' ) ) {
                 'id'          => array(),
                 'placeholder' => array(),
             ),
-            'span'   => array(
+            'span'       => array(
                 'class' => array(),
                 'id'    => array(),
                 'style' => array(),
             ),
-            'small'  => array(
+            'small'      => array(
                 'class' => array(),
                 'id'    => array(),
                 'style' => array(),
             ),
-            'img'    => array(
+            'img'        => array(
                 'src'    => array(),
                 'alt'    => array(),
                 'class'  => array(),
@@ -354,6 +356,41 @@ if ( ! function_exists( 'wcv_allowed_html_tags' ) ) {
                 'style'  => array(),
                 'width'  => array(),
                 'height' => array(),
+            ),
+            'svg'        => array(
+                'xmlns'   => array(),
+                'viewBox' => array(),
+                'class'   => array(),
+                'id'      => array(),
+            ),
+            'p'          => array(
+                'class' => array(),
+                'id'    => array(),
+                'style' => array(),
+            ),
+            'use'        => array(
+                'xlink:href' => array(),
+                'class'      => array(),
+            ),
+            'i'          => array(
+                'class' => array(),
+                'id'    => array(),
+                'style' => array(),
+            ),
+            'ins'        => array(
+                'class' => array(),
+                'id'    => array(),
+                'style' => array(),
+            ),
+            'li'         => array(
+                'class' => array(),
+                'id'    => array(),
+                'style' => array(),
+            ),
+            'blockquote' => array(
+                'class' => array(),
+                'id'    => array(),
+                'style' => array(),
             ),
         );
         return apply_filters(

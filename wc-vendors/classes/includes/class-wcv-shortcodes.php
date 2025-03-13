@@ -717,7 +717,7 @@ class WCV_Shortcodes {
             $columns = 4;
         }
 
-        if ( ! in_array( $orderby, array( 'registered', 'post_count' ), true ) ) {
+        if ( ! in_array( $orderby, array( 'registered', 'post_count', 'random' ), true ) ) {
             $orderby = 'wp_users.user_registered';
         }
 
@@ -741,15 +741,37 @@ class WCV_Shortcodes {
             $has_products_sql = ' ';
         }
 
+        if ( 'post_count' === $orderby ) {
+            $order_by_sql = ' GROUP BY wp_users.ID ORDER BY product_counts.product_count ' . $order;
+        } elseif ( 'random' === $orderby ) {
+            $order_by_sql = ' GROUP BY wp_users.ID ORDER BY RAND()';
+        } else {
+            $order_by_sql = ' GROUP BY wp_users.ID ORDER BY ' . $orderby . ' ' . $order;
+        }
+
         $search_term     = sanitize_text_field( $search_term );
+        $join_usermeta3  = '';
+        $and_usermeta3   = '';
         $search_term_sql = '';
 
         if ( ! empty( $search_term ) ) {
-            $search_term_sql = $wpdb->prepare( ' AND ( wp_usermeta2.meta_value LIKE %s )', '%' . $wpdb->esc_like( $search_term ) . '%' );
+            $search_term_sql = $wpdb->prepare( ' AND ( wp_usermeta2.meta_value LIKE %s OR wp_usermeta3.meta_value LIKE %s )', '%' . $wpdb->esc_like( $search_term ) . '%', '%' . $wpdb->esc_like( $search_term ) . '%' );
+            $join_usermeta3  = ' INNER JOIN ' . $wpdb->usermeta . ' as wp_usermeta3 ON wp_users.ID = wp_usermeta3.user_id';
+            $and_usermeta3   = ' AND wp_usermeta3.meta_key = "pv_shop_name"';
         }
 
-        if ( 'post_count' === $orderby ) {
-            $order_by_sql = ' GROUP BY wp_users.ID ORDER BY product_counts.product_count ' . $order;
+        $inactive_vendor_ids = get_users(
+            array(
+                'meta_key'   => '_wcv_vendor_status',
+                'meta_value' => 'inactive',
+                'fields'     => 'ID',
+            )
+        );
+
+        $inactive_vendor_sql = '';
+
+        if ( ! empty( $inactive_vendor_ids ) ) {
+            $inactive_vendor_sql = ' AND wp_users.ID NOT IN (' . implode( ',', $inactive_vendor_ids ) . ')';
         }
 
         $count_product_sql = "LEFT JOIN (
@@ -767,31 +789,50 @@ class WCV_Shortcodes {
         FROM {$wpdb->users} as wp_users
         INNER JOIN {$wpdb->usermeta} as wp_usermeta ON wp_users.ID = wp_usermeta.user_id
         INNER JOIN {$wpdb->usermeta} as wp_usermeta2 ON wp_users.ID = wp_usermeta2.user_id
+        {$join_usermeta3}
         {$count_product_sql}
-        WHERE wp_usermeta.meta_key = 'wp_capabilities'
+        WHERE wp_usermeta.meta_key = %s
+        {$inactive_vendor_sql}
         AND wp_usermeta.meta_value LIKE %s
-        AND (wp_usermeta2.meta_key = 'pv_shop_slug' AND wp_usermeta2.meta_value != '')";
+        AND (wp_usermeta2.meta_key = 'pv_shop_slug' AND wp_usermeta2.meta_value != '')
+        {$and_usermeta3}";
 
         $vendor_total_sql .= $search_term_sql . $has_products_sql . $order_by_sql;
 
         // Prepare the final SQL query.
-        $vendor_total_sql = $wpdb->prepare( $vendor_total_sql, '%vendor%' ); // phpcs:ignore
+        $vendor_total_sql = $wpdb->prepare( $vendor_total_sql, $wpdb->prefix.'capabilities' , '%"vendor"%' ); // phpcs:ignore
+
+        if ( ! empty( $search_term ) ) {
+            $check_sql     = $vendor_total_sql . $wpdb->prepare( ' LIMIT %d, %d', 0, 0 );
+            $found_vendors = $wpdb->get_results( $check_sql ); // phpcs:ignore
+            $total_check = $wpdb->get_var( 'SELECT FOUND_ROWS()' ); // phpcs:ignore
+            if ( $total_check < $per_page ) {
+                $offset = 0;
+            }
+        }
 
         // Get the paged vendors.
         $vendor_paged_sql = $vendor_total_sql . $wpdb->prepare( ' LIMIT %d, %d', $offset, $per_page );
 
-        $all_vendors   = $wpdb->get_results( $vendor_total_sql ); // phpcs:ignore
         $paged_vendors = $wpdb->get_results( $vendor_paged_sql ); // phpcs:ignore
+        $total_vendors = $wpdb->get_var( 'SELECT FOUND_ROWS()' ); // phpcs:ignore
         $vendors       = array();
 
         foreach ( $paged_vendors as $vendor ) {
-            $vendors[] = new WP_User( $vendor->ID );
+            $wp_u                = new stdClass();
+            $wp_u->ID            = $vendor->ID;
+            $wp_u->product_count = $vendor->product_count;
+            $metas               = get_user_meta( $vendor->ID );
+            foreach ( $metas as $key => $value ) {
+                $wp_u->$key = maybe_unserialize( $value[0] );
+            }
+
+            $vendors[] = $wp_u;
         }
 
-        // Pagination calcs.
-        $total_vendors       = count( $all_vendors );
-        $total_vendors_paged = count( $paged_vendors );
+        $total_vendors_paged = $total_vendors;
         $total_pages         = ceil( $total_vendors / $per_page );
+        $current_page        = max( 1, get_query_var( 'paged' ) );
 
         ob_start();
         wc_get_template(
@@ -809,11 +850,10 @@ class WCV_Shortcodes {
 
         $html .= ob_get_clean();
 
-        if ( $total_vendors > $total_vendors_paged ) {
-            $html        .= '<div class="woocommerce-pagination">';
-            $current_page = max( 1, get_query_var( 'paged' ) );
-            $big          = 999999999; // need an unlikely integer.
-            $html        .= paginate_links(
+        if ( $total_pages > 1 ) {
+            $html .= '<div class="woocommerce-pagination">';
+            $big   = 999999999; // need an unlikely integer.
+            $html .= paginate_links(
                 array(
                     'base'      => str_replace( $big, '%#%', esc_url( get_pagenum_link( $big ) ) ),
                     'format'    => 'page/%#%/',
@@ -823,7 +863,7 @@ class WCV_Shortcodes {
                     'type'      => 'list',
                 )
             );
-            $html        .= '</div>';
+            $html .= '</div>';
         }
 
         return $html;

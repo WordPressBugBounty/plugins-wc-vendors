@@ -29,15 +29,13 @@ use WC_Vendors\Classes\Front\WCV_Form_Helper;
                     apply_filters(
                         'wcv_product_seo_title_field',
                         array(
-                            'id'            => 'wcv_product_seo_title',
-                            'label'         => __( 'SEO title', 'wc-vendors' ),
-                            'placeholder'   => __( 'SEO title', 'wc-vendors' ),
-                            'type'          => 'text',
-                            'desc_tip'      => true,
-                            'description'   => __( 'The product title will be used if left blank', 'wc-vendors' ),
-                            'value'         => $seo_title,
-                            'wrapper_start' => '<div class="control-group"><div class="all-100 small-100">',
-                            'wrapper_end'   => '</div></div>',
+                            'id'          => 'wcv_product_seo_title',
+                            'label'       => __( 'SEO title', 'wc-vendors' ),
+                            'placeholder' => __( 'SEO title', 'wc-vendors' ),
+                            'type'        => 'text',
+                            'desc_tip'    => true,
+                            'description' => __( 'The product title will be used if left blank', 'wc-vendors' ),
+                            'value'       => $seo_title,
                         )
                     )
                 );
@@ -51,15 +49,13 @@ use WC_Vendors\Classes\Front\WCV_Form_Helper;
                 apply_filters(
                     'wcv_product_seo_description_field',
                     array(
-                        'id'            => 'wcv_product_seo_description',
-                        'label'         => __( 'SEO description', 'wc-vendors' ),
-                        'placeholder'   => __( 'SEO description', 'wc-vendors' ),
-                        'type'          => 'text',
-                        'desc_tip'      => true,
-                        'description'   => __( 'The product short description will be used if left blank', 'wc-vendors' ),
-                        'value'         => $seo_description,
-                        'wrapper_start' => '<div class="control-group"><div class="all-100 small-100">',
-                        'wrapper_end'   => '</div></div>',
+                        'id'          => 'wcv_product_seo_description',
+                        'label'       => __( 'SEO description', 'wc-vendors' ),
+                        'placeholder' => __( 'SEO description', 'wc-vendors' ),
+                        'type'        => 'text',
+                        'desc_tip'    => true,
+                        'description' => __( 'The product short description will be used if left blank', 'wc-vendors' ),
+                        'value'       => $seo_description,
                     )
                 )
             );
@@ -73,15 +69,13 @@ use WC_Vendors\Classes\Front\WCV_Form_Helper;
                 apply_filters(
                     'wcv_product_seo_keywords_field',
                     array(
-                        'id'            => 'wcv_product_seo_keywords',
-                        'label'         => __( 'Keywords', 'wc-vendors' ),
-                        'placeholder'   => __( 'Keywords', 'wc-vendors' ),
-                        'type'          => 'text',
-                        'value'         => $seo_keywords,
-                        'desc_tip'      => true,
-                        'description'   => __( 'Keywords should be comma separated. The product categories/tags will be used if left blank.', 'wc-vendors' ),
-                        'wrapper_start' => '<div class="control-group"><div class="all-100 small-100">',
-                        'wrapper_end'   => '</div></div>',
+                        'id'          => 'wcv_product_seo_keywords',
+                        'label'       => __( 'Keywords', 'wc-vendors' ),
+                        'placeholder' => __( 'Keywords', 'wc-vendors' ),
+                        'type'        => 'text',
+                        'value'       => $seo_keywords,
+                        'desc_tip'    => true,
+                        'description' => __( 'Keywords should be comma separated. The product categories/tags will be used if left blank.', 'wc-vendors' ),
                     )
                 )
             );
@@ -95,12 +89,10 @@ use WC_Vendors\Classes\Front\WCV_Form_Helper;
                 apply_filters(
                     'wcv_product_seo_opengraph_field',
                     array(
-                        'id'            => 'wcv_product_seo_opengraph',
-                        'label'         => __( 'Allow output of OpenGraph data for this product', 'wc-vendors' ),
-                        'type'          => 'checkbox',
-                        'value'         => $seo_opengraph,
-                        'wrapper_start' => '<div class="control-group"><div class="all-100 small-100">',
-                        'wrapper_end'   => '</div></div>',
+                        'id'    => 'wcv_product_seo_opengraph',
+                        'label' => __( 'Allow output of OpenGraph data for this product', 'wc-vendors' ),
+                        'type'  => 'checkbox',
+                        'value' => $seo_opengraph,
                     )
                 )
             );
@@ -114,12 +106,11 @@ use WC_Vendors\Classes\Front\WCV_Form_Helper;
                 apply_filters(
                     'wcv_product_seo_twitter_card_field',
                     array(
-                        'id'            => 'wcv_product_seo_twitter_card',
-                        'label'         => __( 'Allow output of Twitter Card for this product', 'wc-vendors' ),
-                        'type'          => 'checkbox',
-                        'value'         => $seo_twitter_card,
-                        'wrapper_start' => '<div class="control-group"><div class="all-100 small-100">',
-                        'wrapper_end'   => '</div></div>',
+                        'id'        => 'wcv_product_seo_twitter_card',
+                        'label'     => __( 'Allow output of Twitter Card for this product', 'wc-vendors' ),
+                        'type'      => 'checkbox',
+                        'value'     => $seo_twitter_card,
+                        'no_margin' => true,
                     )
                 )
             );

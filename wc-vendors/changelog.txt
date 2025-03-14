@@ -1,5 +1,9 @@
 Changelog for WC Vendors Marketplace
 
+Version 2.5.4.1 - 14th March 2025
+
+ * Bug Fix: Fix the critical error on product edit
+
 Version 2.5.4 - 5th March 2025
 
  * Improvement: Add Vendor lists shortcode to sort by random

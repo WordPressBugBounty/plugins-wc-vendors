@@ -8,7 +8,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Language-Team: WC Vendors <translate@wcvendors.com>\n"
 "Last-Translator: Jamie Madden <translate@wcvendors.com>\n"
-"POT-Creation-Date: 2025-03-05 03:37+0000\n"
+"POT-Creation-Date: 2025-03-14 06:44+0000\n"
 "Report-Msgid-Bugs-To: https://www.wcvendors.com\n"
 "X-Poedit-Basepath: ..\n"
 "X-Poedit-KeywordsList: __;_e;_ex:1,2c;_n:1,2;_n_noop:1,2;_nx:1,2,4c;_nx_noop:1,2,3c;_x:1,2c;esc_attr__;esc_attr_e;esc_attr_x:1,2c;esc_html__;esc_html_e;esc_html_x:1,2c\n"
@@ -224,7 +224,7 @@ msgstr ""
 msgid "View product status report"
 msgstr ""
 
-#: classes/class-install.php:604, classes/front/class-wcv-dashboard-controller.php:607
+#: classes/class-install.php:604, classes/front/class-wcv-dashboard-controller.php:608
 msgid "Add product"
 msgstr ""
 
@@ -1568,15 +1568,15 @@ msgstr ""
 msgid "End date"
 msgstr ""
 
-#: classes/front/class-wcv-dashboard-controller.php:515
+#: classes/front/class-wcv-dashboard-controller.php:516
 msgid "Guest"
 msgstr ""
 
-#: classes/front/class-wcv-dashboard-controller.php:600
+#: classes/front/class-wcv-dashboard-controller.php:601
 msgid "View Pending Orders"
 msgstr ""
 
-#: classes/front/class-wcv-dashboard-controller.php:621
+#: classes/front/class-wcv-dashboard-controller.php:622
 msgid "Sales Report: This month"
 msgstr ""
 

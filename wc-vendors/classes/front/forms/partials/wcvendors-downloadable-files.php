@@ -32,7 +32,7 @@ $downloadable_files = ! empty( $post_id ) ? wc_get_product( $post_id )->get_down
 
                 <?php foreach ( $downloadable_files as $key => $file ) : ?>
 
-                    <?php $file_id = WCVendors_Pro::get_attachment_id( $key ); ?>
+                    <?php $file_id = \wcv_get_attachment_id( $key ); ?>
                     <?php
                     $download   = new WC_Product_Download( $file_id );
                     $file_hash  = $download->get_id();

@@ -265,3 +265,24 @@ if ( ! function_exists( 'wcv_recursive_sanitize_array' ) ) {
         return $arr;
     }
 }
+
+if ( ! function_exists( 'wcv_get_attachment_id' ) ) {
+    /**
+     * Get the attachment id from the database.
+     *
+     * @param string $md5_guid The md5 guid.
+     * @return int|null
+     */
+    function wcv_get_attachment_id( $md5_guid ) {
+        global $wpdb;
+        // Get the attachment_id from the database.
+    $attachment_id = $wpdb->get_var(
+        $wpdb->prepare(
+            "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = '_md5_guid' AND meta_value =%s",
+            $md5_guid
+        )
+    );
+
+        return $attachment_id ? absint( $attachment_id ) : null;
+    }
+}

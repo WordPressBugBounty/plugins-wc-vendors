@@ -539,7 +539,7 @@ $weight_parsley_pattern = '/^\d{1,3}([' . $decimal_separator . ']\d{1,' . $decim
                                     }
                                     foreach ( $_downloadable_files as $key => $file ) {
 
-                                        $file_id      = WCVendors_Pro::get_attachment_id( $key );
+                                        $file_id      = \wcv_get_attachment_id( $key );
                                         $file_display = ( 'file_url' === $file_display_type ) ? $file['file'] : basename( $file['file'] );
 
 

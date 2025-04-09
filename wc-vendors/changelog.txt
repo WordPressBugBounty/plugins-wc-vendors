@@ -1,5 +1,9 @@
 Changelog for WC Vendors Marketplace
 
+Version 2.5.5.1 - 9th April 2025
+
+ * Improvement: Update WooCommerce version
+
 Version 2.5.5 - 31st March 2025
 
  * Improvement: Add support multiple select for Vendor Dashboard Product

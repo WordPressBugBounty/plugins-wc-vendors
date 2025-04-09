@@ -8,11 +8,11 @@
  * Author URI:           https://www.wcvendors.com
  * GitHub Plugin URI:    https://github.com/wcvendors/wcvendors
  *
- * Version:              2.5.5
+ * Version:              2.5.5.1
  * Requires at least:    5.3.0
  * Tested up to:         6.7
  * WC requires at least: 5.0
- * WC tested up to:      9.7
+ * WC tested up to:      9.8
  *
  * Text Domain:          wc-vendors
  * Domain Path:          /languages/
@@ -135,7 +135,7 @@ class WC_Vendors {
         }
 
         if ( ! defined( 'WCV_VERSION' ) ) {
-            define( 'WCV_VERSION', '2.5.5' );
+            define( 'WCV_VERSION', '2.5.5.1' );
         }
 
         if ( ! defined( 'WCV_TEMPLATE_BASE' ) ) {

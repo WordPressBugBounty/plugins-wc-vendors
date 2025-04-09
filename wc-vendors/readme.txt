@@ -3,7 +3,7 @@ Contributors: jkohlbach, RymeraWebCo, Rymera01, smub
 Tags: multivendor, marketplace, multi vendor, product vendors, woocommerce commissions
 Requires at least: 5.5.0
 Tested up to: 6.7
-Stable tag: 2.5.5
+Stable tag: 2.5.5.1
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -298,6 +298,10 @@ Please [get in touch](https://www.wcvendors.com/contact-us/?utm_campaign=faq&utm
 12. Email notifications for admins, customers and vendors
 
 == Changelog ==
+
+= Version 2.5.5.1 - 9th April 2025 =
+
+ * Improvement: Update WooCommerce version
 
 = Version 2.5.5 - 31th March 2025 =
  * Improvement: Add support for multiple selects for Vendor Dashboard Products

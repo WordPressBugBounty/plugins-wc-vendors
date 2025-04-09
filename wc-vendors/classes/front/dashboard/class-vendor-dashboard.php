@@ -496,7 +496,7 @@ class WCV_Vendor_Dashboard {
         $shipping_details        = get_user_meta( get_current_user_id(), '_wcv_shipping', true );
 
         wc_get_template(
-            'store-settings.php',
+            'wc-vendors-store-settings.php',
             array(
                 'store_name'              => $store_name,
                 'store_description'       => $store_description,

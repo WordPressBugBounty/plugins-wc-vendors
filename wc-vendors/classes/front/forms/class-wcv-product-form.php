@@ -1270,7 +1270,7 @@ class WCV_Product_Form {
                                 'shipping' => __( 'Shipping only', 'wc-vendors' ),
                                 'none'     => _x( 'None', 'Tax status', 'wc-vendors' ),
                             ),
-                            'no_margin'         => true,
+                            'no_margin'         => false,
                         )
                     )
                 );

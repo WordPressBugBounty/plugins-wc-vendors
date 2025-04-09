@@ -338,6 +338,7 @@ class WC_Vendors_Bootstrap {
         include_once WCV_PLUGIN_DIR . 'classes/front/dashboard/class-vendor-dashboard.php';
         include_once WCV_PLUGIN_DIR . 'classes/front/class-wcv-table-helper.php';
         include_once WCV_PLUGIN_DIR . 'classes/front/class-wcv-dashboard-controller.php';
+        include_once WCV_PLUGIN_DIR . 'classes/includes/class-wcv-reports.php';
 
         if ( is_admin() ) {
 

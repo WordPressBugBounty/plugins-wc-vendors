@@ -155,13 +155,9 @@ class WCV_Table_Helper {
 
         $paged = ( get_query_var( 'paged' ) ) ? get_query_var( 'paged' ) : 1;
 
-        $search = isset( $_GET['wcv-search'] ) ? $_GET['wcv-search'] : ''; // phpcs:ignore
-        $product_status = isset( $_GET['product_status'] ) ? $_GET['product_status'] : ''; // phpcs:ignore
+        $product_status = isset( $_GET['product_status'] ) ? sanitize_text_field( $_GET['product_status'] ) : ''; // phpcs:ignore
         $instock_status = array( 'instock', 'outofstock', 'onbackorder' );
         $post_status    = array( 'publish', 'draft', 'pending', 'private' );
-        $product_tag   = isset( $_GET['_wcv_product_tag'] ) ? $_GET['_wcv_product_tag'] : ''; // phpcs:ignore
-        $product_cat   = isset( $_GET['_wcv_product_category'] ) ? $_GET['_wcv_product_category'] : ''; // phpcs:ignore
-        $product_type = isset( $_GET['_wcv_product_type'] ) ? $_GET['_wcv_product_type'] : ''; // phpcs:ignore
 
         if ( 'all' === $product_status ) {
             $product_status = 'any';
@@ -174,7 +170,6 @@ class WCV_Table_Helper {
             'author'         => $this->vendor_id,
             'post_status'    => 'any',
             'paged'          => $paged,
-            's'              => $search,
             'tax_query'      => array(
                 'relation' => 'AND',
             ),
@@ -196,37 +191,8 @@ class WCV_Table_Helper {
             $args['post_status'] = $product_status;
         }
 
-        if ( ! empty( $product_tag ) ) {
-            $args['tax_query'][] = array(
-                array(
-                    'taxonomy' => 'product_tag',
-                    'field'    => 'term_id',
-                    'terms'    => $product_tag,
-                ),
-            );
-        }
+        $args = wcv_deprecated_filter( 'wcvendors_pro_table_row_args_' . $this->id, '2.5.2', 'wcvendors_table_row_args_' . $this->id, $args );
 
-        if ( ! empty( $product_cat ) ) {
-            $args['tax_query'][] = array(
-                array(
-                    'taxonomy' => 'product_cat',
-                    'field'    => 'term_id',
-                    'terms'    => $product_cat,
-                ),
-            );
-        }
-
-        if ( ! empty( $product_type ) ) {
-            $args['tax_query'][] = array(
-                array(
-                    'taxonomy' => 'product_type',
-                    'field'    => 'slug',
-                    'terms'    => $product_type,
-                ),
-            );
-        }
-
-        $args    = wcv_deprecated_filter( 'wcvendors_pro_table_row_args_' . $this->id, '2.5.2', 'wcvendors_table_row_args_' . $this->id, $args );
         $results = new \WP_Query( $args );
 
         $this->rows = wcv_deprecated_filter( 'wcvendors_pro_table_rows_' . $this->id, '2.5.2', 'wcvendors_table_rows_' . $this->id, $results->posts, $results );

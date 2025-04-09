@@ -3,6 +3,14 @@
  * Class Admin API for WC Vendors.
  */
 class WCV_Admin_API extends WCV_API {
+
+    /**
+     * Enable rate limiting for the API.
+     *
+     * @var bool $enable_rate_limiting Enable rate limiting.
+     */
+    protected $enable_rate_limiting = false;
+
     /**
      * Register routes.
      */
@@ -204,10 +212,15 @@ class WCV_Admin_API extends WCV_API {
 
         // build the query based on the search parameter.
         if ( $search ) {
-            $regexsearch  = str_replace( ' ', '|', $search );
+            $search = sanitize_text_field( $search );
+            $search = stripslashes( $search );
+            // Escape the search term for use in REGEXP.
+            $regexsearch = str_replace( ' ', '|', $search );
+            $regexsearch = str_replace( "'", "\'", $regexsearch );
+
             $concat_query = ", u.user_login, u.user_nicename, u.user_email,
-                GROUP_CONCAT( IF(um.meta_key REGEXP 'billing_|nickname|first_name last_name', um.meta_key, null) ORDER BY um.meta_key DESC SEPARATOR ' ' ) AS meta_keys,
-                GROUP_CONCAT( IF(um.meta_key REGEXP 'billing_|nickname|first_name|last_name', IFNULL(um.meta_value, ''), null) ORDER BY um.meta_key DESC SEPARATOR ' ' ) AS meta_values
+                GROUP_CONCAT( IF(um.meta_key REGEXP 'billing_|nickname|first_name|last_name|pv_shop_name', um.meta_key, null) ORDER BY um.meta_key DESC SEPARATOR ' ' ) AS meta_keys,
+                GROUP_CONCAT( IF(um.meta_key REGEXP 'billing_|nickname|first_name|last_name|pv_shop_name', IFNULL(um.meta_value, ''), null) ORDER BY um.meta_key DESC SEPARATOR ' ' ) AS meta_values
             ";
             $inner_joins .= "INNER JOIN {$wpdb->usermeta} um ON (u.ID = um.user_id)";
             $having_query = "HAVING (u.ID REGEXP '{$regexsearch}' OR meta_values REGEXP '{$regexsearch}' OR u.user_login REGEXP '{$regexsearch}' OR u.user_nicename REGEXP '{$regexsearch}' OR u.user_email REGEXP '{$regexsearch}')";

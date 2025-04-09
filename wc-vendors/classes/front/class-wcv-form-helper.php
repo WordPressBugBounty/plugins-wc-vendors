@@ -809,9 +809,7 @@ class WCV_Form_Helper {
      * @todo       add filters to allow the field to be hooked into this should not echo html but return it.
      */
     public static function product_media_uploader( $post_id ) {
-
         if ( 'yes' !== get_option( 'wcvendors_hide_product_media_featured', 'no' ) ) {
-
             do_action( 'wcv_form_product_media_uploader_before_product_media_uploader', $post_id );
 
             echo '<div class="all-45 small-100 tiny-100 product-feat-image-upload small-align-center tiny-align-center">';
@@ -837,8 +835,10 @@ class WCV_Form_Helper {
 
             echo '</div>';
 
-            if ( 'yes' !== get_option( 'wcvendors_hide_product_media_gallery', 'no' ) ) {
+            // Always open the gallery wrapper.
+            echo '<div class="wcv-flex wcv-flex-end all-55 small-100 tiny-100 product-imgs-gallery-upload small-top-space tiny-top-space" id="product-imgs-gallery-upload">';
 
+            if ( 'yes' !== get_option( 'wcvendors_hide_product_media_gallery', 'no' ) ) {
                 if ( metadata_exists( 'post', $post_id, '_product_image_gallery' ) ) {
                     $product_image_gallery = get_post_meta( $post_id, '_product_image_gallery', true );
                 } else {
@@ -857,7 +857,6 @@ class WCV_Form_Helper {
                 $attachment_ids = array_filter( explode( ',', $product_image_gallery ) );
 
                 $max_gallery_count = get_option( 'wcvendors_product_max_gallery_count', 4 );
-
                 $max_gallery_count = $max_gallery_count ? $max_gallery_count : 4;
 
                 $gallery_options = apply_filters(
@@ -872,7 +871,7 @@ class WCV_Form_Helper {
                         ),
                     )
                 );
-                echo '<div class="wcv-flex wcv-flex-end all-55 small-100 tiny-100 product-imgs-gallery-upload small-top-space tiny-top-space" id="product-imgs-gallery-upload">';
+
                 echo '<div id="product-imgs-gallery-parent" style="width: 100%;">';
                 echo '<h6 class="blue-title text-blue small-align-center tiny-align-center no-margin">' . esc_html__( 'Gallery', 'wc-vendors' ) . '</h6>';
                 echo '<span style="display: block; margin-bottom: 25px; margin-top: 12px;" class="small-align-center tiny-align-center">';
@@ -921,9 +920,9 @@ class WCV_Form_Helper {
             }
 
             echo '<div class="all-100"></div>';
-            echo '</div>';
-            do_action( 'wcv_form_product_media_uploader_after_product_media_uploader', $post_id );
+            echo '</div>'; // Close #product-imgs-gallery-upload.
 
+            do_action( 'wcv_form_product_media_uploader_after_product_media_uploader', $post_id );
         }
     }
 

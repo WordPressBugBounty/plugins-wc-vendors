@@ -19,7 +19,7 @@ use function WC_Vendors\Classes\Includes\wcv_get_product_types;
 
 ?>
 <?php if ( 'before' === $position ) : ?>
-<form class="wcv-search-form wcv-form" method="get">
+<form class="wcv-search-form wcv-form" method="post">
     <div class="wcv_dashboard_table_header wcv-cols-group wcv-search wcv-product-table-search-<?php echo esc_attr( $position ); ?>">
         <div class="wcv-flex wcv-flex-wrap">
             <div class="quick-link-wrapper small-100 all-60">
@@ -52,58 +52,50 @@ use function WC_Vendors\Classes\Includes\wcv_get_product_types;
                 $product_types      = wcv_get_product_types();
                 $product_types      = array( '' => esc_html__( 'None', 'wc-vendors' ) ) + $product_types;
 
-                $product_cat_get  = isset( $_GET['_wcv_product_category'] ) ? sanitize_text_field( wp_unslash( $_GET['_wcv_product_category'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
-                $product_tag_get  = isset( $_GET['_wcv_product_tag'] ) ? sanitize_text_field( wp_unslash( $_GET['_wcv_product_tag'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
-                $product_type_get = isset( $_GET['_wcv_product_type'] ) ? sanitize_text_field( wp_unslash( $_GET['_wcv_product_type'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
+                $product_cat_get  = isset( $_POST['_wcv_product_category'] ) ? ( wp_unslash( $_POST['_wcv_product_category'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
+                $product_tag_get  = isset( $_POST['_wcv_product_tag'] ) ? ( wp_unslash( $_POST['_wcv_product_tag'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
+                $product_type_get = isset( $_POST['_wcv_product_type'] ) ? ( wp_unslash( $_POST['_wcv_product_type'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
+
                 WCV_Form_Helper::select(
                     array(
-                        'id'                => '_wcv_product_category',
-                        'options'           => $product_categories,
-                        'class'             => 'wcv-dashboard-filter wcv-custom-select',
-                        'wrapper_start'     => '<div class="all-20 small-100">',
-                        'wrapper_end'       => '</div>',
-                        'value'             => $product_cat_get,
-                        'label'             => esc_html__( 'Categories', 'wc-vendors' ),
-                        'multiple'          => false,
-                        'custom_attributes' => array(
-                            'data-autosubmit' => 'true',
-                        ),
+                        'id'            => '_wcv_product_category',
+                        'options'       => $product_categories,
+                        'class'         => 'wcv-dashboard-filter wcv-custom-select',
+                        'wrapper_start' => '<div class="all-15 small-100">',
+                        'wrapper_end'   => '</div>',
+                        'value'         => $product_cat_get,
+                        'label'         => esc_html__( 'Categories', 'wc-vendors' ),
+                        'multiple'      => true,
                     )
                 );
 
                 WCV_Form_Helper::select(
                     array(
-                        'id'                => '_wcv_product_tag',
-                        'options'           => $product_tags,
-                        'class'             => 'wcv-dashboard-filter wcv-custom-select',
-                        'value'             => $product_tag_get,
-                        'wrapper_start'     => '<div class="all-20 small-50">',
-                        'wrapper_end'       => '</div>',
-                        'label'             => esc_html__( 'Tags', 'wc-vendors' ),
-                        'multiple'          => false,
-                        'custom_attributes' => array(
-                            'data-autosubmit' => 'true',
-                        ),
+                        'id'            => '_wcv_product_tag',
+                        'options'       => $product_tags,
+                        'class'         => 'wcv-dashboard-filter wcv-custom-select',
+                        'value'         => $product_tag_get,
+                        'wrapper_start' => '<div class="all-15 small-50">',
+                        'wrapper_end'   => '</div>',
+                        'label'         => esc_html__( 'Tags', 'wc-vendors' ),
+                        'multiple'      => true,
                     )
                 );
 
                 WCV_Form_Helper::select(
                     array(
-                        'id'                => '_wcv_product_type',
-                        'value'             => $product_type_get,
-                        'options'           => $product_types,
-                        'class'             => 'wcv-dashboard-filter wcv-custom-select',
-                        'wrapper_start'     => '<div class="all-15 small-50">',
-                        'wrapper_end'       => '</div>',
-                        'label'             => esc_html__( 'Type', 'wc-vendors' ),
-                        'multiple'          => false,
-                        'custom_attributes' => array(
-                            'data-autosubmit' => 'true',
-                        ),
+                        'id'            => '_wcv_product_type',
+                        'value'         => $product_type_get,
+                        'options'       => $product_types,
+                        'class'         => 'wcv-dashboard-filter wcv-custom-select',
+                        'wrapper_start' => '<div class="all-15 small-50">',
+                        'wrapper_end'   => '</div>',
+                        'label'         => esc_html__( 'Type', 'wc-vendors' ),
+                        'multiple'      => true,
                     )
                 );
             ?>
-            <div class="all-45 small-100">
+            <div class="all-35 small-100">
                 <div class="control-group">
                     <label for="wcv_search" class="wcv_desktop">&nbsp;</label>
                     <div class="wcv-search-box-wrapper wcv-flex">
@@ -127,6 +119,40 @@ use function WC_Vendors\Classes\Includes\wcv_get_product_types;
                     </div>
                 </div>
             </div>
+            <?php
+                // Update Button.
+                WCV_Form_Helper::button(
+                    apply_filters(
+                        'wcv_product_update_button',
+                        array(
+                            'id'            => 'update_button_product',
+                            'value'         => __( 'Update', 'wc-vendors' ),
+                            'type'          => 'submit',
+                            'button_text'   => __( 'Update', 'wc-vendors' ),
+                            'after_text'    => '</span>',
+                            'class'         => 'wcv-button wcv-inline-flex wcv-button-link-secondary text-blue',
+                            'wrapper_start' => '<div class="all-20 medium-30 small-100 tiny-100 push-right wcv-flex wcv-flex-end"><div class="control-group"><label class="wcv_desktop">&nbsp;&nbsp;</label><div class="control">',
+                            'wrapper_end'   => '</div></div>',
+                            'before_text'   => wcv_get_icon( 'wcv-icon wcv-icon-24', 'wcv-icon-round-update' ) . '<span>',
+                        )
+                    )
+                );
+
+                // Update Button.
+                WCV_Form_Helper::button(
+                    apply_filters(
+                        'wcv_product_filter_clear_button',
+                        array(
+                            'id'            => 'clear_button_product',
+                            'button_text'   => __( 'Clear', 'wc-vendors' ),
+                            'class'         => 'wcv-button wcv-flex wcv-button-link-danger',
+                            'type'          => 'reset',
+                            'wrapper_start' => '<div class="control-group"><label class="wcv_desktop">&nbsp;&nbsp;</label><div class="control">',
+                            'wrapper_end'   => '</div></div></div>',
+                        )
+                    )
+                );
+            ?>
         </div>
         <div class="all-50 small-100 wcv-product-table-search-results">
             <?php if ( strlen( $search ) > 0 ) : ?>
@@ -134,6 +160,7 @@ use function WC_Vendors\Classes\Includes\wcv_get_product_types;
             <?php endif; ?>
         </div>
     </div>
+    <?php wp_nonce_field( 'wcv_product_table_nonce', 'wcv_product_table_nonce' ); ?>
 </form>
 <?php else : ?>
     <div class="all-100 small-100 wcv-product-table-pagination-<?php echo esc_attr( $position ); ?>">

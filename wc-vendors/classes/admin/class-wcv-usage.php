@@ -116,7 +116,7 @@ class Usage {
             $license_data = get_option( 'wc-vendors-membership_license_manager', array() );
             if ( isset( $license_data['license_key'] ) ) {
                 $data['wcv_wcm_license_key'] = $license_data['license_key'];
-                $data['wcv_wcm_version']     = wcvm()->version ? wcvm()->version : $license_data['current_version'];
+                $data['wcv_wcm_version']     = defined( 'WCV_WCM_VERSION' ) ? WCV_WCM_VERSION : $license_data['current_version'];
             }
         }
 

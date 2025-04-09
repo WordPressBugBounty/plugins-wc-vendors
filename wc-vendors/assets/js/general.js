@@ -204,7 +204,7 @@ jQuery(function($) {
 
   // Shipping from other address trigger
   $('select#_wcv_shipping_from')
-    .change(function() {
+    .on('change', function() {
       // Get value
       var select_val = $(this).val();
 
@@ -214,7 +214,7 @@ jQuery(function($) {
         $('.shipping_other').hide();
       }
     })
-    .change();
+    .trigger('change');
 
   // Flat Rates
   // National
@@ -236,28 +236,28 @@ jQuery(function($) {
 
   // Disable national shipping
   // Toggle Free shipping
-  $('#_wcv_shipping_fee_national_free').change(function() {
+  $('#_wcv_shipping_fee_national_free').on('change', function() {
     enable_disable($(this), $('#_wcv_shipping_fee_national'));
   });
-  $('#_wcv_shipping_fee_national_disable').change(function() {
+  $('#_wcv_shipping_fee_national_disable').on('change', function() {
     enable_disable($(this), $('.wcv-disable-national-input'));
   });
 
   // International
   // Free shipping
-  $('#_wcv_shipping_fee_international_free').change(function() {
+  $('#_wcv_shipping_fee_international_free').on('change', function() {
     enable_disable($(this), $('#_wcv_shipping_fee_international'));
   });
 
   // Disable international shipping
-  $('#_wcv_shipping_fee_international_disable').change(function() {
+  $('#_wcv_shipping_fee_international_disable').on('change', function() {
     enable_disable($(this), $('.wcv-disable-international-input'));
   });
 
   shipping_address_other();
 
   // Vacation Mode
-  $('.wcv-vacaction-mode').change(function() {
+  $('.wcv-vacaction-mode').on('change', function() {
     $('.wcv-vacation-mode-msg-wrapper').slideToggle();
   });
 
@@ -267,7 +267,7 @@ jQuery(function($) {
 
   //Enable Google Analytics
 
-  $('.wcv-ga-enable').change(function() {
+  $('.wcv-ga-enable').on('change', function() {
     $('.wcv-ga-id-value-wrapper').slideToggle();
   });
 
@@ -278,7 +278,7 @@ jQuery(function($) {
   }
 
   // Enable Opening hours
-  $('.wcv-enable-opening-hours').change(function() {
+  $('.wcv-enable-opening-hours').on('change', function() {
     $('.wcv-opening-hours-wrapper').slideToggle();
   });
 
@@ -369,7 +369,7 @@ jQuery(function($) {
   }
 
   // Order form date picker clear button
-  $('#clear_button').click(function(e) {
+  $('#clear_button').on('click', function(e) {
     e.preventDefault();
 
     var $startDateInput = $('#_wcv_order_start_date_input'),
@@ -382,30 +382,39 @@ jQuery(function($) {
 
     $('#_wcv_order_status_input').val('');
 
-    $('.wcv-order-header .wcv-form').submit();
+    $('.wcv-order-header .wcv-form').trigger('submit');
   });
   // commission form date picker clear button
-  $('#clear_button_commission').click(function(e) {
+  $('#clear_button_commission').on('click', function(e) {
     e.preventDefault();
     var $startDateInput = $('#_wcv_commission_start_date_input'),
       $endDateInput = $('#_wcv_commission_end_date_input');
     $startDateInput.val($startDateInput.data('default'));
     $endDateInput.val($endDateInput.data('default'));
-    $('.wcv-commission-header .wcv-form').submit();
+    $('.wcv-commission-header .wcv-form').trigger('submit');
   });
 
-  $('#clear_button_report').click(function(e) {
+  $('#clear_button_report').on('click', function(e) {
     e.preventDefault();
     var $startDateInput = $('#_wcv_dashboard_start_date_input'),
       $endDateInput = $('#_wcv_dashboard_end_date_input');
     $startDateInput.val($startDateInput.data('default'));
     $endDateInput.val($endDateInput.data('default'));
-    $('.wcv-form').submit();
+    $('.wcv-form').trigger('submit');
+  });
+
+  $('#clear_button_product').on('click', function(e) {
+    e.preventDefault();
+    $('#_wcv_product_category').val('');
+    $('#_wcv_product_tag').val('');
+    $('#_wcv_product_type').val('');
+    $('#wcv-search').val('');
+    $('.wcv-form').trigger('submit');
   });
 
   // PayPal Payout Option change
   $('select#wcv_paypal_masspay_wallet')
-    .change(function() {
+    .on('change', function() {
       // Get value
       var select_val = $(this).val();
 
@@ -415,5 +424,5 @@ jQuery(function($) {
         $('.wcv_paypal_masspay_venmo_id').hide();
       }
     })
-    .change();
+    .trigger('change');
 });

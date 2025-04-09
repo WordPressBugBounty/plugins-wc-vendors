@@ -63,6 +63,8 @@ class WCV_Product_Controller {
         add_action( 'woocommerce_product_query', array( $this, 'hide_all_inactive_vendor_products' ), 10 );
         add_filter( 'woocommerce_add_to_cart_validation', array( $this, 'add_to_cart_validation' ), 10, 2 );
         add_action( 'woocommerce_check_cart_items', array( $this, 'remove_inactive_vendor_products_from_cart' ) );
+
+        add_filter( 'wcvendors_table_row_args_product', array( $this, 'process_search_and_filter' ) );
     }
 
     /**
@@ -218,6 +220,77 @@ class WCV_Product_Controller {
         }
         wp_safe_redirect( apply_filters( 'wcv_save_product_redirect', $url, $product_redirect, $post_id ) );
         exit;
+    }
+
+    /**
+     * Process search and filter
+     *
+     * @param array $args The arguments for the query.
+     *
+     * @since 2.5.5
+     * @version 2.5.5
+     */
+    public function process_search_and_filter( $args ) {
+        $request = $_SERVER['REQUEST_METHOD'];
+        if ( 'POST' === $request ) {
+            $nonce = isset( $_POST['wcv_product_table_nonce'] ) ? $_POST['wcv_product_table_nonce'] : '';
+            if ( ! wp_verify_nonce( $nonce, 'wcv_product_table_nonce' ) ) {
+                wp_die( 'Invalid nonce' );
+            }
+        }
+
+        $search       = isset( $_POST['wcv-search'] ) ? sanitize_text_field( $_POST['wcv-search'] ) : '';
+        $product_tag   = isset( $_POST['_wcv_product_tag'] ) ? $_POST['_wcv_product_tag'] : ''; // phpcs:ignore
+        $product_cat   = isset( $_POST['_wcv_product_category'] ) ? $_POST['_wcv_product_category'] : ''; // phpcs:ignore
+        $product_type = isset( $_POST['_wcv_product_type'] ) ? $_POST['_wcv_product_type'] : ''; // phpcs:ignore
+
+        if ( ! empty( $search ) ) {
+            $args['s'] = $search;
+        }
+
+        if ( ! empty( $product_tag ) ) {
+
+            $product_tag_array = is_array( $product_tag ) ? array_filter( $product_tag ) : array( $product_tag );
+
+            if ( ! empty( $product_tag_array ) ) {
+                $args['tax_query'][] = array(
+                    'taxonomy' => 'product_tag',
+                    'field'    => 'term_id',
+                    'terms'    => $product_tag_array,
+                    'operator' => 'IN',
+                );
+            }
+        }
+
+        if ( ! empty( $product_cat ) ) {
+
+            $product_cat_array = is_array( $product_cat ) ? array_filter( $product_cat ) : array( $product_cat );
+
+            if ( ! empty( $product_cat_array ) ) {
+                $args['tax_query'][] = array(
+                    'taxonomy' => 'product_cat',
+                    'field'    => 'term_id',
+                    'terms'    => $product_cat_array,
+                    'operator' => 'IN',
+                );
+            }
+        }
+
+        if ( ! empty( $product_type ) ) {
+
+            $product_type_array = is_array( $product_type ) ? array_filter( $product_type ) : array( $product_type );
+
+            if ( ! empty( $product_type_array ) ) {
+                $args['tax_query'][] = array(
+                    'taxonomy' => 'product_type',
+                    'field'    => 'slug',
+                    'terms'    => $product_type_array,
+                    'operator' => 'IN',
+                );
+            }
+        }
+
+        return $args;
     }
 
     /**
@@ -1937,7 +2010,7 @@ class WCV_Product_Controller {
 
         $lock_new_products   = apply_filters( 'wcv_product_table_lock_new_products', ( 'yes' === get_user_meta( get_current_user_id(), '_wcv_lock_new_products_vendor', true ) ) ? true : false );
         $can_submit_products = get_option( 'wcvendors_can_submit_products', '' );
-		$search              = isset( $_GET['wcv-search'] ) ? $_GET['wcv-search'] : ''; // phpcs:ignore
+		$search              = isset( $_POST['wcv-search'] ) ? $_POST['wcv-search'] : ''; // phpcs:ignore
         $can_submit          = wc_string_to_bool( get_option( 'wcvendors_capability_products_enabled', 'no' ) );
 
         $pagination_wrapper = apply_filters(
@@ -2869,7 +2942,10 @@ class WCV_Product_Controller {
 
         if ( 'product' === $args['post_type'] ) {
 
-            $search = $args['s'];
+            $search = '';
+            if ( isset( $args['s'] ) ) {
+                $search = $args['s'];
+            }
             // If there is no search return the args.
             if ( empty( $search ) ) {
                 return $args;
@@ -2878,7 +2954,9 @@ class WCV_Product_Controller {
             $meta_query = $this->get_product_search_meta_keys( $search );
             // Reset the simple query.
             if ( is_wcv_pro_active() ) {
-                unset( $args['s'] );
+                if ( isset( $args['s'] ) ) {
+                    unset( $args['s'] );
+                }
             }
 
             if ( count( $meta_query ) > 1 ) {

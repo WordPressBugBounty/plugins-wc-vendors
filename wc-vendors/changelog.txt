@@ -1,5 +1,18 @@
 Changelog for WC Vendors Marketplace
 
+Version 2.5.5 - 31st March 2025
+
+ * Improvement: Add support multiple select for Vendor Dashboard Product
+ * Improvement: Add view buttons to order section in the vendor dashboard
+ * Bug Fix: When Gallery display is Disabled it breaks the product editor form
+ * Bug Fix: Store Phone Field Flag Displays [Object Object] Text
+ * Bug Fix: Awaiting shipping counter not updating and mismatch with orders report
+ * Bug Fix: Partially refunded order only shows the View Order option
+ * Bug Fix: Vendor Search Failing When Store name has single quote or Apostrophe
+ * Bug Fix: Duplicate Notes Or Shipping Tracking Info After Form Submission and Page Refresh
+ * Bug Fix: Store Settings template override not working as intended
+ * Bug Fix: Email ID conflict
+
 Version 2.5.4.1 - 14th March 2025
 
  * Bug Fix: Fix the critical error on product edit

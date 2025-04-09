@@ -3,7 +3,7 @@ Contributors: jkohlbach, RymeraWebCo, Rymera01, smub
 Tags: multivendor, marketplace, multi vendor, product vendors, woocommerce commissions
 Requires at least: 5.5.0
 Tested up to: 6.7
-Stable tag: 2.5.4.1
+Stable tag: 2.5.5
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -298,6 +298,18 @@ Please [get in touch](https://www.wcvendors.com/contact-us/?utm_campaign=faq&utm
 12. Email notifications for admins, customers and vendors
 
 == Changelog ==
+
+= Version 2.5.5 - 31th March 2025 =
+ * Improvement: Add support for multiple selects for Vendor Dashboard Products
+ * Improvement: Add view buttons to the order section in the vendor dashboard
+ * Bug Fix: When Gallery display is Disabled, it breaks the product editor form
+ * Bug Fix: Store Phone Field Flag Displays [object Object] Text
+ * Bug Fix: Awaiting shipping counter not updating and mismatch with orders report
+ * Bug Fix: Partially refunded orders only shows the View Order option
+ * Bug Fix: Vendor Search Failing When Store Name Has Single Quote or Apostrophe
+ * Bug Fix: Duplicate Notes Or Shipping Tracking Info After Form Submission and Page Refresh
+ * Bug Fix: Store Settings template override not working as intended
+ * Bug Fix: Email ID Conflict
 
 = Version 2.5.4.1 - 14th March 2025 =
  * Bug Fix: Fix the critical error on product edit

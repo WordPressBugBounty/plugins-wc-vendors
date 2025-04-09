@@ -1,6 +1,8 @@
 <?php
 namespace WC_Vendors\Classes\Front;
 
+use WCV_Vendor_Dashboard;
+
 /**
  * The WC Vendors order Controller class
  *
@@ -408,6 +410,8 @@ class WCV_Order_Controller {
             }
 
             $this->add_order_note( $order_id, $comment );
+            wp_safe_redirect( WCV_Vendor_Dashboard::get_dashboard_page_url( 'orders' ) );
+            exit;
         }
 
         if ( isset( $_POST['wcv_add_tracking_number_nonce'] ) ) {
@@ -416,6 +420,8 @@ class WCV_Order_Controller {
             }
 
             self::update_shipment_tracking();
+            wp_safe_redirect( WCV_Vendor_Dashboard::get_dashboard_page_url( 'orders' ) );
+            exit;
         }
 
         // Process the date updates for the form.
@@ -572,7 +578,7 @@ class WCV_Order_Controller {
                 $item_tax_refunded_total = 0;
                 $refunded_total          = 0;
                 $row_order_items         = isset( $order_row->order_items ) && is_array( $order_row->order_items ) ? $order_row->order_items : array();
-
+                $is_full_refund          = false;
                 if ( ! empty( $row_order_items ) ) {
 
                     $refunded_count = count( $parent_order->get_refunds() );
@@ -630,8 +636,10 @@ class WCV_Order_Controller {
 
                         if ( $refunded_total < $order_total ) {
                             $refunded_status = '<span class="wcv-order-refunded"><strong>' . __( 'Partially Refunded', 'wc-vendors' ) . '</strong></span>';
+                            $is_full_refund  = false;
                         } else {
                             $refunded_status = '<span class="wcv-order-refunded"><strong>' . __( 'Refunded', 'wc-vendors' ) . '</strong></span>';
+                            $is_full_refund  = true;
                         }
                     }
                 }
@@ -751,12 +759,11 @@ class WCV_Order_Controller {
                     apply_filters(
                         'wcv_order_status_action_hide',
                         array(
-                            'refunded',
                             'cancelled',
                         )
                     ),
                     true
-                ) ) {
+                ) || $is_full_refund ) {
                     if ( isset( $row_actions['print_label'] ) ) {
                         unset( $row_actions['print_label'] );
                     }

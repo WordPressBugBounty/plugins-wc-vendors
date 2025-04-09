@@ -256,10 +256,8 @@
       if (!state.id) {
         return state.text;
       }
-      const $state = $(
-        `<div class="wcv-country-code-selection-item"><span class="wcv-country-code-selection-flag">${state.flag}</span> <span class="wcv-country-code-selection-dial-code">${state.dial_code}</span></div>`
-      );
-      return $state;
+      const flagAndDialCode = state.flag + '  ' + state.dial_code;
+      return flagAndDialCode;
     };
 
     $('#wcv-country-code-select').select2({

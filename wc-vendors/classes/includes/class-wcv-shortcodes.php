@@ -749,15 +749,23 @@ class WCV_Shortcodes {
             $order_by_sql = ' GROUP BY wp_users.ID ORDER BY ' . $orderby . ' ' . $order;
         }
 
-        $search_term     = sanitize_text_field( $search_term );
+        $search_term = sanitize_text_field( $search_term );
+        // Remove any automatically added backslashes from apostrophes.
+        $search_term     = stripslashes( $search_term );
         $join_usermeta3  = '';
         $and_usermeta3   = '';
         $search_term_sql = '';
 
         if ( ! empty( $search_term ) ) {
-            $search_term_sql = $wpdb->prepare( ' AND ( wp_usermeta2.meta_value LIKE %s OR wp_usermeta3.meta_value LIKE %s )', '%' . $wpdb->esc_like( $search_term ) . '%', '%' . $wpdb->esc_like( $search_term ) . '%' );
-            $join_usermeta3  = ' INNER JOIN ' . $wpdb->usermeta . ' as wp_usermeta3 ON wp_users.ID = wp_usermeta3.user_id';
-            $and_usermeta3   = ' AND wp_usermeta3.meta_key = "pv_shop_name"';
+            // Use proper escaping for the search term to handle apostrophes.
+            $escaped_search_term = $wpdb->esc_like( $search_term );
+            $search_term_sql     = $wpdb->prepare(
+                ' AND ( wp_usermeta2.meta_value LIKE %s OR wp_usermeta3.meta_value LIKE %s )',
+                '%' . $escaped_search_term . '%',
+                '%' . $escaped_search_term . '%'
+            );
+            $join_usermeta3      = ' INNER JOIN ' . $wpdb->usermeta . ' as wp_usermeta3 ON wp_users.ID = wp_usermeta3.user_id';
+            $and_usermeta3       = ' AND wp_usermeta3.meta_key = "pv_shop_name"';
         }
 
         $inactive_vendor_ids = get_users(

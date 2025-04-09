@@ -13,10 +13,34 @@ abstract class WCV_API {
     protected $wcv_api_namespace = 'wcv-api/v1';
 
     /**
+     * Enable rate limiting for the API.
+     *
+     * @var bool $enable_rate_limiting Enable rate limiting.
+     */
+    protected $enable_rate_limiting = true;
+
+    /**
+     * Rate limit for the API per minute by IP address.
+     *
+     * @var int $rate_limit Rate limit.
+     */
+    protected $rate_limit = 100;
+
+
+    /**
      * Setup class.
      */
     public function __construct() {
         add_action( 'rest_api_init', array( $this, 'register_routes' ) );
+    }
+
+    /**
+     * Get user IP address.
+     *
+     * @return string
+     */
+    protected function get_user_ip() {
+        return isset( $_SERVER['REMOTE_ADDR'] ) ? filter_var( $_SERVER['REMOTE_ADDR'], FILTER_VALIDATE_IP ) : '';
     }
 
     /**
@@ -37,16 +61,18 @@ abstract class WCV_API {
             return;
         }
 
+        $processed_callback = $this->process_rate_limiting( $callback );
+
         register_rest_route(
             $this->wcv_api_namespace,
             $route,
             array(
-				array(
-					'methods'             => $method,
-					'callback'            => array( $this, $callback ),
+                array(
+                    'methods'             => $method,
+                    'callback'            => array( $this, $processed_callback ),
                     'permission_callback' => array( $this, 'get_api_permissions_check' ),
                     'args'                => $args,
-				),
+                ),
             )
         );
     }
@@ -57,6 +83,76 @@ abstract class WCV_API {
      * @return bool
      */
     public function get_api_permissions_check() {
-        return true;
+        return false;
+    }
+
+    /**
+     * Process rate limiting.
+     *
+     * @since 2.5.5
+     *
+     * @param string $callback Callback function.
+     * @return string|callable
+     */
+    protected function process_rate_limiting( $callback ) {
+        if ( $this->enable_rate_limiting ) {
+            $is_limited = $this->check_rate_limit();
+
+            if ( $is_limited ) {
+                return 'limit_response';
+            }
+        }
+
+        return $callback;
+    }
+
+    /**
+     * Limit response.
+     *
+     * @return WP_Error
+     */
+    public function limit_response() {
+        return new WP_REST_Response( array( 'message' => 'You have made too many requests. Please try again later.' ), 429 );
+    }
+
+
+    /**
+     * Check rate limit.
+     *
+     * @since 2.5.5
+     *
+     * @return bool
+     */
+    protected function check_rate_limit() {
+            // Get the user's IP address.
+            $ip_address = $this->get_user_ip();
+
+            // Get the current time.
+            $current_time = current_time( 'timestamp' ); // phpcs:ignore
+
+            // Get the time of the last request.
+            $last_request_time = get_transient( 'wcv_last_request_time_' . $ip_address );
+
+            // Get the number of requests made in the last minute.
+            $requests_made = get_transient( 'wcv_requests_made_' . $ip_address );
+
+            // If the last request time is not set or more than a minute ago, reset the number of requests made.
+            if ( empty( $last_request_time ) || ( $current_time - $last_request_time > 60 ) ) {
+                $requests_made = 0;
+            }
+
+            // Increment the number of requests made.
+            ++$requests_made;
+
+            // Update the last request time and the number of requests made.
+            set_transient( 'wcv_last_request_time_' . $ip_address, $current_time );
+            set_transient( 'wcv_requests_made_' . $ip_address, $requests_made );
+
+        // If the number of requests made is greater than the rate limit, return true to indicate it should be throttled.
+        if ( $requests_made > $this->rate_limit ) {
+            return true;
+        }
+
+        return false;
     }
 }

@@ -34,6 +34,7 @@
                         <th><?php esc_html_e( 'Order', 'wc-vendors' ); ?></th>
                         <th><?php esc_html_e( 'Customer', 'wc-vendors' ); ?></th>
                         <th><?php esc_html_e( 'Status', 'wc-vendors' ); ?></th>
+                        <th><?php esc_html_e( 'Actions', 'wc-vendors' ); ?></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -48,6 +49,10 @@
                                 </td>
                                 <td>
                                     <?php echo esc_html( $od['status'] ); ?>
+                                </td>
+                                <td>
+                                    <a href="#" class="wcv-view-btn" id="open-order-details-modal-<?php echo esc_attr( $od['order_id'] ); ?>"><?php esc_html_e( 'View', 'wc-vendors' ); ?></a>
+                                    <?php echo $od['detail_popup']; // phpcs:ignore ?>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

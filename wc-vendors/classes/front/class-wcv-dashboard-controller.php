@@ -107,11 +107,11 @@ class WCV_Dashboard_Controller {
         $this->start_date            = ( clone $now )->modify( 'first day of this month' )->format( 'Y-m-d' );
         $this->end_date              = ( clone $now )->format( 'Y-m-d' );
         $this->last_month_start_date = ( clone $now )->modify( 'first day of last month' )->format( 'Y-m-d' );
-        $last_month_end_date         = ( clone $now )->modify( '-1 month' )->format( 'Y-m-d' );
+        $now->setTime( 23, 59, 59 );
 
         // Check if last month has the same date as end_date, if not assign it to the last day of last month.
         $last_day_of_last_month    = ( clone $now )->modify( 'last day of last month' )->format( 'Y-m-d' );
-        $this->last_month_end_date = ( $last_month_end_date === $this->end_date ) ? $last_month_end_date : $last_day_of_last_month;
+        $this->last_month_end_date = ( $now->format( 'Y-m-d' ) === $this->end_date ) ? $now->format( 'Y-m-d' ) : $last_day_of_last_month;
 
         $this->orders                  = $this->get_orders();
         $this->pending_shipping_orders = $this->get_pending_shipping_orders();
@@ -215,14 +215,14 @@ class WCV_Dashboard_Controller {
 
         $this_month_order_id = array_map(
             function ( $order ) {
-            return $order->get_parent_id();
+                return $order->get_parent_id();
             },
             $this_month_orders
         );
 
         $last_month_order_id = array_map(
             function ( $order ) {
-            return $order->get_parent_id();
+                return $order->get_parent_id();
             },
             $last_month_orders
         );
@@ -342,7 +342,7 @@ class WCV_Dashboard_Controller {
         usort(
             $steps,
             function ( $a, $b ) {
-            return $b['is_complete'] - $a['is_complete'];
+                return $b['is_complete'] - $a['is_complete'];
             }
         );
 
@@ -390,22 +390,20 @@ class WCV_Dashboard_Controller {
 
         global $wpdb;
 
-        $commission_table = $wpdb->prefix . 'pv_commission';
-
-        $order_ids = $wpdb->get_col(
+        $commission_rows = $wpdb->get_results(
             $wpdb->prepare(
-                'SELECT order_id FROM %i WHERE vendor_id = %d AND status = %s ORDER BY order_id DESC LIMIT 7',
-                $commission_table,
+                "SELECT * FROM {$wpdb->prefix}pv_commission WHERE vendor_id = %d ORDER BY order_id DESC LIMIT 7",
                 $this->vendor_id,
-                'due'
             )
         );
 
-        if ( empty( $order_ids ) ) {
+        if ( empty( $commission_rows ) ) {
             return array();
         }
 
-        $orders = wc_get_orders(
+        $order_ids = array_column( $commission_rows, 'order_id' );
+        $order_ids = array_unique( $order_ids );
+        $orders    = wc_get_orders(
             array(
                 'post__in' => $order_ids,
             )
@@ -426,12 +424,14 @@ class WCV_Dashboard_Controller {
                 }
             }
             $order_status      = in_array( $this->vendor_id, $shipped, true ) ? 'Shipped' : $status[ "wc-{$order->get_status()}" ];
+            $detail_popup      = $this->get_order_popup_details( $commission_rows, $order );
             $formated_orders[] = array(
-                'order_id'   => $order->get_id(),
-                'customer'   => $order->get_billing_first_name() . ' ' . $order->get_billing_last_name(),
-                'view_order' => $order->get_view_order_url(),
-                'status'     => $order_status,
-                'total_prod' => $vendor_product_count,
+                'order_id'     => $order->get_id(),
+                'customer'     => $order->get_billing_first_name() . ' ' . $order->get_billing_last_name(),
+                'view_order'   => $order->get_view_order_url(),
+                'status'       => $order_status,
+                'total_prod'   => $vendor_product_count,
+                'detail_popup' => $detail_popup,
             );
         }
 
@@ -439,30 +439,144 @@ class WCV_Dashboard_Controller {
     }
 
     /**
+     * Get order popup details
+     *
+     * @param array    $commission_rows Commission rows.
+     * @param WC_Order $order           Order.
+     *
+     * @return string html for order popup details
+     */
+    public function get_order_popup_details( $commission_rows, $order ) {
+        $order_id         = $order->get_id();
+        $order_total      = 0;
+        $order_shipping   = 0;
+        $order_tax        = 0;
+        $order_commission = 0;
+        $refunded_amount  = 0;
+        $shipping_tax     = 0;
+        $commission_rows  = array_filter(
+            $commission_rows,
+            function ( $row ) use ( $order_id ) {
+                return (int) $row->order_id === (int) $order_id;
+            }
+        );
+
+        $billing_details = array(
+            'name'    => $order->get_billing_first_name() . ' ' . $order->get_billing_last_name(),
+            'email'   => $order->get_billing_email(),
+            'phone'   => $order->get_billing_phone(),
+            'address' => $order->get_formatted_billing_address(),
+        );
+
+        $shipping_details = array(
+            'name'    => $order->get_shipping_first_name() . ' ' . $order->get_shipping_last_name(),
+            'email'   => $order->get_billing_email(),
+            'phone'   => $order->get_shipping_phone(),
+            'address' => $order->get_formatted_shipping_address(),
+        );
+
+        $order_details = array(
+            'order_id'     => $order->get_id(),
+            'order_date'   => $order->get_date_created()->date( 'Y-m-d' ),
+            'order_status' => $order->get_status(),
+        );
+
+        $order_items  = array();
+        $parent_items = $order->get_items();
+        foreach ( $commission_rows as $row ) {
+            $cost         = 0;
+            $name         = '';
+            $refunded     = 0;
+            $total        = 0;
+            $refunded_qty = 0;
+            $product_meta = '';
+            foreach ( $parent_items as $item ) {
+                $item_id         = $item->get_id();
+                $item_product_id = $item->get_variation_id() > 0 ? $item->get_variation_id() : $item->get_product_id();
+                if ( $item_product_id === (int) $row->product_id ) {
+                    $cost             += $item->get_total();
+                    $name              = $item->get_name();
+                    $refunded          = $order->get_total_refunded_for_item( $item_id );
+                    $total             = $item->get_total();
+                    $order_total      += $total;
+                    $refunded_amount  += $refunded;
+                    $refunded_qty     += $order->get_qty_refunded_for_item( $item_id );
+                    $order_commission += $row->total_due;
+                    $order_shipping   += $row->total_shipping;
+                    $order_tax        += $row->tax;
+                    $shipping_tax     += \WCV_Shipping::calculate_shipping_tax( $row->total_shipping );
+                    $product_meta      = wc_display_item_meta( $item, array( 'echo' => false ) );
+                }
+            }
+            $thumbnail     = has_post_thumbnail( $row->product_id ) ? get_the_post_thumbnail_url( $row->product_id, 'thumbnail' ) : wc_placeholder_img_src( 'thumbnail' );
+            $order_items[] = array(
+                'name'         => $name,
+                'quantity'     => $row->qty,
+                'commission'   => $row->total_due,
+                'shipping'     => $row->total_shipping,
+                'tax'          => $row->tax,
+                'cost'         => $cost,
+                'thumbnail'    => $thumbnail,
+                'refunded'     => $refunded,
+                'total'        => $total,
+                'refunded_qty' => $refunded_qty,
+                'product_meta' => $product_meta ? $product_meta : '',
+            );
+        }
+
+        ob_start();
+        wc_get_template(
+            'order-popup-details.php',
+            array(
+                'billing_details'  => $billing_details,
+                'shipping_details' => $shipping_details,
+                'order_details'    => $order_details,
+                'order_items'      => $order_items,
+                'order_id'         => $order_id,
+                'order_total'      => $order_total,
+                'order_shipping'   => $order_shipping,
+                'order_tax'        => $order_tax,
+                'refunded_amount'  => $refunded_amount,
+                'order_currency'   => $order->get_currency(),
+                'order_commission' => $order_commission,
+                'shipping_tax'     => $shipping_tax,
+                'order'            => $order,
+            ),
+            'wcvendors/dashboard/',
+            plugin_dir_path( WCV_PLUGIN_FILE ) . 'templates/dashboard/'
+        );
+        $html = ob_get_clean();
+
+        return $html;
+    }
+
+    /**
      * Get pending shipping orders
      *
      * @return array Pending shipping orders.
      */
-    public static function get_pending_shipping_orders() {
+    public function get_pending_shipping_orders() {
         global $wpdb;
-        $vendor_id          = get_current_user_id();
-        $default_start_date = gmdate( 'Y-m-d', strtotime( 'first day of this month' ) );
-        $default_end_date   = gmdate( 'Y-m-d', strtotime( 'today' ) );
-        $start_date         = WC()->session->get( 'wcv_order_start_date', strtotime( $default_start_date ) );
-        $end_date           = WC()->session->get( 'wcv_order_end_date', strtotime( $default_end_date ) );
+        $vendor_id = $this->vendor_id;
+
+        $timezone   = wp_timezone();
+        $now        = new \DateTime( 'now', $timezone );
+        $start_date = ( clone $now )->modify( 'first day of this month' )->setTime( 0, 0, 0 );
+        $now->setTime( 23, 59, 59 );
+
+        $formatted_start_date = $start_date->format( 'Y-m-d H:i:s' );
+        $formatted_end_date   = $now->format( 'Y-m-d H:i:s' );
 
         if ( ! $vendor_id ) {
             return array();
         }
 
-        $commission_table   = $wpdb->prefix . 'pv_commission';
         $vendor_order_query = $wpdb->prepare(
-            'SELECT order_id FROM %i WHERE vendor_id = %d
-            AND time BETWEEN %s AND %s',
-            $commission_table,
+            "SELECT order_id FROM {$wpdb->prefix}pv_commission WHERE vendor_id = %d 
+            AND time BETWEEN %s AND %s",
             $vendor_id,
-            gmdate( 'Y-m-d', $start_date ),
-            gmdate( 'Y-m-d', $end_date ),
+            $formatted_start_date,
+            $formatted_end_date
         );
 
         $parent_order_ids = $wpdb->get_col( $vendor_order_query ); // phpcs:ignore
@@ -477,7 +591,7 @@ class WCV_Dashboard_Controller {
         $query_args = array(
             'post__in'     => $parent_order_ids,
             'limit'        => $limit,
-            'date_created' => gmdate( 'Y-m-d', $start_date ) . '...' . gmdate( 'Y-m-d', $end_date ),
+            'date_created' => $formatted_start_date . '...' . $formatted_end_date,
         );
 
         $parents_orders = wc_get_orders( $query_args );

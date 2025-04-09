@@ -16,6 +16,7 @@ class WCV_Rest_API {
     public function includes() {
         include_once 'class-abstract-wcv-api.php';
         include_once 'admin/class-wcv-admin-api.php';
+        include_once 'admin/class-wcv-reports-api.php';
     }
 }
 new WCV_Rest_API();

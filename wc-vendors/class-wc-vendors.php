@@ -8,9 +8,9 @@
  * Author URI:           https://www.wcvendors.com
  * GitHub Plugin URI:    https://github.com/wcvendors/wcvendors
  *
- * Version:              2.5.5.1
+ * Version:              2.5.6
  * Requires at least:    5.3.0
- * Tested up to:         6.7
+ * Tested up to:         6.8
  * WC requires at least: 5.0
  * WC tested up to:      9.8
  *
@@ -134,8 +134,12 @@ class WC_Vendors {
             define( 'WCV_PLUGIN_DIR_PATH', untrailingslashit( plugin_dir_path( __FILE__ ) ) );
         }
 
+        if ( ! defined( 'WCV_PLUGIN_URL' ) ) {
+            define( 'WCV_PLUGIN_URL', trailingslashit( plugin_dir_url( __FILE__ ) ) );
+        }
+
         if ( ! defined( 'WCV_VERSION' ) ) {
-            define( 'WCV_VERSION', '2.5.5.1' );
+            define( 'WCV_VERSION', '2.5.6' );
         }
 
         if ( ! defined( 'WCV_TEMPLATE_BASE' ) ) {
@@ -220,6 +224,28 @@ add_action( 'setup_theme', 'run_wcvendors', 20 );
  */
 function wcv_schedule_admin_notice() {
     wcvendors_schedule_display_notice( 'cart_and_checkout', 0 );
-    wcvendors_schedule_display_notice( 'review_request', 10 );
+    wcvendors_schedule_display_notice( 'review_request', 14 );
 }
 add_action( 'admin_init', 'wcv_schedule_admin_notice' );
+
+
+add_action( 'init', 'check_wcv_version' );
+
+/**
+ * Since 2.5.6
+ */
+function check_wcv_version() {
+
+    if ( ! function_exists( 'get_plugin_data' ) ) {
+        require_once ABSPATH . 'wp-admin/includes/plugin.php';
+    }
+
+    $plugin_data    = get_plugin_data( __FILE__ );
+    $plugin_version = $plugin_data['Version'];
+    $db_version     = get_option( 'wcvendors_version', 0 );
+
+    if ( version_compare( $plugin_version, $db_version, '>' ) ) {
+        WCV_Activate::maybe_create_marketplace_report_cache_table();
+        WCV_Activate::maybe_create_marketplace_report_cache();
+    }
+}

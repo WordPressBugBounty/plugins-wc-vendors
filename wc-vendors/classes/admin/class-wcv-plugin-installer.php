@@ -25,7 +25,7 @@ class WCV_Plugin_Installer {
      */
 
     /**
-     * Property that holds the single main instance of URL_Coupon.
+     * Property that holds the single main instance of WCV_Plugin_Installer.
      *
      * @version 2.4.8
      * @since 2.4.8
@@ -213,7 +213,7 @@ class WCV_Plugin_Installer {
                 'upgrade_link' => 'https://www.wcvendors.com/pricing/?utm_source=plugin&utm_medium=extensionspage&utm_campaign=upgradebookingsaddon',
             ),
             'wc-vendors-tax'                        => array(
-                'base_name'    => 'wc-vendors-tax/wcv-tax.php',
+                'base_name'    => 'wc-vendors-tax/wc-vendors-tax.php',
                 'name'         => __( 'WC Vendors Tax', 'wc-vendors' ),
                 'logo'         => WCV_ASSETS_URL . 'images/extensions/icon-cart.png',
                 'desc'         => __( 'Provides your marketplace with automatic sales tax calculations using either TaxJar or Avalara tax calculation services.', 'wc-vendors' ),
@@ -223,7 +223,7 @@ class WCV_Plugin_Installer {
                 'base_name'    => 'wc-vendors-woocommerce-subscriptions/wcv-wc-subscriptions.php',
                 'name'         => __( 'WC Vendors Subscriptions Integration', 'wc-vendors' ),
                 'logo'         => WCV_ASSETS_URL . 'images/extensions/icon-cart.png',
-                'desc'         => __( 'Integration with WooCommerce Subscriptions to allow your vendors to create and sell their own subscription products. Turn your marketplace int oa subscription box service, capture recurring membership fees and more.', 'wc-vendors' ),
+                'desc'         => __( 'Integration with WooCommerce Subscriptions to allow your vendors to create and sell their own subscription products. Turn your marketplace into a subscription box service, capture recurring membership fees and more.', 'wc-vendors' ),
                 'upgrade_link' => 'https://www.wcvendors.com/pricing/?utm_source=plugin&utm_medium=extensionspage&utm_campaign=upgradesubscriptionsaddon',
             ),
             'wc-vendors-membership'                 => array(

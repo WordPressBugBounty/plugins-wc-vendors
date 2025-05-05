@@ -50,15 +50,34 @@ class WCV_Product_Controller {
     public $date_format;
 
     /**
+     * Is Pro active
+     *
+     * @since 2.5.6
+     *
+     * @var boolean $is_pro_active
+     */
+    public $is_pro_active;
+
+    /**
+     * Product status
+     *
+     * @since 2.5.6
+     *
+     * @var array $product_status
+     */
+    public $product_statuses;
+
+    /**
      * Initialize the class and set its properties.
      *
      * @since    2.5.2
      */
     public function __construct() {
         global $wpdb;
-        $this->table_name  = $wpdb->prefix . 'wcv_feedback';
-        $this->date_format = is_wcv_pro_active() ? get_option( 'wcvendors_dashboard_date_format', 'Y-m-d' ) : 'Y-m-d';
-
+        $this->table_name       = $wpdb->prefix . 'wcv_feedback';
+        $this->is_pro_active    = is_wcv_pro_active();
+        $this->date_format      = $this->is_pro_active ? get_option( 'wcvendors_dashboard_date_format', 'Y-m-d' ) : 'Y-m-d';
+        $this->product_statuses = apply_filters( 'wcvendors_vendor_dashboard_product_statuses', array( 'publish', 'pending', 'private', 'draft' ) );
         add_filter( 'wcvendors_import_export_buttons', array( $this, 'add_import_export_buttons' ) );
         add_action( 'woocommerce_product_query', array( $this, 'hide_all_inactive_vendor_products' ), 10 );
         add_filter( 'woocommerce_add_to_cart_validation', array( $this, 'add_to_cart_validation' ), 10, 2 );
@@ -244,6 +263,18 @@ class WCV_Product_Controller {
         $product_cat   = isset( $_POST['_wcv_product_category'] ) ? $_POST['_wcv_product_category'] : ''; // phpcs:ignore
         $product_type = isset( $_POST['_wcv_product_type'] ) ? $_POST['_wcv_product_type'] : ''; // phpcs:ignore
 
+        $hide_product_types = get_option( 'wcvendors_capability_product_types', array() );
+
+        if ( ! empty( $hide_product_types ) ) {
+
+            $args['tax_query'][] = array(
+                'taxonomy' => 'product_type',
+                'field'    => 'slug',
+                'terms'    => $hide_product_types,
+                'operator' => 'NOT IN',
+            );
+        }
+
         if ( ! empty( $search ) ) {
             $args['s'] = $search;
         }
@@ -415,10 +446,9 @@ class WCV_Product_Controller {
         $this->allow_markup = wc_string_to_bool( get_option( 'wcvendors_allow_form_markup', 'no' ) );
 
         // Work on adding filters and option checks to publish to draft instead of straight to live.
-        $can_submit_live   = wc_string_to_bool( get_option( 'wcvendors_capability_products_live', 'no' ) );
-        $can_edit_live     = wc_string_to_bool( get_option( 'wcvendors_capability_products_edit', 'no' ) );
-        $can_edit_approved = wc_string_to_bool( get_option( 'wcvendors_capability_products_approved', 'no' ) );
-
+        $can_submit_live     = wc_string_to_bool( get_option( 'wcvendors_capability_products_live', 'no' ) );
+        $can_edit_live       = wc_string_to_bool( get_option( 'wcvendors_capability_products_edit', 'no' ) );
+        $can_edit_approved   = wc_string_to_bool( get_option( 'wcvendors_capability_products_approved', 'no' ) );
         $post_status         = '';
         $current_post_status = isset( $_POST['post_status'] ) ? $_POST['post_status'] : '';
 
@@ -455,14 +485,21 @@ class WCV_Product_Controller {
 
         $product_type = empty( $_POST['product-type'] ) ? 'simple' : sanitize_title( stripslashes( $_POST['product-type'] ) );
         $categories   = isset( $_POST['product_cat'] ) ? wc_clean( $_POST['product_cat'] ) : get_option( 'default_product_cat' );
-        $_product     = array(
-            'post_title'   => $this->allow_markup ? wc_clean( $_POST['post_title'] ) : wp_strip_all_tags( wc_clean( $_POST['post_title'] ) ),
-            'post_status'  => $post_status,
-            'post_type'    => 'product',
-            'post_excerpt' => ( isset( $_POST['post_excerpt'] ) ? ( wc_string_to_bool( get_option( 'wcvendors_allow_product_html', 'no' ) ) ? wp_kses_post( $_POST['post_excerpt'] ) : wp_strip_all_tags( $_POST['post_excerpt'] ) ) : '' ),
-            'post_content' => ( isset( $_POST['post_content'] ) ? ( wc_string_to_bool( get_option( 'wcvendors_allow_product_html', 'no' ) ) ? wp_kses_post( $_POST['post_content'] ) : wp_strip_all_tags( $_POST['post_content'] ) ) : '' ),
-            'post_author'  => get_current_user_id(),
+
+        $_product = array(
+            'post_title'  => $this->allow_markup ? wc_clean( $_POST['post_title'] ) : wp_strip_all_tags( wc_clean( $_POST['post_title'] ) ),
+            'post_status' => $post_status,
+            'post_type'   => 'product',
+            'post_author' => get_current_user_id(),
         );
+
+        if ( isset( $_POST['post_excerpt'] ) ) {
+            $_product['post_excerpt'] = wc_string_to_bool( get_option( 'wcvendors_allow_product_html', 'no' ) ) ? wp_kses_post( $_POST['post_excerpt'] ) : wp_strip_all_tags( $_POST['post_excerpt'] );
+        }
+
+        if ( isset( $_POST['post_content'] ) ) {
+            $_product['post_content'] = wc_string_to_bool( get_option( 'wcvendors_allow_product_html', 'no' ) ) ? wp_kses_post( $_POST['post_content'] ) : wp_strip_all_tags( $_POST['post_content'] );
+        }
 
         do_action( 'wcvendors_before_product_save', $post_id );
 
@@ -512,6 +549,8 @@ class WCV_Product_Controller {
         }
 
         do_action( 'wcvendors_before_product_save_categories', $product_id, $categories );
+
+        $hide_categories = wc_string_to_bool( get_option( 'wcvendors_hide_product_basic_categories', 'no' ) ) && $this->is_pro_active;
         // Categories.
         if ( isset( $_POST['product_cat'] ) && is_array( $_POST['product_cat'] ) ) {
             $categories = array_map( 'intval', $_POST['product_cat'] );
@@ -519,12 +558,12 @@ class WCV_Product_Controller {
 
             // Need to store product categories into single user meta to track all. Sync this also.
             wp_set_post_terms( $product_id, $categories, 'product_cat' );
-        } else {
-            // No categories selected so reset them.
+        } elseif ( ! $hide_categories ) {
             wp_set_post_terms( $product_id, null, 'product_cat' );
         }
 
         do_action( 'wcvendors_before_product_save_tags', $product_id );
+        $hide_tags = wc_string_to_bool( get_option( 'wcvendors_hide_product_basic_tags', 'no' ) ) && $this->is_pro_active;
         // Tags.
         if ( isset( $_POST['product_tags'] ) ) {
 
@@ -550,8 +589,7 @@ class WCV_Product_Controller {
             $tags = implode( ',', $tags );
 
             wp_set_post_terms( $product_id, $tags, 'product_tag' );
-        } else {
-            // No tags selected so reset them.
+        } elseif ( ! $hide_tags ) {
             wp_set_post_terms( $product_id, null, 'product_tag' );
         }
 
@@ -844,7 +882,8 @@ class WCV_Product_Controller {
         do_action( 'wcvendors_before_product_save_attributes', $post_id );
 
         // Save Attributes.
-        $attributes = array();
+        $attributes      = array();
+        $hide_attributes = wc_string_to_bool( get_option( 'wcvendors_hide_product_basic_attributes', 'no' ) ) && $this->is_pro_active;
 
         if ( isset( $_POST['attribute_names'] ) && isset( $_POST['attribute_values'] ) ) {
 
@@ -950,11 +989,13 @@ class WCV_Product_Controller {
                     );
                 }
             } // end forloop.
+
+            uasort( $attributes, 'WC_Vendors\Classes\Includes\attributes_cmp' );
+
+            update_post_meta( $post_id, '_product_attributes', $attributes );
+        } elseif ( ! $hide_attributes ) {
+            update_post_meta( $post_id, '_product_attributes', array() );
         }
-
-        uasort( $attributes, 'WC_Vendors\Classes\Includes\attributes_cmp' );
-
-        update_post_meta( $post_id, '_product_attributes', $attributes );
 
         do_action( 'wcvendors_before_product_save_prices', $post_id );
         // Sales and prices.
@@ -1783,7 +1824,11 @@ class WCV_Product_Controller {
             )
         );
 
-        return $product_status[ $status ];
+        if ( isset( $product_status[ $status ] ) ) {
+            return $product_status[ $status ];
+        }
+
+        return $status;
     }
 
     /**
@@ -3201,26 +3246,93 @@ class WCV_Product_Controller {
     }
 
     /**
+     * Get term taxonomy IDs for given product types.
+     *
+     * @param array $product_types Array of product type slugs.
+     * @return array Term taxonomy IDs.
+     *
+     * @since 2.5.6
+     */
+    public function get_product_type_taxonomy_ids( $product_types ) {
+        global $wpdb;
+
+        if ( empty( $product_types ) ) {
+            return array();
+        }
+
+        $placeholders = implode( ',', array_fill( 0, count( $product_types ), '%s' ) );
+
+        $query = "
+            SELECT tt.term_taxonomy_id 
+            FROM {$wpdb->term_taxonomy} tt
+            JOIN {$wpdb->terms} t ON tt.term_id = t.term_id
+            WHERE tt.taxonomy = 'product_type'
+            AND t.slug IN ($placeholders)
+        ";
+
+        return $wpdb->get_col( $wpdb->prepare( $query, $product_types ) ); //phpcs:ignore
+    }
+
+    /**
+     * Get products for current vendor excluding specific taxonomy IDs.
+     *
+     * @param array $taxonomy_ids Array of term taxonomy IDs to exclude.
+     * @return string SQL query.
+     *
+     * @since 2.5.6
+     */
+    public function get_vendor_products_excluding_taxonomies_query( $taxonomy_ids ) {
+        global $wpdb;
+
+        if ( empty( $taxonomy_ids ) ) {
+            return array();
+        }
+
+        $placeholders               = implode( ',', array_fill( 0, count( $taxonomy_ids ), '%d' ) );
+        $product_status_placeholder = implode( ',', array_fill( 0, count( $this->product_statuses ), '%s' ) );
+        $query                      = "
+            SELECT p.post_status, pm.meta_value as stock_status
+            FROM {$wpdb->posts} p
+            JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id AND pm.meta_key = '_stock_status'
+            WHERE p.post_type = 'product'
+            AND p.post_author = %d
+            AND p.post_status IN ($product_status_placeholder)
+            AND NOT EXISTS (
+                SELECT 1 FROM {$wpdb->term_relationships} tr 
+                WHERE tr.object_id = p.ID 
+                AND tr.term_taxonomy_id IN ($placeholders)
+            )
+        ";
+
+        return $wpdb->prepare( $query, array_merge( array( get_current_user_id() ), $this->product_statuses, $taxonomy_ids ) ); //phpcs:ignore
+    }
+
+    /**
      * Count products status and stock status.
      *
      * @since 2.5.4
+     * @version 2.5.6
      */
     public function count_products_status() {
         global $wpdb;
+        $hide_product_types = get_option( 'wcvendors_capability_product_types', array() );
 
-        $query = $wpdb->prepare(
-            "SELECT p.post_status, pm.meta_value as stock_status
-            FROM %i p
-            JOIN %i pm ON p.ID = pm.post_id
-            WHERE p.post_type = 'product'
-            AND pm.meta_key = '_stock_status'
-            AND p.post_author = %d
-            AND p.post_status != %s",
-            $wpdb->posts,
-            $wpdb->postmeta,
-            get_current_user_id(),
-            'auto-draft'
-        );
+        if ( ! empty( $hide_product_types ) ) {
+            $taxonomy_ids = $this->get_product_type_taxonomy_ids( $hide_product_types );
+            $query        = $this->get_vendor_products_excluding_taxonomies_query( $taxonomy_ids );
+        } else {
+            $product_status_placeholder = implode( ',', array_fill( 0, count( $this->product_statuses ), '%s' ) );
+            // Original optimized query.
+            $query = $wpdb->prepare(
+                "SELECT p.post_status, pm.meta_value as stock_status
+                FROM {$wpdb->posts} p
+                JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id AND pm.meta_key = '_stock_status'
+                WHERE p.post_type = 'product'
+                AND p.post_author = %d
+                AND p.post_status IN ($product_status_placeholder)", //phpcs:ignore
+                array_merge( array( get_current_user_id() ), $this->product_statuses )
+            );
+        }
 
         $results = $wpdb->get_results( $query ); //phpcs:ignore
         $post_status_counts  = array();
@@ -3249,16 +3361,19 @@ class WCV_Product_Controller {
         );
 
         $counts = array_merge( $counts, $post_status_counts, $stock_status_counts );
-        $labels = array(
-            'all'         => __( 'All', 'wc-vendors' ),
-            'publish'     => __( 'Published', 'wc-vendors' ),
-            'draft'       => __( 'Draft', 'wc-vendors' ),
-            'auto-draft'  => __( 'Auto Draft', 'wc-vendors' ),
-            'pending'     => __( 'Pending', 'wc-vendors' ),
-            'private'     => __( 'Private', 'wc-vendors' ),
-            'instock'     => __( 'In stock', 'wc-vendors' ),
-            'outofstock'  => __( 'Out of stock', 'wc-vendors' ),
-            'onbackorder' => __( 'On backorder', 'wc-vendors' ),
+        $labels = apply_filters(
+            'wcvendors_product_status_labels',
+            array(
+                'all'         => __( 'All', 'wc-vendors' ),
+                'publish'     => __( 'Published', 'wc-vendors' ),
+                'draft'       => __( 'Draft', 'wc-vendors' ),
+                'auto-draft'  => __( 'Auto Draft', 'wc-vendors' ),
+                'pending'     => __( 'Pending', 'wc-vendors' ),
+                'private'     => __( 'Private', 'wc-vendors' ),
+                'instock'     => __( 'In stock', 'wc-vendors' ),
+                'outofstock'  => __( 'Out of stock', 'wc-vendors' ),
+                'onbackorder' => __( 'On backorder', 'wc-vendors' ),
+            )
         );
 
         foreach ( $counts as $key => $count ) {
@@ -3270,6 +3385,7 @@ class WCV_Product_Controller {
                 'label' => $labels[ $key ],
             );
         }
+
         return $counts;
     }
 

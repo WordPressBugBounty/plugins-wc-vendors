@@ -750,3 +750,17 @@ if ( ! function_exists( 'maybe_load_new_dashboard' ) ) {
         return $maybe_load_new_dashboard;
     }
 }
+
+
+if ( ! function_exists( 'wcv_is_all_product_types_hidden' ) ) {
+    /**
+     * Check if all product types are hidden.
+     *
+     * @return bool
+     */
+    function wcv_is_all_product_types_hidden() {
+        $hidden_product_types = get_option( 'wcvendors_capability_product_types', array() );
+        $wc_product_types     = array_keys( wc_get_product_types() );
+        return empty( array_diff( $wc_product_types, $hidden_product_types ) );
+    }
+}

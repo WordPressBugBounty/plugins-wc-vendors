@@ -120,34 +120,47 @@ function wcv_check_allow_screen() {
         return $is_allow_screen;
     }
 
+    $post_type = get_post_type();
+
+    if ( ! $post_type && isset( $_GET['post_type'] ) ) { // phpcs:ignore
+        $post_type = sanitize_text_field( $_GET['post_type'] ); // phpcs:ignore
+    }
+
     $allow_screen_pages = array(
+        'dashboard',
         'wc-vendors_page_wcv-commissions',
-        'wc-vendors_page_wcv-settings',
-        'wc-vendors_page_wcv-all-vendors',
+        'wc-vendors_page_wcv-vendor-settings',
         'wc-vendors_page_wcv-extensions',
+        'wc-vendors_page_wcv-all-vendors',
+        'wc-vendors_page_wcv-settings',
         'wc-vendors_page_wcv-help',
-        'wc-vendors_page_wcv-about',
+        'wc-vendors_page_wcv_pro_vendor_feedback',
+        'wc-vendors_page_wcvm_subscription',
         'wc-vendors_page_wc-vendors-license',
-        'wc-vendors_page_wcv-tools',
-        'marketing_page_advanced-coupons-marketing',
+        'wc-vendors_page_wcv-about',
+        'wc-vendors_page_wc-vendors-marketplace-dashboard',
+        'woocommerce_page_wc-admin',
+        'woocommerce_page_wc-settings',
+        'woocommerce_page_wc-reports',
+        'woocommerce_page_wc-status',
+        'edit-shop_order',
         'edit-shop_coupon',
-        'edit-product',
+        'plugins',
+        'woocommerce_page_wc-addons',
+    );
+
+    $allow_screen_post_types = array(
         'shop_order',
-        'edit-post',
-        'shop_order',
-        'product',
         'shop_coupon',
-        'post',
+        'product',
     );
 
     $allow_screen_pages = apply_filters( 'wcvendors_allow_screen_pages', $allow_screen_pages );
     $screen_id          = isset( $screen->id ) ? $screen->id : '';
 
-    if ( ! in_array( $screen_id, $allow_screen_pages, true ) ) {
-        return $is_allow_screen;
-    }
+    $is_allow_screen = in_array( $screen_id, $allow_screen_pages, true ) || in_array( $post_type, $allow_screen_post_types, true );
 
-    return apply_filters( 'wcvendors_allow_screen', true );
+    return apply_filters( 'wcvendors_allow_screen', $is_allow_screen );
 }
 
 if ( ! function_exists( 'wcv_enqueue_script' ) ) {

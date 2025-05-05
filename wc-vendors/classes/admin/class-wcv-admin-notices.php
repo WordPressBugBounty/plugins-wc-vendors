@@ -366,39 +366,13 @@ class WCVendors_Admin_Notices {
             return;
         }
 
-        $screen = get_current_screen();
-        if ( ! $screen ) {
-            return;
-        }
-
-        $allow_screen = array(
-            'dashboard',
-            'wc-vendors_page_wcv-commissions',
-            'wc-vendors_page_wcv-vendor-settings',
-            'wc-vendors_page_wcv-extensions',
-            'wc-vendors_page_wcv-all-vendors',
-            'wc-vendors_page_wcv-settings',
-            'wc-vendors_page_wcv-help',
-            'wc-vendors_page_wc-vendors-license',
-            'wc-vendors_page_wcv-about',
-            'woocommerce_page_wc-admin',
-            'woocommerce_page_wc-settings',
-            'woocommerce_page_wc-reports',
-            'woocommerce_page_wc-status',
-            'edit-shop_order',
-            'edit-shop_coupon',
-            'plugins',
-        );
-
-        if ( ! in_array( $screen->id, $allow_screen, true ) ) {
-            return;
-        }
-
         if ( ! current_user_can( 'manage_options' ) ) {
             return;
         }
 
-        include 'views/notices/html-notice-review-request.php';
+        if ( wcv_check_allow_screen() ) {
+            include 'views/notices/html-notice-review-request.php';
+        }
     }
 
     /**

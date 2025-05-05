@@ -129,6 +129,13 @@ if ( ! class_exists( 'WCVendors_Settings_General', false ) ) :
                             'default' => 'no',
                         ),
                         array(
+                            'title'   => __( 'Marketplace Dashboard Cache', 'wc-vendors' ),
+                            'desc'    => __( 'Enable caching for Marketplace Dashboard', 'wc-vendors' ),
+                            'id'      => 'wcvendors_enable_dashboard_cache',
+                            'type'    => 'checkbox',
+                            'default' => 'yes',
+                        ),
+                        array(
                             'type' => 'sectionend',
                             'id'   => 'general_options',
                         ),

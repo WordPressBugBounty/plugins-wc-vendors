@@ -877,7 +877,7 @@ class WCV_Form_Helper {
                 echo '<span style="display: block; margin-bottom: 25px; margin-top: 12px;" class="small-align-center tiny-align-center">';
                 printf(
                     /* translators: %d: maximum number of gallery images */
-                    esc_html__( 'Add more product images here, and you can upload up to %d files max' ),
+                    esc_html__( 'Add more product images here, and you can upload up to %d files max', 'wc-vendors' ),
                     esc_html( $gallery_options['max_upload'] )
                 );
                 echo '</span>';

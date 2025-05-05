@@ -157,26 +157,22 @@ class WCV_Table_Helper {
 
         $product_status = isset( $_GET['product_status'] ) ? sanitize_text_field( $_GET['product_status'] ) : ''; // phpcs:ignore
         $instock_status = array( 'instock', 'outofstock', 'onbackorder' );
-        $post_status    = array( 'publish', 'draft', 'pending', 'private' );
-
-        if ( 'all' === $product_status ) {
-            $product_status = 'any';
-        }
+        $post_status    = array( 'publish', 'pending', 'private', 'draft' );
 
         // Default table rows.
         $args = array(
             'posts_per_page' => wcv_deprecated_filter( 'wcvendors_pro_table_post_per_page_' . $this->id, '2.5.2', 'wcvendors_table_post_per_page_' . $this->id,  20 ), //phpcs:ignore
             'post_type'      => $this->post_type,
             'author'         => $this->vendor_id,
-            'post_status'    => 'any',
+            'post_status'    => $post_status,
             'paged'          => $paged,
             'tax_query'      => array(
                 'relation' => 'AND',
             ),
         );
         if ( in_array( $product_status, $instock_status, true ) ) {
-            $args['post_status'] = 'any';
-            $meta_query          = array(
+
+            $meta_query = array(
                 array(
                     'key'     => '_stock_status',
                     'value'   => $product_status,

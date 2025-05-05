@@ -727,7 +727,7 @@ class WCV_Dashboard_Controller {
             }
         }
 
-        if ( $lock_edit_products || $lock_new_products ) {
+        if ( $lock_edit_products || $lock_new_products || wcv_is_all_product_types_hidden() ) {
             unset( $quick_links['product'] );
         }
 

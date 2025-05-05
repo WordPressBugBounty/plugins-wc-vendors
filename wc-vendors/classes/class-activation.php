@@ -20,8 +20,52 @@ class WCV_Activate {
         }
         wcvendors_add_vendor_status_meta_key();
         self::maybe_alter_table_decimal_places();
+        self::maybe_create_marketplace_report_cache_table();
+        self::maybe_create_marketplace_report_cache();
         // Flush rewrite rules when activating plugin.
         flush_rewrite_rules();
+    }
+
+    /**
+     * Maybe create marketplace report cache for the first time
+     */
+    public static function maybe_create_marketplace_report_cache() {
+        global $wpdb;
+        // Check if the report cache is exists.
+        $table_name   = $wpdb->prefix . 'wcv_reports_cache';
+        $table_exists = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table_name ) );
+        if ( $table_exists ) {
+
+            // Check if the report cache is empty.
+            $count = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT( report_key ) FROM %i", $table_name ) ); //phpcs:ignore
+            if ( 0 === $count || ! $count ) {
+
+                wp_schedule_single_event( time() + 10, 'wcv_pre_cache_reports' );
+            }
+        }
+    }
+
+    /**
+     * Maybe create marketplace report cache table
+     *
+     * @since 2.5.5
+     */
+    public static function maybe_create_marketplace_report_cache_table() {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'wcv_reports_cache';
+
+        $sql = "CREATE TABLE IF NOT EXISTS $table_name (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            report_key VARCHAR(255) NOT NULL,
+            report_data LONGTEXT NOT NULL,
+            report_date DATE NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            INDEX report_key_idx (report_key),
+            INDEX report_date_idx (report_date)
+        )";
+
+        require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+        dbDelta( $sql );
     }
 
     /**

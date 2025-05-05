@@ -466,6 +466,10 @@ class WCV_Vendor_Dashboard {
             'icon'    => 'wcv-icon-settings',
         );
 
+        if ( wcv_is_all_product_types_hidden() ) {
+            unset( $this->dashboard_pages['product'] );
+        }
+
         return wcv_deprecated_filter( 'wcv_pro_dashboard_urls', '2.5.2', 'wcv_dashboard_urls', $this->dashboard_pages );
     }
 

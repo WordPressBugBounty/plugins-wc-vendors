@@ -84,21 +84,6 @@ class WCV_Order_Controller {
      */
     private $controller_type;
 
-    /**
-     * Billing fields.
-     *
-     * @var array
-     * @version 2.5.2
-     */
-    private static $billing_fields;
-
-    /**
-     * Shipping fields.
-     *
-     * @var array
-     * @version 2.5.2
-     */
-    private static $shipping_fields;
 
     /**
      * Default start date.
@@ -220,8 +205,17 @@ class WCV_Order_Controller {
         }
 
         $this->default_start = apply_filters( 'wcv_default_order_start_date', $this->default_start );
+    }
 
-        self::$billing_fields = apply_filters(
+    /**
+     * Get billing fields
+     *
+     * @since 2.5.6
+     *
+     * @return array $billing_fields
+     */
+    public static function get_billing_fields() {
+        $billing_fields = apply_filters(
             'wcv_order_billing_fields',
             array(
                 'first_name' => array(
@@ -273,7 +267,18 @@ class WCV_Order_Controller {
             )
         );
 
-        self::$shipping_fields = apply_filters(
+        return $billing_fields;
+    }
+
+    /**
+     * Get shipping fields
+     *
+     * @since 2.5.6
+     *
+     * @return array $shipping_fields
+     */
+    public static function get_shipping_fields() {
+        $shipping_fields = apply_filters(
             'wcv_order_shipping_fields',
             array(
                 'first_name' => array(
@@ -318,6 +323,8 @@ class WCV_Order_Controller {
                 ),
             )
         );
+
+        return $shipping_fields;
     }
 
     /**

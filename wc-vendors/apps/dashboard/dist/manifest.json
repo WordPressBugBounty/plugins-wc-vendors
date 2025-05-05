@@ -1,0 +1,265 @@
+{
+  "Dashboard.css": {
+    "file": "assets/Dashboard-66296c7d.css",
+    "src": "Dashboard.css"
+  },
+  "_Dashboard.dad82f26.js": {
+    "css": [
+      "assets/Dashboard-66296c7d.css"
+    ],
+    "dynamicImports": [
+      "src/components/Filter.vue",
+      "src/components/Metrics.vue",
+      "src/components/TopVendors.vue",
+      "src/components/PendingVendors.vue",
+      "src/components/HelpFulLinks.vue",
+      "src/components/LicenseInfo.vue"
+    ],
+    "file": "common/Dashboard.dad82f26.js",
+    "imports": [
+      "src/main.ts",
+      "_vendor.6b2451aa.js",
+      "_antd.138ea4fd.js"
+    ],
+    "isDynamicEntry": true
+  },
+  "_antd.138ea4fd.js": {
+    "file": "common/antd.138ea4fd.js",
+    "imports": [
+      "_vendor.6b2451aa.js"
+    ]
+  },
+  "_createLucideIcon.aebff54c.js": {
+    "file": "common/createLucideIcon.aebff54c.js",
+    "imports": [
+      "_Dashboard.dad82f26.js",
+      "_vendor.6b2451aa.js"
+    ]
+  },
+  "_index.1c336f1b.js": {
+    "file": "common/index.1c336f1b.js",
+    "imports": [
+      "_Dashboard.dad82f26.js",
+      "_vendor.6b2451aa.js",
+      "_createLucideIcon.aebff54c.js",
+      "_antd.138ea4fd.js"
+    ]
+  },
+  "_index.282cac68.js": {
+    "file": "common/index.282cac68.js",
+    "imports": [
+      "_Dashboard.dad82f26.js",
+      "_vendor.6b2451aa.js",
+      "_createLucideIcon.aebff54c.js",
+      "_antd.138ea4fd.js"
+    ]
+  },
+  "_index.6b112fdd.js": {
+    "file": "common/index.6b112fdd.js",
+    "imports": [
+      "_Dashboard.dad82f26.js",
+      "_vendor.6b2451aa.js",
+      "_createLucideIcon.aebff54c.js"
+    ]
+  },
+  "_index.6d9f89df.js": {
+    "file": "common/index.6d9f89df.js",
+    "imports": [
+      "_Dashboard.dad82f26.js",
+      "_vendor.6b2451aa.js",
+      "_createLucideIcon.aebff54c.js",
+      "_index.282cac68.js"
+    ]
+  },
+  "_index.ad90af7f.js": {
+    "file": "common/index.ad90af7f.js",
+    "imports": [
+      "_Dashboard.dad82f26.js",
+      "_vendor.6b2451aa.js",
+      "_createLucideIcon.aebff54c.js"
+    ]
+  },
+  "_index.b29ae5be.js": {
+    "file": "common/index.b29ae5be.js",
+    "imports": [
+      "_Dashboard.dad82f26.js",
+      "_vendor.6b2451aa.js",
+      "_createLucideIcon.aebff54c.js",
+      "_antd.138ea4fd.js",
+      "_index.eea31faf.js",
+      "_index.282cac68.js"
+    ]
+  },
+  "_index.eea31faf.js": {
+    "file": "common/index.eea31faf.js",
+    "imports": [
+      "_Dashboard.dad82f26.js",
+      "_vendor.6b2451aa.js",
+      "_createLucideIcon.aebff54c.js",
+      "_index.282cac68.js",
+      "_antd.138ea4fd.js",
+      "_index.6d9f89df.js"
+    ]
+  },
+  "_settings.11de4bb8.js": {
+    "file": "common/settings.11de4bb8.js",
+    "imports": [
+      "_createLucideIcon.aebff54c.js"
+    ]
+  },
+  "_vendor.6b2451aa.js": {
+    "file": "common/vendor.6b2451aa.js"
+  },
+  "src/components/Filter.css": {
+    "file": "assets/Filter-7113684a.css",
+    "src": "src/components/Filter.css"
+  },
+  "src/components/Filter.vue": {
+    "css": [
+      "assets/Filter-7113684a.css"
+    ],
+    "file": "components/Filter.c429fb37.js",
+    "imports": [
+      "_vendor.6b2451aa.js",
+      "_Dashboard.dad82f26.js",
+      "_index.282cac68.js",
+      "_index.ad90af7f.js",
+      "_createLucideIcon.aebff54c.js",
+      "_index.eea31faf.js",
+      "_index.6d9f89df.js",
+      "_antd.138ea4fd.js",
+      "src/main.ts"
+    ],
+    "isDynamicEntry": true,
+    "src": "src/components/Filter.vue"
+  },
+  "src/components/HelpFulLinks.css": {
+    "file": "assets/HelpFulLinks-28919b27.css",
+    "src": "src/components/HelpFulLinks.css"
+  },
+  "src/components/HelpFulLinks.vue": {
+    "css": [
+      "assets/HelpFulLinks-28919b27.css"
+    ],
+    "file": "components/HelpFulLinks.e736d868.js",
+    "imports": [
+      "_vendor.6b2451aa.js",
+      "_Dashboard.dad82f26.js",
+      "_createLucideIcon.aebff54c.js",
+      "_index.1c336f1b.js",
+      "_settings.11de4bb8.js",
+      "src/main.ts",
+      "_antd.138ea4fd.js"
+    ],
+    "isDynamicEntry": true,
+    "src": "src/components/HelpFulLinks.vue"
+  },
+  "src/components/LicenseInfo.css": {
+    "file": "assets/LicenseInfo-bd14d151.css",
+    "src": "src/components/LicenseInfo.css"
+  },
+  "src/components/LicenseInfo.vue": {
+    "css": [
+      "assets/LicenseInfo-bd14d151.css"
+    ],
+    "file": "components/LicenseInfo.8ee101c0.js",
+    "imports": [
+      "_vendor.6b2451aa.js",
+      "_Dashboard.dad82f26.js",
+      "_createLucideIcon.aebff54c.js",
+      "_index.1c336f1b.js",
+      "_index.282cac68.js",
+      "_index.6d9f89df.js",
+      "_index.6b112fdd.js",
+      "_settings.11de4bb8.js",
+      "src/main.ts",
+      "_antd.138ea4fd.js"
+    ],
+    "isDynamicEntry": true,
+    "src": "src/components/LicenseInfo.vue"
+  },
+  "src/components/Metrics.css": {
+    "file": "assets/Metrics-5529a9eb.css",
+    "src": "src/components/Metrics.css"
+  },
+  "src/components/Metrics.vue": {
+    "css": [
+      "assets/Metrics-5529a9eb.css"
+    ],
+    "file": "components/Metrics.f6b9281b.js",
+    "imports": [
+      "_vendor.6b2451aa.js",
+      "_Dashboard.dad82f26.js",
+      "_index.1c336f1b.js",
+      "_createLucideIcon.aebff54c.js",
+      "_index.282cac68.js",
+      "_index.ad90af7f.js",
+      "src/main.ts",
+      "_antd.138ea4fd.js"
+    ],
+    "isDynamicEntry": true,
+    "src": "src/components/Metrics.vue"
+  },
+  "src/components/PendingVendors.css": {
+    "file": "assets/PendingVendors-12fb8aa3.css",
+    "src": "src/components/PendingVendors.css"
+  },
+  "src/components/PendingVendors.vue": {
+    "css": [
+      "assets/PendingVendors-12fb8aa3.css"
+    ],
+    "file": "components/PendingVendors.f7e38419.js",
+    "imports": [
+      "_vendor.6b2451aa.js",
+      "_Dashboard.dad82f26.js",
+      "_createLucideIcon.aebff54c.js",
+      "_index.282cac68.js",
+      "_index.6b112fdd.js",
+      "_index.6d9f89df.js",
+      "_index.1c336f1b.js",
+      "_index.b29ae5be.js",
+      "_index.ad90af7f.js",
+      "src/main.ts",
+      "_antd.138ea4fd.js",
+      "_index.eea31faf.js"
+    ],
+    "isDynamicEntry": true,
+    "src": "src/components/PendingVendors.vue"
+  },
+  "src/components/TopVendors.css": {
+    "file": "assets/TopVendors-5790b9a4.css",
+    "src": "src/components/TopVendors.css"
+  },
+  "src/components/TopVendors.vue": {
+    "css": [
+      "assets/TopVendors-5790b9a4.css"
+    ],
+    "file": "components/TopVendors.76ffe15c.js",
+    "imports": [
+      "_vendor.6b2451aa.js",
+      "_Dashboard.dad82f26.js",
+      "_index.b29ae5be.js",
+      "_createLucideIcon.aebff54c.js",
+      "_index.282cac68.js",
+      "_index.1c336f1b.js",
+      "_index.eea31faf.js",
+      "_index.6d9f89df.js",
+      "_antd.138ea4fd.js",
+      "_index.ad90af7f.js",
+      "src/main.ts"
+    ],
+    "isDynamicEntry": true,
+    "src": "src/components/TopVendors.vue"
+  },
+  "src/main.ts": {
+    "dynamicImports": [
+      "_Dashboard.dad82f26.js"
+    ],
+    "file": "main.5c2e1de1.js",
+    "imports": [
+      "_vendor.6b2451aa.js"
+    ],
+    "isEntry": true,
+    "src": "src/main.ts"
+  }
+}

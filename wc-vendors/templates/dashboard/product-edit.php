@@ -209,17 +209,18 @@ $post_status               = ( isset( $product ) && null !== $product ) ? $post_
             <!-- Attributes -->
 
             <?php do_action( 'wcv_before_attributes_tab', $object_id ); ?>
+            <?php $hide_attributes = wc_string_to_bool( get_option( 'wcvendors_hide_product_basic_attributes', 'no' ) ) && is_wcv_pro_active(); ?>
+            <?php if ( ! $hide_attributes ) : ?>
+                <div class="wcv_product_attributes tabs-content hide-all" id="attributes">
 
-            <div class="wcv_product_attributes tabs-content hide-all" id="attributes">
+                    <div class="attributes-validation-error"></div>
 
-                <div class="attributes-validation-error"></div>
+                    <?php WCV_Product_Form::product_attributes( $object_id ); ?>
 
-                <?php WCV_Product_Form::product_attributes( $object_id ); ?>
+                    <?php do_action( 'wcv_product_options_attributes_product_data', $object_id ); ?>
 
-                <?php do_action( 'wcv_product_options_attributes_product_data', $object_id ); ?>
-
-            </div>
-
+                </div>
+            <?php endif; ?>
             <?php do_action( 'wcv_after_attributes_tab', $object_id ); ?>
 
             <!-- Advanced -->

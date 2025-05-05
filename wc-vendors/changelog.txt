@@ -1,5 +1,17 @@
 Changelog for WC Vendors Marketplace
 
+Version 2.5.6 - 28th April 2025
+
+ * Feature: Marketplace Admin Dashboard
+ * Improvement: Review Request
+ * Improvement: Marketplace Backend Dashboard optimise
+ * Bug Fix: Undefined Array Key importing
+ * Bug Fix: An uncaught error occurs when all product types are hidden
+ * Bug Fix: Hidden Categories field causes product categories to be removed on save
+ * Bug Fix: Restricted Product Types Still Visible in Dropdown on Vendor Dashboard Product Tab
+ * Bug Fix: Product images translation
+ * Bug Fix: When Gallery display is Disabled it breaks the product editor form
+
 Version 2.5.5.1 - 9th April 2025
 
  * Improvement: Update WooCommerce version
@@ -212,7 +224,7 @@ Version 2.4.7.2 - 16th November 2023
 
 * Bug Fix: Insert commission is not working
 
-Verison 2.4.7.1 - 14th November 2023
+Version 2.4.7.1 - 14th November 2023
 
 * Improvement: Declare incompatible with WC Cart/Checkout blocks
 * Improvement: Commissions page security

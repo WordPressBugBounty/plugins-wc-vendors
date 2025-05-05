@@ -2,8 +2,8 @@
 Contributors: jkohlbach, RymeraWebCo, Rymera01, smub
 Tags: multivendor, marketplace, multi vendor, product vendors, woocommerce commissions
 Requires at least: 5.5.0
-Tested up to: 6.7
-Stable tag: 2.5.5.1
+Tested up to: 6.8
+Stable tag: 2.5.6
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -298,6 +298,17 @@ Please [get in touch](https://www.wcvendors.com/contact-us/?utm_campaign=faq&utm
 12. Email notifications for admins, customers and vendors
 
 == Changelog ==
+
+= Version 2.5.6 - 28th April 2025 =
+ * Feature: Marketplace Admin Dashboard
+ * Improvement: Review Request
+ * Improvement: Marketplace Backend Dashboard optimise
+ * Bug Fix: Undefined Array Key importing
+ * Bug Fix: An uncaught error occurs when all product types are hidden
+ * Bug Fix: Hidden Categories field causes product categories to be removed on save
+ * Bug Fix: Restricted Product Types Still Visible in Dropdown on Vendor Dashboard Product Tab
+ * Bug Fix: Product images translation
+ * Bug Fix: When Gallery display is Disabled it breaks the product editor form
 
 = Version 2.5.5.1 - 9th April 2025 =
 

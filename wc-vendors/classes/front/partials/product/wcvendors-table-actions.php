@@ -52,6 +52,16 @@ use function WC_Vendors\Classes\Includes\wcv_get_product_types;
                 $product_types      = wcv_get_product_types();
                 $product_types      = array( '' => esc_html__( 'None', 'wc-vendors' ) ) + $product_types;
 
+                $hide_product_types = get_option( 'wcvendors_capability_product_types', array() );
+
+                foreach ( $hide_product_types as $product_type ) {
+                    if ( isset( $product_types[ $product_type ] ) ) {
+                        unset( $product_types[ $product_type ] );
+                    }
+                }
+
+                $product_types = apply_filters( 'wcvendors_capability_filter_product_types', $product_types );
+
                 $product_cat_get  = isset( $_POST['_wcv_product_category'] ) ? ( wp_unslash( $_POST['_wcv_product_category'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
                 $product_tag_get  = isset( $_POST['_wcv_product_tag'] ) ? ( wp_unslash( $_POST['_wcv_product_tag'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
                 $product_type_get = isset( $_POST['_wcv_product_type'] ) ? ( wp_unslash( $_POST['_wcv_product_type'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification

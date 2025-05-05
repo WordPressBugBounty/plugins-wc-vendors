@@ -85,7 +85,7 @@ class WC_Vendors_Bootstrap {
      */
     public function __construct() {
 
-        $this->title = __( 'WC Vendors Marketplace', 'wc-vendors' );
+        $this->title = 'WC Vendors Marketplace';
         add_action( 'plugins_loaded', array( $this, 'load_il8n' ) );
         // Install & upgrade.
         add_action( 'admin_init', array( $this, 'check_install' ) );
@@ -128,8 +128,21 @@ class WC_Vendors_Bootstrap {
 
         add_action( 'upgrader_process_complete', array( $this, 'run_action_after_process_complete' ), 10, 2 );
         add_action( 'upgrader_overwrote_package', array( $this, 'run_action_after_overwrote_package' ), 10, 3 );
+        add_action( 'after_setup_theme', array( $this, 'init_plugin_installer' ) );
 
         $this->define_public_hooks();
+    }
+
+    /**
+     * Initialize the plugin installer
+     *
+     * @since 2.5.6 - Fix text domain error
+     */
+    public function init_plugin_installer() {
+        if ( ! class_exists( 'WCV_Plugin_Installer' ) ) {
+            include_once WCV_PLUGIN_DIR . 'classes/admin/class-wcv-plugin-installer.php';
+        }
+        new WCV_Plugin_Installer();
     }
 
     /**
@@ -322,6 +335,7 @@ class WC_Vendors_Bootstrap {
         include_once WCV_PLUGIN_DIR . 'classes/includes/class-wcv-order-data-synchronizer.php';
         include_once WCV_PLUGIN_DIR . 'classes/class-vendor-settings.php';
         include_once WCV_PLUGIN_DIR . 'classes/includes/class-all-vendors-page.php';
+        include_once WCV_PLUGIN_DIR . 'classes/includes/class-wcv-marketplace-backend-dashboard.php';
         include_once WCV_PLUGIN_DIR . 'classes/includes/class-wcv-cli.php';
         include_once WCV_PLUGIN_DIR . 'classes/includes/class-wcv-order-cli.php';
         include_once WCV_PLUGIN_DIR . 'classes/includes/class-wcv-seo-compatibility.php';
@@ -339,6 +353,7 @@ class WC_Vendors_Bootstrap {
         include_once WCV_PLUGIN_DIR . 'classes/front/class-wcv-table-helper.php';
         include_once WCV_PLUGIN_DIR . 'classes/front/class-wcv-dashboard-controller.php';
         include_once WCV_PLUGIN_DIR . 'classes/includes/class-wcv-reports.php';
+        include_once WCV_PLUGIN_DIR . 'classes/includes/class-wcv-reports-cache.php';
 
         if ( is_admin() ) {
 
@@ -372,7 +387,6 @@ class WC_Vendors_Bootstrap {
             new WCV_Admin_Reports();
             new WCV_Admin_Import_Export();
             new WCVendors_Admin_Orders();
-            new WCV_Plugin_Installer();
             new WCV_Admin_ACFWF_Promo_Page();
 
         } else {
@@ -404,6 +418,10 @@ class WC_Vendors_Bootstrap {
         new WCV_Commission();
         new WCV_Vendors();
         new WCV_Emails();
+
+        $reports_cache = WCV_Reports_Cache::get_instance();
+        $reports_cache->init_hooks();
+        $reports_cache->schedule_cache_pre_caching();
 
         // Initialize the synchronizer.
         $synchronizer = new WCV_Order_Data_Synchronizer();

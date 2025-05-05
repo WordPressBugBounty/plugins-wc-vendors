@@ -30,10 +30,11 @@ class WCVendors_Admin_Menus {
         // Add menus.
         add_action( 'current_screen', array( $this, 'add_wcv_logo' ), 0 );
         add_action( 'admin_menu', array( $this, 'admin_menu' ) );
-        add_action( 'admin_menu', array( $this, 'commissions_menu' ), 20 );
+        add_action( 'admin_menu', array( $this, 'marketplace_dashboard_menu' ), 10 );
+        add_action( 'admin_menu', array( $this, 'commissions_menu' ), 30 );
         add_action( 'admin_menu', array( $this, 'settings_menu' ), 40 );
-        add_action( 'admin_menu', array( $this, 'extensions_menu' ), 60 );
-        add_action( 'admin_menu', array( $this, 'all_vendors_menu' ), 30 );
+        add_action( 'admin_menu', array( $this, 'extensions_menu' ), 50 );
+        add_action( 'admin_menu', array( $this, 'all_vendors_menu' ), 20 );
         add_action( 'admin_menu', array( $this, 'license_page' ), 70 );
         // Add help page and about page menu items.
         add_action( 'admin_menu', array( $this, 'help_menu' ), 80 );
@@ -68,10 +69,35 @@ class WCVendors_Admin_Menus {
             __( 'WC Vendors', 'wc-vendors' ),
             'manage_woocommerce',
             'wc-vendors',
-            array( $this, 'extensions_page' ),
+            array( $this, 'marketplace_dashboard_page' ),
             'dashicons-cart',
             50
         );
+    }
+
+    /**
+     * Marketplace dashboard page menu item
+     */
+    public function marketplace_dashboard_menu() {
+        add_submenu_page(
+            'wc-vendors',
+            __( 'Dashboard', 'wc-vendors' ),
+            __( 'Dashboard', 'wc-vendors' ),
+            'manage_woocommerce',
+            'wc-vendors-marketplace-dashboard',
+            array( $this, 'marketplace_dashboard_page' ),
+            10
+        );
+    }
+
+    /**
+     * Dashboard page
+     */
+    public function marketplace_dashboard_page() {
+        echo '<div class="wrap">';
+        echo '<h1 class="wcv-page-title"></h1>';
+        echo '<div id="wcv-marketplace-backend-dashboard-root"></div>';
+        echo '</div>';
     }
 
     /**
@@ -264,6 +290,16 @@ class WCVendors_Admin_Menus {
             color: #fff;
             font-weight: 700;
             border-left-color: #fff;
+            }
+            .wcv-notice-container {
+                margin-right: 0;
+                margin-left: 0;
+                padding-top: 10px !important;
+                padding-bottom: 10px !important;
+            }
+            .wcv-notice-container p {
+                margin-bottom: 0;
+                margin-top: 0;
             }
         </style>
         <?php

@@ -1,5 +1,3 @@
-/* global wcv_product_variation / copyright WooCommerce 2016
- */
 jQuery(function($) {
   $(document).ready(function() {
     $('select.variation_actions').select2({

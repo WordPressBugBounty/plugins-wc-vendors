@@ -97,6 +97,10 @@ class WCV_Order_Data_Synchronizer {
             return;
         }
 
+        if ( ! wc_string_to_bool( $new_value ) ) {
+            return;
+        }
+
         $this->process_background_sync();
         $this->maybe_verify_customer_ids();
     }
@@ -661,7 +665,7 @@ class WCV_Order_Data_Synchronizer {
             ),
         );
 
-        $orders = wc_get_orders( $args );
+        $orders = $this->get_orders( $args );
 
         if ( ! $orders || count( $orders ) === 0 ) {
             $this->log( 'WC Vendors: No orders to process.' );
@@ -727,7 +731,7 @@ class WCV_Order_Data_Synchronizer {
      * @since   2.4.8
      */
     public function migrate_vendor_id() {
-        $orders = wc_get_orders(
+        $orders = $this->get_orders(
             array(
                 'limit'      => $this->batch_size,
                 'type'       => array( 'shop_order_vendor' ),
@@ -1019,7 +1023,7 @@ class WCV_Order_Data_Synchronizer {
             ),
         );
 
-        $orders = wc_get_orders( $args );
+        $orders = $this->get_orders( $args );
 
         return $orders;
     }
@@ -1367,5 +1371,102 @@ class WCV_Order_Data_Synchronizer {
         update_option( 'wcvendors_display_notice_hpos_sync_in_progress', 'no' );
 
         wp_send_json_success();
+    }
+
+    /**
+     * Get orders
+     *
+     * @param array $args the query args.
+     * @return array the orders
+     */
+    public function get_orders( $args = array() ) {
+        if ( wcv_hpos_enabled() ) {
+            $orders = wc_get_orders( $args );
+        } else {
+            $orders = $this->get_custom_orders( $args );
+        }
+
+        return $orders;
+    }
+
+    /**
+     * Get custom orders
+     *
+     * @param array $args the query args for the custom orders.
+     * @return array the orders
+     */
+    public function get_custom_orders( $args = array() ) {
+        $limit      = isset( $args['limit'] ) ? $args['limit'] : $this->batch_size;
+        $return_ids = isset( $args['return'] ) && 'ids' === $args['return'];
+        $meta_query = isset( $args['meta_query'] ) ? $args['meta_query'] : array();
+        $status     = isset( $args['status'] ) ? $args['status'] : array();
+        $relation   = isset( $args['meta_query']['relation'] ) ? $args['meta_query']['relation'] : 'AND';
+        $type       = isset( $args['type'] ) ? $args['type'] : 'shop_order';
+        global $wpdb;
+
+        $joins        = array();
+        $wheres       = array();
+        $where_clause = '';
+        $prepare_args = array();
+        $orders       = array();
+
+        unset( $meta_query['relation'] );
+
+        if ( ! empty( $meta_query ) ) {
+            foreach ( $meta_query as $index => $meta ) {
+                $alias        = 'pm' . ( $index + 1 );
+                $exist_or_not = isset( $meta['compare'] ) && 'NOT EXISTS' === $meta['compare'] ? 'IS NULL' : 'IS NOT NULL';
+                $joins[]      = "LEFT JOIN {$wpdb->postmeta} {$alias} ON p.ID = {$alias}.post_id AND {$alias}.meta_key = '" . esc_sql( $meta['key'] ) . "'";
+                $wheres[]     = "{$alias}.post_id {$exist_or_not}";
+            }
+        }
+
+        if ( ! empty( $wheres ) ) {
+            $where_clause = 'WHERE (' . implode( " {$relation} ", $wheres ) . ')';
+        }
+
+        $where_status = '';
+        if ( ! empty( $status ) ) {
+            $where_status_placeholders = array();
+            foreach ( $status as $s ) {
+                $where_status_placeholders[] = '%s';
+                $prepare_args[]              = $s;
+            }
+            $where_status_placeholder = implode( ',', $where_status_placeholders );
+            $where_status             = 'AND p.post_status IN (' . $where_status_placeholder . ')';
+        }
+
+        $where_type = '';
+        if ( ! empty( $type ) ) {
+            if ( is_array( $type ) ) {
+                $where_type_placeholders = array();
+                foreach ( $type as $t ) {
+                    $where_type_placeholders[] = '%s';
+                    $prepare_args[]            = $t;
+                }
+                $where_type_placeholder = implode( ',', $where_type_placeholders );
+            } else {
+                $where_type_placeholder = '%s';
+                $prepare_args[]         = $type;
+            }
+            $where_type = 'AND p.post_type IN (' . $where_type_placeholder . ')';
+        }
+
+        $joins_clause = implode( ' ', $joins );
+
+        $sql = "SELECT p.ID FROM {$wpdb->prefix}posts p {$joins_clause} {$where_clause} {$where_status} {$where_type} LIMIT {$limit}";
+
+        if ( ! empty( $prepare_args ) ) {
+            $sql = $wpdb->prepare( $sql, $prepare_args ); // phpcs:ignore
+        }
+
+        $order_ids = $wpdb->get_col( $sql ); // phpcs:ignore
+
+        if ( ! $return_ids ) {
+            $wc_query = new WC_Order_Query( array( 'post__in' => $order_ids ) );
+            $orders   = $wc_query->get_orders();
+        }
+
+        return $orders;
     }
 }

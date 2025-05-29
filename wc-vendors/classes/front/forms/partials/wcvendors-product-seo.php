@@ -9,7 +9,7 @@ use WC_Vendors\Classes\Front\WCV_Form_Helper;
     <div class="wcv-cols-group wcv-horizontal-gutters product-seo">
         <div class="all-100">
             <div id="wcv-attr-message" class="inline notice woocommerce-message">
-                <?php esc_html_e( 'Leave field empty to use product details.', 'wc-vendors' ); ?>
+                <?php esc_html_e( 'Leave field empty to use product details for SEO.', 'wc-vendors' ); ?>
             </div>
         </div>
     </div>

@@ -154,6 +154,7 @@ class WCVendors_Install {
         self::maybe_run_setup_wizard();
         self::update_wcv_version();
         self::maybe_update_db_version();
+        self::create_pages();
 
         delete_transient( 'wcvendors_installing' );
 
@@ -299,27 +300,8 @@ class WCVendors_Install {
             ''
         );
 
-        $pages = apply_filters(
-            'wcvendors_create_pages',
-            array(
-                'shop_settings'  => array(
-                    'name'    => _x( 'shop_settings', 'Page slug', 'wc-vendors' ),
-                    'title'   => _x( 'Shop Settings', 'Page title', 'wc-vendors' ),
-                    'parent'  => $vendor_dashboard_page_id,
-                    'content' => '[wcv_shop_settings]',
-                ),
-                'product_orders' => array(
-                    'name'    => _x( 'product_orders', 'Page slug', 'wc-vendors' ),
-                    'title'   => _x( 'Orders', 'Page title', 'wc-vendors' ),
-                    'parent'  => $vendor_dashboard_page_id,
-                    'content' => '[wcv_orders]',
-                ),
-            )
-        );
-
-        foreach ( $pages as $key => $page ) {
-            wc_create_page( esc_sql( $page['name'] ), 'wcvendors_' . $key . '_page_id', $page['title'], $page['content'], ! empty( $page['parent'] ) ? $page['parent'] : '' );
-        }
+        // activate setup wizard.
+        add_option( 'wcvendors_admin_notice_install' );
     }
 
     /**

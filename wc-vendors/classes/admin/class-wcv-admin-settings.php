@@ -43,7 +43,7 @@ class WCVendors_Admin_Settings extends WC_Admin_Settings {
             $settings = array();
 
             // Include the setings page.
-            include_once WCV_ABSPATH_ADMIN . 'settings/class-wcv-settings-page.php';
+            include_once WCV_ABSPATH_ADMIN . '/settings/class-wcv-settings-page.php';
 
             $settings[] = include WCV_ABSPATH_ADMIN . 'settings/class-wcv-settings-general.php';
             $settings[] = include WCV_ABSPATH_ADMIN . 'settings/class-wcv-settings-commission.php';

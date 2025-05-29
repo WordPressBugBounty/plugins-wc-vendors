@@ -266,7 +266,6 @@ class WCV_Product_Controller {
         $hide_product_types = get_option( 'wcvendors_capability_product_types', array() );
 
         if ( ! empty( $hide_product_types ) ) {
-
             $args['tax_query'][] = array(
                 'taxonomy' => 'product_type',
                 'field'    => 'slug',
@@ -276,7 +275,32 @@ class WCV_Product_Controller {
         }
 
         if ( ! empty( $search ) ) {
-            $args['s'] = $search;
+            // First search for products with matching SKU.
+            $sku_query = new \WP_Query(
+                array(
+                    'post_type'      => 'product',
+                    'posts_per_page' => -1,
+                    'fields'         => 'ids',
+                    'author'         => get_current_user_id(),
+                    'meta_query'     => array(
+                        array(
+                            'key'     => '_sku',
+                            'value'   => $search,
+                            'compare' => 'LIKE',
+                        ),
+                    ),
+                )
+            );
+
+            $product_ids = $sku_query->posts;
+
+            // If no products found by SKU, search in title/content.
+            if ( empty( $product_ids ) ) {
+                $args['s'] = $search;
+            } else {
+                $args['post__in'] = $product_ids;
+                unset( $args['s'] );
+            }
         }
 
         if ( ! empty( $product_tag ) ) {
@@ -2976,65 +3000,6 @@ class WCV_Product_Controller {
         return $file;
     }
 
-    /**
-     * Hook into the product search and search by product meta.
-     *
-     * @param array $args - the search args.
-     *
-     * @since 1.5.0
-     */
-    public function product_search_args( $args ) {
-
-        if ( 'product' === $args['post_type'] ) {
-
-            $search = '';
-            if ( isset( $args['s'] ) ) {
-                $search = $args['s'];
-            }
-            // If there is no search return the args.
-            if ( empty( $search ) ) {
-                return $args;
-            }
-
-            $meta_query = $this->get_product_search_meta_keys( $search );
-            // Reset the simple query.
-            if ( is_wcv_pro_active() ) {
-                if ( isset( $args['s'] ) ) {
-                    unset( $args['s'] );
-                }
-            }
-
-            if ( count( $meta_query ) > 1 ) {
-                $meta_query['relation'] = 'OR';
-            }
-
-            $args['_wcv_product_search'] = $search;
-            if ( is_wcv_pro_active() ) {
-                $args['meta_query'] = $meta_query;
-            }
-}
-        return $args;
-    }
-
-    /**
-     * Add product meta to the product search defaul sku.
-     *
-     * @param string $search - the search string.
-     *
-     * @since 1.5.0
-     */
-    public function get_product_search_meta_keys( $search ) {
-
-        $meta_query = array();
-
-        $meta_query[] = array(
-            'key'     => '_sku',
-            'value'   => $search,
-            'compare' => 'LIKE',
-        );
-
-        return wcv_deprecated_filter( 'wcvendors_pro_table_product_search_meta_keys', '2.5.2', 'wcvendors_table_product_search_meta_keys', $meta_query );
-    }
 
     /**
      * Prepare downloads for save.

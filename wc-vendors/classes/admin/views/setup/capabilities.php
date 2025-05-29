@@ -35,7 +35,9 @@ if ( ! defined( 'ABSPATH' ) ) {
                     ?>
                 </td>
                 <td class="table-check">
+                    <?php do_action( 'wcvendors_setup_wizard_before_wcv_capability_products_enabled' ); ?>
                     <input type="checkbox" style="float: right; font-size: 4em;" id="wcv_capability_products_enabled" name="wcv_capability_products_enabled" value="yes" <?php checked( $products_enabled, 'yes' ); ?> />
+                    <?php do_action( 'wcvendors_setup_wizard_after_wcv_capability_products_enabled' ); ?>
                 </td>
             </tr>
             <tr>
@@ -46,7 +48,9 @@ if ( ! defined( 'ABSPATH' ) ) {
                     ?>
                 </td>
                 <td class="table-check">
+                    <?php do_action( 'wcvendors_setup_wizard_before_wcv_capability_products_edit' ); ?>
                     <input type="checkbox" style="float: right; font-size: 4em;" id="wcv_capability_products_edit" name="wcv_capability_products_edit" value="yes" <?php checked( $live_products, 'yes' ); ?> />
+                    <?php do_action( 'wcvendors_setup_wizard_after_wcv_capability_products_edit' ); ?>
                 </td>
             </tr>
             <tr>
@@ -57,7 +61,9 @@ if ( ! defined( 'ABSPATH' ) ) {
                     ?>
                 </td>
                 <td class="table-check">
+                    <?php do_action( 'wcvendors_setup_wizard_before_wcv_capability_products_live' ); ?>
                     <input type="checkbox" style="float: right; font-size: 4em;" id="wcv_capability_products_live" name="wcv_capability_products_live" value="yes" <?php checked( $products_approval, 'yes' ); ?> />
+                    <?php do_action( 'wcvendors_setup_wizard_after_wcv_capability_products_live' ); ?>
                 </td>
             </tr>
         </tbody>
@@ -79,7 +85,9 @@ if ( ! defined( 'ABSPATH' ) ) {
                 ?>
             </td>
             <td class="table-check">
+                <?php do_action( 'wcvendors_setup_wizard_before_wcv_capability_orders_export' ); ?>
                 <input type="checkbox" style="float: right; font-size: 4em;" id="wcv_capability_orders_export" name="wcv_capability_orders_export" value="yes" <?php checked( $export_orders, 'yes' ); ?> />
+                <?php do_action( 'wcvendors_setup_wizard_after_wcv_capability_orders_export' ); ?>
             </td>
         </tr>
         <tr>
@@ -90,7 +98,9 @@ if ( ! defined( 'ABSPATH' ) ) {
                 ?>
             </td>
             <td class="table-check">
+                <?php do_action( 'wcvendors_setup_wizard_before_wcv_capability_order_read_notes' ); ?>
                 <input type="checkbox" style="float: right; font-size: 4em;" id="wcv_capability_order_read_notes" name="wcv_capability_order_read_notes" value="yes" <?php checked( $view_order_notes, 'yes' ); ?> />
+                <?php do_action( 'wcvendors_setup_wizard_after_wcv_capability_order_read_notes' ); ?>
             </td>
         </tr>
         <tr>
@@ -101,7 +111,9 @@ if ( ! defined( 'ABSPATH' ) ) {
                 ?>
             </td>
             <td class="table-check">
+                <?php do_action( 'wcvendors_setup_wizard_before_wcv_capability_order_update_notes' ); ?>
                 <input type="checkbox" style="float: right; font-size: 4em;" id="wcv_capability_order_update_notes" name="wcv_capability_order_update_notes" value="yes" <?php checked( $view_order_notes, 'yes' ); ?> />
+                <?php do_action( 'wcvendors_setup_wizard_after_wcv_capability_order_update_notes' ); ?>
             </td>
         </tr>
         </tbody>

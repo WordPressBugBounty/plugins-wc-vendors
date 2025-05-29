@@ -36,6 +36,17 @@ $post_status               = ( isset( $product ) && null !== $product ) ? $post-
 <!-- Product Edit Form -->
 <form method="post" action="" id="wcv-product-edit" class="wcv-form">
 
+    <div class="all-100">
+        <?php do_action( 'wcv_before_product_media', $object_id ); ?>
+        <!-- Media uploader -->
+        <div class="wcv-product-media wcv-gap-bottom">
+            <div class="wcv-flex wcv-product-media-wrapper" style="gap: 24px;">
+                <?php WCV_Form_Helper::product_media_uploader( $object_id ); ?>
+            </div>
+        </div>
+        <?php do_action( 'wcv_after_product_media', $object_id ); ?>
+    </div>
+
     <!-- Basic Product Details -->
     <div class="wcv-product-basic wcv-product">
         <?php do_action( 'wcv_before_product_details', $object_id ); ?>
@@ -47,16 +58,6 @@ $post_status               = ( isset( $product ) && null !== $product ) ? $post-
         <?php WCV_Product_Form::categories( $object_id ); ?>
         <?php do_action( 'wcv_after_product_details', $object_id ); ?>
     </div>
-
-    <div class="all-100">
-        <?php do_action( 'wcv_before_product_media', $object_id ); ?>
-        <!-- Media uploader -->
-        <div class="wcv-product-media">
-            <?php WCV_Form_Helper::product_media_uploader( $object_id ); ?>
-        </div>
-        <?php do_action( 'wcv_after_product_media', $object_id ); ?>
-    </div>
-
     <hr/>
 
     <?php do_action( 'wcv_after_product_simple_before', $object_id ); ?>
@@ -70,11 +71,32 @@ $post_status               = ( isset( $product ) && null !== $product ) ? $post-
         <?php do_action( 'wcv_after_product_prices', $object_id ); ?>
     </div>
 
-    <!-- Tax -->
-    <?php WCV_Product_Form::tax( $object_id ); ?>
+    <div class="wcv-cols-group wcv-horizontal-gutters">
+        <?php WCV_Product_Form::tax( $object_id ); ?>
+    </div>
     
     <!-- SKU  -->
     <?php WCV_Product_Form::sku( $object_id ); ?>
+
+    <?php WCV_Product_Form::manage_stock( $object_id ); ?>
+
+    <?php do_action( 'wcv_product_options_stock', $object_id ); ?>
+
+    <div class="stock_fields show_if_simple show_if_variable">
+        <?php WCV_Product_Form::stock_qty( $object_id ); ?>
+        <?php WCV_Product_Form::backorders( $object_id ); ?>
+        <?php WCV_Product_Form::low_stock_threshold( $object_id ); ?>
+    </div>
+
+    <?php WCV_Product_Form::stock_status( $object_id ); ?>
+    <div class="options_group show_if_simple show_if_variable">
+        <?php WCV_Product_Form::sold_individually( $object_id ); ?>
+    </div>
+
+    <?php do_action( 'wcv_product_options_sold_individually', $object_id ); ?>
+
+    <?php do_action( 'wcv_product_options_inventory_product_data', $object_id ); ?>
+    <div class="wcv-gap-top wcv-gap-top-small"></div>
     <!-- Private listing  -->
     <?php WCV_Product_Form::private_listing( $object_id ); ?>
     
@@ -87,12 +109,14 @@ $post_status               = ( isset( $product ) && null !== $product ) ? $post-
     <?php WCV_Product_Form::crosssells( $object_id ); ?>
     <?php do_action( 'wcv_product_options_upsells_product_data' ); ?>
     <?php do_action( 'wcv_after_product_simple_linked' ); ?>
-
+    <div class="wcv-gap-top wcv-gap-top-small"></div>
     <?php WCV_Product_Form::product_seo( $object_id ); ?>
 
     <?php WCV_Product_Form::form_data( $object_id, $post_status, $template ); ?>
-    <?php WCV_Product_Form::save_button( $title ); ?>
-    <?php WCV_Product_Form::draft_button( __( 'Save Draft', 'wc-vendors' ) ); ?>
+    <div class="wcv-button-group small">
+        <?php WCV_Product_Form::save_button( $title ); ?>
+        <?php WCV_Product_Form::draft_button( __( 'Save Draft', 'wc-vendors' ) ); ?>
+    </div>
 
 </form>
 

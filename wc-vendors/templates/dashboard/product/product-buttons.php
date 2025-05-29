@@ -1,4 +1,4 @@
-<div class="small-70 all-50 wcv-product-table-buttons wcv-flex wcv-flex-wrap wcv-flex-end">
+<div class="small-70 wcv-product-table-buttons wcv-flex wcv-flex-wrap wcv-flex-end">
     <?php if ( ! $lock_new_products && $can_submit ) : ?>
         <?php foreach ( $template_overrides as $key => $template_data ) : ?>
             <a href="<?php echo esc_url( $template_data['url'] ); ?>"

@@ -97,7 +97,7 @@ class WCVendors_Admin_Help {
                 'content' =>
                     '<h2>' . __( 'Setup wizard', 'wc-vendors' ) . '</h2>' .
                     '<p>' . __( 'If you need to access the setup wizard again, please click on the button below.', 'wc-vendors' ) . '</p>' .
-                    '<p><a href="' . admin_url( 'index.php?page=wcv-setup' ) . '" class="button button-primary">' . __( 'Setup wizard', 'wc-vendors' ) . '</a></p>',
+                    '<p><a href="' . admin_url( 'admin.php?page=wcv-setup' ) . '" class="button button-primary">' . __( 'Setup wizard', 'wc-vendors' ) . '</a></p>',
 
             )
         );

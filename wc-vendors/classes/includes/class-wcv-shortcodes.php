@@ -717,102 +717,94 @@ class WCV_Shortcodes {
             $columns = 4;
         }
 
-        if ( ! in_array( $orderby, array( 'registered', 'post_count', 'random' ), true ) ) {
-            $orderby = 'wp_users.user_registered';
-        }
+        // Validate and set orderby parameter.
+        $valid_orderby = array( 'registered', 'post_count', 'random' );
+        $orderby       = in_array( $orderby, $valid_orderby, true ) ? $orderby : 'registered';
 
-        if ( 'registered' === $orderby ) {
-            $orderby = 'wp_users.user_registered';
-        }
+        // Validate and set order parameter.
+        $order = in_array( $order, array( 'ASC', 'DESC' ), true ) ? $order : 'ASC';
 
-        if ( ! in_array( $order, array( 'ASC', 'DESC' ), true ) ) {
-            $order = 'ASC';
-        }
+        // Clean and sanitize search terms.
+        $search_term = stripslashes( sanitize_text_field( $search_term ) );
 
-        // Hook into the user query to modify the query to return users that have at least one product.
-        if ( 'yes' === $has_products ) {
-            $this->has_products = true;
-        }
-
-        $order_by_sql     = ' GROUP BY wp_users.ID ORDER BY ' . $orderby . ' ' . $order;
-        $has_products_sql = ' AND product_counts.product_count > 0';
-
-        if ( ! $this->has_products ) {
-            $has_products_sql = ' ';
-        }
-
-        if ( 'post_count' === $orderby ) {
-            $order_by_sql = ' GROUP BY wp_users.ID ORDER BY product_counts.product_count ' . $order;
-        } elseif ( 'random' === $orderby ) {
-            $order_by_sql = ' GROUP BY wp_users.ID ORDER BY RAND()';
-        } else {
-            $order_by_sql = ' GROUP BY wp_users.ID ORDER BY ' . $orderby . ' ' . $order;
-        }
-
-        $search_term = sanitize_text_field( $search_term );
-        // Remove any automatically added backslashes from apostrophes.
-        $search_term     = stripslashes( $search_term );
-        $join_usermeta3  = '';
-        $and_usermeta3   = '';
-        $search_term_sql = '';
-
-        if ( ! empty( $search_term ) ) {
-            // Use proper escaping for the search term to handle apostrophes.
-            $escaped_search_term = $wpdb->esc_like( $search_term );
-            $search_term_sql     = $wpdb->prepare(
-                ' AND ( wp_usermeta2.meta_value LIKE %s OR wp_usermeta3.meta_value LIKE %s )',
-                '%' . $escaped_search_term . '%',
-                '%' . $escaped_search_term . '%'
-            );
-            $join_usermeta3      = ' INNER JOIN ' . $wpdb->usermeta . ' as wp_usermeta3 ON wp_users.ID = wp_usermeta3.user_id';
-            $and_usermeta3       = ' AND wp_usermeta3.meta_key = "pv_shop_name"';
-        }
-
-        $inactive_vendor_ids = get_users(
-            array(
-                'meta_key'   => '_wcv_vendor_status',
-                'meta_value' => 'inactive',
-                'fields'     => 'ID',
-            )
+        // Build the SQL query in smaller pieces with proper escaping.
+        // Start with the basic query with placeholders.
+        $sql = $wpdb->prepare(
+            "SELECT SQL_CALC_FOUND_ROWS u.ID, u.user_registered, COALESCE(pc.product_count, 0) AS product_count
+            FROM {$wpdb->users} AS u
+            LEFT JOIN (
+                SELECT post_author, COUNT(*) AS product_count
+                FROM {$wpdb->posts}
+                WHERE post_type = 'product' AND post_status = 'publish'
+                GROUP BY post_author
+            ) AS pc ON u.ID = pc.post_author
+            INNER JOIN {$wpdb->usermeta} AS um_role ON u.ID = um_role.user_id 
+               AND um_role.meta_key = %s AND um_role.meta_value LIKE %s
+            INNER JOIN {$wpdb->usermeta} AS um_slug ON u.ID = um_slug.user_id 
+               AND um_slug.meta_key = 'pv_shop_slug' AND um_slug.meta_value != ''",
+            $wpdb->prefix . 'capabilities',
+            '%\"vendor\"%'
         );
 
-        $inactive_vendor_sql = '';
-
-        if ( ! empty( $inactive_vendor_ids ) ) {
-            $inactive_vendor_sql = ' AND wp_users.ID NOT IN (' . implode( ',', $inactive_vendor_ids ) . ')';
+        // Add search join if needed.
+        if ( ! empty( $search_term ) ) {
+            $sql .= " LEFT JOIN {$wpdb->usermeta} AS um_name ON u.ID = um_name.user_id AND um_name.meta_key = 'pv_shop_name'";
         }
 
-        $count_product_sql = "LEFT JOIN (
-        SELECT post_author, COUNT(*) AS product_count
-        FROM {$wpdb->posts}
-        WHERE post_type = 'product'
-        AND post_status = 'publish'
-        GROUP BY post_author
-        ) AS product_counts
-        ON wp_users.ID = product_counts.post_author";
+        // Begin WHERE clause.
+        $sql .= ' WHERE 1=1';
 
-        // Get all vendors.
-        $vendor_total_sql = "SELECT SQL_CALC_FOUND_ROWS wp_users.ID,
-        COALESCE(product_counts.product_count, 0) AS product_count
-        FROM {$wpdb->users} as wp_users
-        INNER JOIN {$wpdb->usermeta} as wp_usermeta ON wp_users.ID = wp_usermeta.user_id
-        INNER JOIN {$wpdb->usermeta} as wp_usermeta2 ON wp_users.ID = wp_usermeta2.user_id
-        {$join_usermeta3}
-        {$count_product_sql}
-        WHERE wp_usermeta.meta_key = %s
-        {$inactive_vendor_sql}
-        AND wp_usermeta.meta_value LIKE %s
-        AND (wp_usermeta2.meta_key = 'pv_shop_slug' AND wp_usermeta2.meta_value != '')
-        {$and_usermeta3}";
-
-        $vendor_total_sql .= $search_term_sql . $has_products_sql . $order_by_sql;
-
-        // Prepare the final SQL query.
-        $vendor_total_sql = $wpdb->prepare( $vendor_total_sql, $wpdb->prefix.'capabilities' , '%"vendor"%' ); // phpcs:ignore
-
+        // Add search condition if needed.
         if ( ! empty( $search_term ) ) {
-            $check_sql     = $vendor_total_sql . $wpdb->prepare( ' LIMIT %d, %d', 0, 0 );
-            $found_vendors = $wpdb->get_results( $check_sql ); // phpcs:ignore
+            $escaped_term = '%' . $wpdb->esc_like( $search_term ) . '%';
+            $sql         .= $wpdb->prepare(
+                ' AND (um_slug.meta_value LIKE %s OR um_name.meta_value LIKE %s)',
+                $escaped_term,
+                $escaped_term
+            );
+        }
+
+        // Add inactive vendor filter.
+        $sql .= $wpdb->prepare(
+            " AND u.ID NOT IN (
+                SELECT um_status.user_id FROM {$wpdb->usermeta} AS um_status
+                WHERE (um_status.meta_key = '_wcv_vendor_status' AND um_status.meta_value = 'inactive')
+                OR (um_status.user_id IN (
+                    SELECT user_id FROM {$wpdb->usermeta}
+                    WHERE meta_key = %s AND meta_value LIKE %s
+                ) AND NOT EXISTS (
+                    SELECT 1 FROM {$wpdb->usermeta}
+                    WHERE user_id = um_status.user_id AND meta_key = '_wcv_vendor_status'
+                ))
+            )",
+            $wpdb->prefix . 'capabilities',
+            '%\"vendor\"%'
+        );
+
+        // Add product count filter if needed.
+        if ( 'yes' === $has_products ) {
+            $sql .= ' AND pc.product_count > 0';
+        }
+
+        // Add GROUP BY.
+        $sql .= ' GROUP BY u.ID';
+
+        // Add ORDER BY.
+        if ( 'post_count' === $orderby ) {
+            $sql .= ' ORDER BY product_count ' . esc_sql( $order );
+        } elseif ( 'random' === $orderby ) {
+            $sql .= ' ORDER BY RAND()';
+        } else {
+            $sql .= ' ORDER BY u.user_registered ' . esc_sql( $order );
+        }
+
+        // Use the fully constructed SQL.
+        $prepared_sql = $sql;
+
+        // Check pagination for search results.
+        if ( ! empty( $search_term ) ) {
+            $check_sql = $prepared_sql . $wpdb->prepare( ' LIMIT %d, %d', 0, 0 );
+            $wpdb->get_results( $check_sql ); // phpcs:ignore
             $total_check = $wpdb->get_var( 'SELECT FOUND_ROWS()' ); // phpcs:ignore
             if ( $total_check < $per_page ) {
                 $offset = 0;
@@ -820,19 +812,28 @@ class WCV_Shortcodes {
         }
 
         // Get the paged vendors.
-        $vendor_paged_sql = $vendor_total_sql . $wpdb->prepare( ' LIMIT %d, %d', $offset, $per_page );
-
+        $vendor_paged_sql = $prepared_sql . $wpdb->prepare( ' LIMIT %d, %d', $offset, $per_page );
         $paged_vendors = $wpdb->get_results( $vendor_paged_sql ); // phpcs:ignore
         $total_vendors = $wpdb->get_var( 'SELECT FOUND_ROWS()' ); // phpcs:ignore
-        $vendors       = array();
 
+        // Process vendor data.
+        $vendors = array();
         foreach ( $paged_vendors as $vendor ) {
             $wp_u                = new stdClass();
             $wp_u->ID            = $vendor->ID;
             $wp_u->product_count = $vendor->product_count;
-            $metas               = get_user_meta( $vendor->ID );
-            foreach ( $metas as $key => $value ) {
-                $wp_u->$key = maybe_unserialize( $value[0] );
+
+            // Get vendor meta in one efficient query instead of multiple calls.
+            $vendor_meta = $wpdb->get_results(
+                $wpdb->prepare(
+                    "SELECT meta_key, meta_value FROM {$wpdb->usermeta} WHERE user_id = %d",
+                    $vendor->ID
+                ),
+                ARRAY_A
+            );
+
+            foreach ( $vendor_meta as $meta ) {
+                $wp_u->{$meta['meta_key']} = maybe_unserialize( $meta['meta_value'] );
             }
 
             $vendors[] = $wp_u;
@@ -842,6 +843,7 @@ class WCV_Shortcodes {
         $total_pages         = ceil( $total_vendors / $per_page );
         $current_page        = max( 1, get_query_var( 'paged' ) );
 
+        // Render the template.
         ob_start();
         wc_get_template(
             'vendor-list.php',
@@ -850,7 +852,6 @@ class WCV_Shortcodes {
                 'search_term'   => $search_term,
                 'vendors_count' => $total_vendors_paged,
                 'vendors_list'  => $vendors,
-
             ),
             'wc-vendors/front/',
             WCV_PLUGIN_DIR . 'templates/front/'
@@ -858,9 +859,10 @@ class WCV_Shortcodes {
 
         $html .= ob_get_clean();
 
+        // Render pagination.
         if ( $total_pages > 1 ) {
             $html .= '<div class="woocommerce-pagination">';
-            $big   = 999999999; // need an unlikely integer.
+            $big   = 999999999; // Need an unlikely integer.
             $html .= paginate_links(
                 array(
                     'base'      => str_replace( $big, '%#%', esc_url( get_pagenum_link( $big ) ) ),

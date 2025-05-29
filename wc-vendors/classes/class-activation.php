@@ -24,6 +24,7 @@ class WCV_Activate {
         self::maybe_create_marketplace_report_cache();
         // Flush rewrite rules when activating plugin.
         flush_rewrite_rules();
+        set_transient( 'wcvendors_activation_redirect', 1, 30 );
     }
 
     /**

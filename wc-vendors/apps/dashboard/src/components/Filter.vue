@@ -85,13 +85,17 @@
         {{ i18n().dashboard.title }}
       </Typography.Title>
 
-      <Flex align="center" gap="small"
+      <Flex align="center" gap="small" :class="['filter-controls', { 'with-custom-range': showCustomRange }]"
         :style="{ backgroundColor: '#f5f5f5', padding: '8px 16px', borderRadius: '4px', border: '1px solid #e0e0e0' }">
         <Calendar size="23" color="#000" />
+
+        <!-- Period Select -->
         <Select v-model:value="period" :options="periodOptions"
           :style="{ width: '200px', paddingTop: '4px', paddingBottom: '4px' }" :bordered="true"
           :dropdown-match-select-width="false" :disabled="isLoading" @change="handlePeriodChange" />
-        <div v-if="showCustomRange" class="custom-range-container">
+
+        <!-- Custom Range Container (on the right) -->
+        <div :class="['custom-range-container', { 'show': showCustomRange }]">
           <RangePicker v-model:value="customRange" :style="{ paddingTop: '5px', paddingBottom: '5px' }"
             :disabled="isLoading" @change="handleCustomRange" />
           <Button type="primary" size="middle" :disabled="isLoading || !customRange" @click="applyCustomRange">
@@ -104,9 +108,35 @@
 </template>
 
 <style scoped>
+  /* Parent container animation */
+  .filter-controls {
+    transition: width 0.5s ease;
+  }
+
+  /* Custom range container - default state (hidden) */
   .custom-range-container {
     display: flex;
     align-items: center;
     gap: 8px;
+    opacity: 0;
+    max-width: 0;
+    overflow: hidden;
+    /* Hide transition: fade out first, then collapse width */
+    transition:
+      opacity 0.2s ease,
+      max-width 0.4s ease 0.15s;
+    /* Start collapsing after fade out begins */
+  }
+
+  /* Custom range container - shown state */
+  .custom-range-container.show {
+    opacity: 1;
+    max-width: 450px;
+    /* Adjust based on your content width */
+    /* Show transition: expand width first, then fade in */
+    transition:
+      max-width 0.4s ease,
+      opacity 0.3s ease 0.15s;
+    /* Start fading in after expansion begins */
   }
 </style>

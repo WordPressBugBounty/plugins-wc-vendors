@@ -805,125 +805,20 @@ class WCV_Form_Helper {
      * @since      2.5.2
      *
      * @param      int $post_id the post id for the files being uploaded.
-     *
-     * @todo       add filters to allow the field to be hooked into this should not echo html but return it.
      */
     public static function product_media_uploader( $post_id ) {
-        if ( 'yes' !== get_option( 'wcvendors_hide_product_media_featured', 'no' ) ) {
-            do_action( 'wcv_form_product_media_uploader_before_product_media_uploader', $post_id );
 
-            echo '<div class="all-45 small-100 tiny-100 product-feat-image-upload small-align-center tiny-align-center">';
-
-            echo '<h6 class="blue-title text-blue" style="width: 100%;">' . esc_html__( 'Featured Image', 'wc-vendors' ) . '</h6>';
-            $post_thumb = has_post_thumbnail( $post_id );
-
-            echo '<input type="hidden" id="_featured_image_id" name="_featured_image_id" value="' . ( $post_thumb ? esc_attr( get_post_thumbnail_id( $post_id ) ) : '' ) . '" />';
-            echo '<div class="wcv-featuredimg ' . ( $post_thumb ? 'has-image' : '' ) . '" data-title="' . esc_html__( 'Select or Upload a Feature Image', 'wc-vendors' ) . '" data-button_text="' . esc_html__( 'Set Product Feature Image', 'wc-vendors' ) . '">';
-            if ( $post_thumb ) {
-                $image_attributes = wp_get_attachment_image_src( get_post_thumbnail_id( $post_id ), array( 300, 300 ) );
-                echo '<img src="' . esc_attr( $image_attributes[0] ) . '" width="' . esc_attr( $image_attributes[1] ) . '" height="' . esc_attr( $image_attributes[2] ) . '">';
-            }
-            echo '<a type="button" href="#" class="wcv-media-uploader-featured-delete ' . ( ! $post_thumb ? 'hidden' : '' ) . '">' . wcv_get_icon( 'wcv-icon wcv-icon-md wcv-icon-middle', 'wcv-icon-times' ) . '</a>'; // phpcs:ignore
-            echo '</div>';
-            echo '<div class="file-upload-wrapper featured-image-upload-wrapper ' . ( $post_thumb ? 'hidden' : '' ) . '">';
-            echo '<small style="display: block;">&nbsp;</small>';
-            include 'partials/product/wcvendors-upload-files-input.php';
-            echo '</div>';
-            echo '<button type="button" class="wcv-media-uploader-featured-replace wcv-button wcv-button-outline bg-white text-blue ' . ( ! $post_thumb ? 'hidden' : '' ) . '" style="margin-top: 36px;">' . wcv_get_icon( 'wcv-icon wcv-setting-icon wcv-icon-left wcv-icon-middle', 'wcv-icon-replace-image' ) . '<span class="vertical-middle">' . esc_html__( 'Replace Featured Image', 'wc-vendors' ) . '</span></button>'; // phpcs:ignore
-
-            echo '<span class="wcv_featured_image_msg"></span>';
-
-            echo '</div>';
-
-            // Always open the gallery wrapper.
-            echo '<div class="wcv-flex wcv-flex-end all-55 small-100 tiny-100 product-imgs-gallery-upload small-top-space tiny-top-space" id="product-imgs-gallery-upload">';
-
-            if ( 'yes' !== get_option( 'wcvendors_hide_product_media_gallery', 'no' ) ) {
-                if ( metadata_exists( 'post', $post_id, '_product_image_gallery' ) ) {
-                    $product_image_gallery = get_post_meta( $post_id, '_product_image_gallery', true );
-                } else {
-                    // Backwards compat.
-                    if ( ! empty( $post_id ) ) {
-                        $attachment_ids = get_posts( 'post_parent=' . $post_id . '&numberposts=-1&post_type=attachment&orderby=menu_order&order=ASC&post_mime_type=image&fields=ids&meta_key=_woocommerce_exclude_image&meta_value=0' );
-                    } else {
-                        $attachment_ids = array();
-                    }
-
-                    $attachment_ids        = array_diff( $attachment_ids, array( get_post_thumbnail_id() ) );
-                    $product_image_gallery = implode( ',', $attachment_ids );
-                }
-
-                // Output the image gallery if there are any images.
-                $attachment_ids = array_filter( explode( ',', $product_image_gallery ) );
-
-                $max_gallery_count = get_option( 'wcvendors_product_max_gallery_count', 4 );
-                $max_gallery_count = $max_gallery_count ? $max_gallery_count : 4;
-
-                $gallery_options = apply_filters(
-                    'wcv_product_gallery_options',
-                    array(
-                        'max_upload'          => $max_gallery_count,
-                        'notice'              => __( 'You have reached the maximum number of gallery images.', 'wc-vendors' ),
-                        'max_selected_notice' => sprintf(
-                            /* translators: %1$d: maximum number of gallery images */
-                            esc_html__( 'Maximum number of gallery images selected. Please select a maximum of %1$d images.', 'wc-vendors' ),
-                            $max_gallery_count
-                        ),
-                    )
-                );
-
-                echo '<div id="product-imgs-gallery-parent" style="width: 100%;">';
-                echo '<h6 class="blue-title text-blue small-align-center tiny-align-center no-margin">' . esc_html__( 'Gallery', 'wc-vendors' ) . '</h6>';
-                echo '<span style="display: block; margin-bottom: 25px; margin-top: 12px;" class="small-align-center tiny-align-center">';
-                printf(
-                    /* translators: %d: maximum number of gallery images */
-                    esc_html__( 'Add more product images here, and you can upload up to %d files max', 'wc-vendors' ),
-                    esc_html( $gallery_options['max_upload'] )
-                );
-                echo '</span>';
-                $has_images = count( $attachment_ids ) > 0 ? 'has-images' : '';
-                echo '<div id="product_images_container" data-gallery_max_upload="' . esc_attr( $gallery_options['max_upload'] ) . '" data-gallery_max_notice="' . esc_attr( $gallery_options['notice'] ) . '" data-gallery_max_selected_notice="' . esc_attr( $gallery_options['max_selected_notice'] ) . '">';
-                echo '<ul class="product_images inline bottom-space ' . esc_attr( $has_images ) . '" id="product_images">';
-
-                if ( count( $attachment_ids ) > 0 ) {
-
-                    foreach ( $attachment_ids as $attachment_id ) {
-
-                        echo '<li class="wcv-gallery-image" data-attachment_id="' . esc_attr( $attachment_id ) . '">';
-                        echo wp_get_attachment_image( $attachment_id, array( 150, 150 ) );
-                        echo '<ul class="actions">';
-                        echo '<li><a href="#" class="delete" title="delete"><svg class="wcv-icon wcv-icon-md">
-						<use xlink:href="' . esc_attr( WCV_ASSETS_URL ) . 'svg/wcv-icons.svg#wcv-icon-times"></use></svg></a></li>';
-                        echo '</ul>';
-                        echo '</li>';
-
-                    }
-                }
-
-                echo '<li class="file-upload-wrapper ' . ( count( $attachment_ids ) >= $gallery_options['max_upload'] ? 'hidden' : '' ) . ' tiny-align-center small-align-center">';
-                wc_get_template(
-                    'wcvendors-upload-files-input.php',
-                    array(
-                        'should_small' => count( $attachment_ids ) > 0,
-                        'classes'      => 'small-push-center tiny-push-center',
-                    ),
-                    'wc-vendors/partials/product/',
-                    __DIR__ . '/partials/product/'
-                );
-                echo '</li>';
-                echo '</ul>';
-                echo '<input type="hidden" id="product_image_gallery" name="product_image_gallery" value="' . ( ( count( $attachment_ids ) > 0 ) ? esc_attr( $product_image_gallery ) : '' ) . '">';
-                echo '</div>';
-                echo '<small>' . esc_html__( 'Only support .jpg, .png  files', 'wc-vendors' ) . '</small>';
-                echo '<span class="wcv_gallery_msg"></span>';
-
-            }
-
-            echo '<div class="all-100"></div>';
-            echo '</div>'; // Close #product-imgs-gallery-upload.
-
-            do_action( 'wcv_form_product_media_uploader_after_product_media_uploader', $post_id );
-        }
+        $post_thumb = has_post_thumbnail( $post_id );
+        // Load the template.
+        wc_get_template(
+            'product/product-media-uploader.php',
+            array(
+                'post_id'    => $post_id,
+                'post_thumb' => $post_thumb,
+            ),
+            'wc-vendors/',
+            WCV_TEMPLATE_BASE
+        );
     }
 
     /**

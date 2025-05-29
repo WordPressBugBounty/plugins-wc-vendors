@@ -155,29 +155,59 @@ class Vendors_Settings {
     public $changes = array();
 
     /**
+     * Error message
+     *
+     * @var string
+     *
+     * @since 2.5.7
+     * @version 2.5.7
+     */
+    public $error = '';
+
+    /**
+     * Valid vendor flag
+     *
+     * @var bool
+     *
+     * @since 2.5.7
+     * @version 2.5.7
+     */
+    public $valid_vendor = false;
+
+    /**
      * Constructor
      *
-     * @param int     $vendor_id (default: false) The vendor ID to load.
-     * @param boolean $view (default: true) Whether to load the settings.
-     * @access public
-     * @return void
-     * @throws Exception If the vendor ID is invalid.
+     * @param int  $vendor_id Vendor ID.
+     * @param bool $view View vendor settings.
      *
-     * @since   2.5.4 - Call get_keys to ensure data added via filters is available for other methods.
-     * @since   2.4.8
-     * @version 2.4.8
+     * @throws Exception If vendor ID is invalid.
      */
     public function __construct( $vendor_id = false, $view = true ) {
         $data_keys       = $this->get_keys();
         $this->data_keys = $data_keys;
         if ( $vendor_id && ( WCV_Vendors::is_vendor( $vendor_id ) || WCV_Vendors::is_pending( $vendor_id ) ) ) {
-            $this->vendor_id = (int) $vendor_id;
+            $this->vendor_id    = (int) $vendor_id;
+            $this->valid_vendor = true;
             if ( $view ) {
                 $this->settings = $this->get_settings();
             }
         } else {
-            throw new Exception( esc_html__( 'Invalid vendor ID', 'wc-vendors' ) );
+            // Set error message but don't throw exception.
+            $this->error        = esc_html__( 'Invalid vendor ID', 'wc-vendors' );
+            $this->valid_vendor = false;
         }
+    }
+
+    /**
+     * Check if the vendor is valid
+     *
+     * @return bool
+     *
+     * @since 2.5.7
+     * @version 2.5.7
+     */
+    public function is_valid() {
+        return $this->valid_vendor;
     }
 
     /**

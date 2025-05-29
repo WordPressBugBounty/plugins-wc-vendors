@@ -180,6 +180,10 @@ class WCV_Order_Controller {
         $this->default_start = '';
         $this->per_page      = get_option( 'wcvendors_orders_per_page', 20 );
 
+        if ( empty( $this->per_page ) ) {
+            $this->per_page = 20;
+        }
+
         switch ( $orders_sales_range ) {
             case 'annually':
                 $this->default_start = '-1 year';
@@ -417,7 +421,7 @@ class WCV_Order_Controller {
             }
 
             $this->add_order_note( $order_id, $comment );
-            wp_safe_redirect( WCV_Vendor_Dashboard::get_dashboard_page_url( 'orders' ) );
+            wp_safe_redirect( WCV_Vendor_Dashboard::get_dashboard_page_url( 'order' ) );
             exit;
         }
 
@@ -427,7 +431,7 @@ class WCV_Order_Controller {
             }
 
             self::update_shipment_tracking();
-            wp_safe_redirect( WCV_Vendor_Dashboard::get_dashboard_page_url( 'orders' ) );
+            wp_safe_redirect( WCV_Vendor_Dashboard::get_dashboard_page_url( 'order' ) );
             exit;
         }
 
@@ -1267,7 +1271,7 @@ class WCV_Order_Controller {
         $notes = '';
 
         if ( ! $can_view_comments ) {
-            return;
+            return $notes;
         }
 
         $order_notes = $this->get_vendor_order_notes( $order_id );
@@ -1666,10 +1670,10 @@ class WCV_Order_Controller {
      */
     public function filter_formatted_shipping_address( $address ) {
 
-        $show_name             = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_name', 'no' ) );
         $show_shipping_address = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_shipping', 'no' ) );
+        $show_shipping_name    = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_shipping_name', 'no' ) );
 
-        if ( ! $show_name ) {
+        if ( ! $show_shipping_name ) {
             if ( array_key_exists( 'first_name', $address ) ) {
                 unset( $address['first_name'] );
             }

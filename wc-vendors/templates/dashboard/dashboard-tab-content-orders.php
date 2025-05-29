@@ -12,7 +12,7 @@
                 );
                 ?>
                 </p>
-                <a href="<?php echo esc_url( \WCV_Vendor_Dashboard::get_dashboard_page_url( 'orders' ) ); ?>" class="wcv-view-more">
+                <a href="<?php echo esc_url( \WCV_Vendor_Dashboard::get_dashboard_page_url( 'order' ) ); ?>" class="wcv-view-more">
                     <svg class="wcv-icon wcv-icon-sm">
                         <use xlink:href="<?php echo esc_url( WCV_ASSETS_URL ); ?>svg/wcv-icons.svg?t=<?php echo esc_attr( $time ); ?>#wcv-icon-view"></use>
                     </svg>
@@ -69,7 +69,7 @@
         <div class="wcv-recent-rating wcv-section wcv-section-small">
             <div class="wcv-flex wcv-section-header wcv-flex-wrap">
                 <h3 class="wcv-sub-heading"><?php esc_html_e( 'Ratings', 'wc-vendors' ); ?></h3>
-                <a href="<?php echo esc_url( trailingslashit( \WCV_Vendors::get_vendor_shop_page( get_current_user_id() ) ) ); ?>ratings" class="wcv-view-more">
+                <a href="<?php echo esc_url( trailingslashit( \WCV_Vendor_Dashboard::get_dashboard_page_url( 'rating' ) ) ); ?>" class="wcv-view-more">
                     <svg class="wcv-icon wcv-icon-sm">
                         <use xlink:href="<?php echo esc_url( WCV_ASSETS_URL ); ?>svg/wcv-icons.svg?t=<?php echo esc_attr( $time ); ?>#wcv-icon-view"></use>
                     </svg>

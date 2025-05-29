@@ -79,10 +79,13 @@ class WCVendors_Admin_Menus {
      * Marketplace dashboard page menu item
      */
     public function marketplace_dashboard_menu() {
+        $pending_vendors_count = $this->get_pending_vendors_count();
+        $pending_vendors_badge = $pending_vendors_count > 0 ? ' <span class="update-plugins count-' . $pending_vendors_count . '"><span class="update-count">' . $pending_vendors_count . '</span></span>' : '';
+
         add_submenu_page(
             'wc-vendors',
             __( 'Dashboard', 'wc-vendors' ),
-            __( 'Dashboard', 'wc-vendors' ),
+            __( 'Dashboard', 'wc-vendors' ) . $pending_vendors_badge,
             'manage_woocommerce',
             'wc-vendors-marketplace-dashboard',
             array( $this, 'marketplace_dashboard_page' ),
@@ -301,6 +304,9 @@ class WCVendors_Admin_Menus {
                 margin-bottom: 0;
                 margin-top: 0;
             }
+            .toplevel_page_wc-vendors li a[href="admin.php?page=wcv-setup"] {
+                display: none !important;
+            }
         </style>
         <?php
     }
@@ -403,7 +409,7 @@ class WCVendors_Admin_Menus {
     public function add_wcv_logo() {
         $parent         = get_admin_page_parent();
         $hook           = get_current_screen()->id;
-        $exclude_screen = apply_filters( 'wcvendors_exclude_logo_screen', array( 'wc-vendors_page_wcv-go-pro' ) );
+        $exclude_screen = apply_filters( 'wcvendors_exclude_logo_screen', array( 'wc-vendors_page_wcv-go-pro', 'wc-vendors_page_wcv-setup' ) );
         if ( 'wc-vendors' === $parent && ! in_array( $hook, $exclude_screen, true ) ) {
             add_filter( "$hook", array( $this, 'wcv_logo' ), 0 );
         }
@@ -594,6 +600,31 @@ class WCVendors_Admin_Menus {
             )
         );
         include WCV_ABSPATH_ADMIN . 'views/html-admin-about-page.php';
+    }
+
+    /**
+     * Get the number of pending vendors awaiting approval
+     *
+     * @since 2.5.7
+     * @version 2.5.7
+     *
+     * @return int The number of pending vendors
+     */
+    public function get_pending_vendors_count() {
+        global $wpdb;
+
+        // Query to get count of pending vendors.
+        $count = $wpdb->get_var(
+            $wpdb->prepare(
+                "SELECT COUNT(*) FROM {$wpdb->prefix}users AS users
+                LEFT JOIN {$wpdb->prefix}usermeta AS meta ON users.ID = meta.user_id
+                WHERE meta.meta_key = %s AND meta.meta_value LIKE %s",
+                'wp_capabilities',
+                '%\"pending_vendor\"%'
+            )
+        );
+
+        return absint( $count );
     }
 }
 new WCVendors_Admin_Menus();

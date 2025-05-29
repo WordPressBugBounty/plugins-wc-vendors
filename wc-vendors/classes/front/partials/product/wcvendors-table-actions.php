@@ -31,7 +31,7 @@ use function WC_Vendors\Classes\Includes\wcv_get_product_types;
                 <?php endforeach; ?>
             </div>
         </div>
-        <div class="wcv-cols-group wcv-horizontal-gutters wcv-gap-top wcv-cols-group-narrow">
+        <div class="wcv-cols-group wcv-horizontal-gutters wcv-gap-top wcv-cols-group-narrow wcv-filter-wrapper">
             <?php
                 $product_categories = get_terms(
                     array(
@@ -71,7 +71,7 @@ use function WC_Vendors\Classes\Includes\wcv_get_product_types;
                         'id'            => '_wcv_product_category',
                         'options'       => $product_categories,
                         'class'         => 'wcv-dashboard-filter wcv-custom-select',
-                        'wrapper_start' => '<div class="all-15 small-100">',
+                        'wrapper_start' => '<div class="all-20 small-100">',
                         'wrapper_end'   => '</div>',
                         'value'         => $product_cat_get,
                         'label'         => esc_html__( 'Categories', 'wc-vendors' ),
@@ -85,7 +85,7 @@ use function WC_Vendors\Classes\Includes\wcv_get_product_types;
                         'options'       => $product_tags,
                         'class'         => 'wcv-dashboard-filter wcv-custom-select',
                         'value'         => $product_tag_get,
-                        'wrapper_start' => '<div class="all-15 small-50">',
+                        'wrapper_start' => '<div class="all-20 small-50">',
                         'wrapper_end'   => '</div>',
                         'label'         => esc_html__( 'Tags', 'wc-vendors' ),
                         'multiple'      => true,
@@ -98,14 +98,14 @@ use function WC_Vendors\Classes\Includes\wcv_get_product_types;
                         'value'         => $product_type_get,
                         'options'       => $product_types,
                         'class'         => 'wcv-dashboard-filter wcv-custom-select',
-                        'wrapper_start' => '<div class="all-15 small-50">',
+                        'wrapper_start' => '<div class="all-20 small-50">',
                         'wrapper_end'   => '</div>',
                         'label'         => esc_html__( 'Type', 'wc-vendors' ),
                         'multiple'      => true,
                     )
                 );
             ?>
-            <div class="all-35 small-100">
+            <div class="all-40 small-100">
                 <div class="control-group">
                     <label for="wcv_search" class="wcv_desktop">&nbsp;</label>
                     <div class="wcv-search-box-wrapper wcv-flex">
@@ -141,7 +141,7 @@ use function WC_Vendors\Classes\Includes\wcv_get_product_types;
                             'button_text'   => __( 'Update', 'wc-vendors' ),
                             'after_text'    => '</span>',
                             'class'         => 'wcv-button wcv-inline-flex wcv-button-link-secondary text-blue',
-                            'wrapper_start' => '<div class="all-20 medium-30 small-100 tiny-100 push-right wcv-flex wcv-flex-end"><div class="control-group"><label class="wcv_desktop">&nbsp;&nbsp;</label><div class="control">',
+                            'wrapper_start' => '<div class="all-100 medium-30 small-100 tiny-100 push-right wcv-flex wcv-flex-end"><div class="control-group"><div class="control">',
                             'wrapper_end'   => '</div></div>',
                             'before_text'   => wcv_get_icon( 'wcv-icon wcv-icon-24', 'wcv-icon-round-update' ) . '<span>',
                         )
@@ -157,7 +157,7 @@ use function WC_Vendors\Classes\Includes\wcv_get_product_types;
                             'button_text'   => __( 'Clear', 'wc-vendors' ),
                             'class'         => 'wcv-button wcv-flex wcv-button-link-danger',
                             'type'          => 'reset',
-                            'wrapper_start' => '<div class="control-group"><label class="wcv_desktop">&nbsp;&nbsp;</label><div class="control">',
+                            'wrapper_start' => '<div class="control-group"><div class="control">',
                             'wrapper_end'   => '</div></div></div>',
                         )
                     )

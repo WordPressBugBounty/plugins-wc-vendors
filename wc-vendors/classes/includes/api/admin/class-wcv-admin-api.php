@@ -207,7 +207,7 @@ class WCV_Admin_API extends WCV_API {
 
         $inner_joins  = "INNER JOIN {$wpdb->usermeta} AS ucap ON (u.ID = ucap.user_id AND ucap.meta_key = '{$wpdb->prefix}capabilities') ";
         $concat_query = '';
-        $where_query  = "AND ucap.meta_value LIKE '%vendor%' ";
+        $where_query  = "AND ucap.meta_value LIKE '%\"vendor\"%' ";
         $having_query = '';
 
         // build the query based on the search parameter.
@@ -229,7 +229,12 @@ class WCV_Admin_API extends WCV_API {
         // build the query based on the status parameter.
         if ( $status ) {
             $inner_joins .= "INNER JOIN {$wpdb->usermeta} AS vstatus ON (u.ID = vstatus.user_id AND vstatus.meta_key = '_wcv_vendor_status')";
-            $where_query .= 'pending' !== $status ? "AND vstatus.meta_value = '{$status}' AND ucap.meta_value NOT LIKE '%pending_vendor%' " : "AND ucap.meta_value LIKE '%pending_vendor%'";
+
+            if ( 'pending' === $status ) {
+                $where_query = "AND ucap.meta_value LIKE '%\"pending_vendor\"%'";
+            } else {
+                $where_query .= "AND vstatus.meta_value = '{$status}' AND ucap.meta_value NOT LIKE '%\"pending_vendor\"%' ";
+            }
         }
 
         // phpcs:disable
@@ -286,7 +291,12 @@ class WCV_Admin_API extends WCV_API {
 
         $vendors = array();
         foreach ( $vendor_ids as $vendor_id ) {
-            $vendor           = new Vendors_Settings( $vendor_id );
+            $vendor = new Vendors_Settings( $vendor_id );
+
+            if ( ! $vendor->is_valid() ) {
+                continue;
+            }
+
             $date_time_format = get_option( 'date_format' ) . ' ' . get_option( 'time_format' );
             $vendors[]        = array(
                 'id'              => $vendor_id,

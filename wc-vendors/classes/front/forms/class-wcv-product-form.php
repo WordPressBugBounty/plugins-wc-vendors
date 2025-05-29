@@ -876,7 +876,7 @@ class WCV_Product_Form {
                 )
             );
 
-            $cancel_icon = wcv_get_icon( 'wcv-icon wcv-icon-sm wcv-icon-middle wcv-icon-left', 'wcv-icon-times' );
+            $cancel_icon = wcv_get_icon( 'wcv-icon wcv-icon-24 wcv-icon-middle wcv-icon-left', 'wcv-icon-times' );
             WCV_Form_Helper::input(
                 apply_filters(
                     'wcv_product_sale_price_date_to',

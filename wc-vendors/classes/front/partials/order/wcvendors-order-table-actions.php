@@ -23,7 +23,7 @@ use WC_Vendors\Classes\Front\WCV_Form_Helper;
     </div>
     <div class="all-100 small-100">
         <form method="post" action="" class="wcv-form wcv-form-exclude">
-            <div class="wcv-cols-group wcv-horizontal-gutters wcv-cols-group-narrow">
+            <div class="wcv-cols-group wcv-horizontal-gutters wcv-cols-group-narrow wcv-filter-wrapper">
             <?php
 
 
@@ -37,7 +37,7 @@ use WC_Vendors\Classes\Front\WCV_Form_Helper;
                         'class'               => 'wcv-datepicker-dashboard-filter no_limit wcv-datepicker wcv-init-picker',
                         'value'               => gmdate( $this->date_format, $this->get_start_date() ),
                         'placeholder'         => 'YYYY-MM-DD',
-                        'wrapper_start'       => '<div class="all-75 medium-100 small-100"><div class="wcv-cols-group wcv-horizontal-gutters wcv-cols-group-narrow"><div class="all-25 small-50 medium-50">',
+                        'wrapper_start'       => '<div class="all-100 medium-100 small-100"><div class="wcv-cols-group wcv-horizontal-gutters wcv-cols-group-narrow"><div class="all-25 small-50 medium-50">',
                         'wrapper_end'         => '</div>',
                         'append_before'       => '<span class="wcv-flex" title="toggle" data-toggle>' . wcv_get_icon( 'wcv-icon wcv-icon-24', 'wcv-icon-calendar' ) . '</span>',
                         'input_wrapper_class' => 'wcv-datepicker-wrapper wcv-flex',
@@ -129,7 +129,7 @@ use WC_Vendors\Classes\Front\WCV_Form_Helper;
                         'button_text'   => __( 'Update', 'wc-vendors' ),
                         'after_text'    => '</span>',
                         'class'         => 'wcv-button wcv-inline-flex wcv-button-link-secondary text-blue',
-                        'wrapper_start' => '<div class="all-25 medium-30 small-100 tiny-100 push-right wcv-flex wcv-flex-end"><div class="control-group"><label class="wcv_desktop">&nbsp;&nbsp;</label><div class="control">',
+                        'wrapper_start' => '<div class="all-100 medium-30 small-100 tiny-100 push-right wcv-flex wcv-flex-end"><div class="control-group"><div class="control">',
                         'wrapper_end'   => '</div></div>',
                         'before_text'   => wcv_get_icon( 'wcv-icon wcv-icon-24', 'wcv-icon-round-update' ) . '<span>',
                     )
@@ -145,7 +145,7 @@ use WC_Vendors\Classes\Front\WCV_Form_Helper;
                         'button_text'   => __( 'Clear', 'wc-vendors' ),
                         'class'         => 'wcv-button wcv-flex wcv-button-link-danger',
                         'type'          => 'reset',
-                        'wrapper_start' => '<div class="control-group"><label class="wcv_desktop">&nbsp;&nbsp;</label><div class="control">',
+                        'wrapper_start' => '<div class="control-group"><div class="control">',
                         'wrapper_end'   => '</div></div></div>',
                     )
                 )

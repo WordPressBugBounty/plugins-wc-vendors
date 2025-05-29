@@ -18,19 +18,50 @@ class WCV_Vendor_Controller {
     private $allow_markup = false;
 
     /**
+     * The orders per page.
+     *
+     * @since 2.5.7
+     *
+     * @var int
+     */
+    public static $orders_per_page;
+
+    /**
      * Constructor
      *
      * @version 2.5.2
      * @since   2.5.2
      */
     public function __construct() {
-        $this->allow_markup = wc_string_to_bool( get_option( 'wcvendors_allow_form_markup', 'no' ) );
+        $this->allow_markup    = wc_string_to_bool( get_option( 'wcvendors_allow_form_markup', 'no' ) );
+        self::$orders_per_page = get_option( 'wcvendors_orders_per_page', 20 );
+
+        if ( empty( self::$orders_per_page ) ) {
+            self::$orders_per_page = 20;
+        }
+
         add_action( 'init', array( $this, 'lock_vendor' ) );
         add_filter( 'wcv_sc_stripe_connect_vendor_template', array( $this, 'get_stripe_connect_vendor_template' ), 20 );
+
+        add_filter( 'wcv_commission_table_limit', array( $this, 'fix_commission_table_limit' ) );
     }
 
     /**
-     * Get orders for a vendor.
+     * Fix commission table limit.
+     *
+     * @param int $limit The limit.
+     * @return int The limit.
+     */
+    public function fix_commission_table_limit( $limit ) {
+        if ( empty( $limit ) ) {
+            return 20;
+        }
+
+        return $limit;
+    }
+
+    /**
+     * Get the vendor orders.
      *
      * @param int     $vendor_id The vendor to get orders for.
      * @param array   $args The order query args.
@@ -50,7 +81,7 @@ class WCV_Vendor_Controller {
         );
 
         if ( $pagination ) {
-            $default_args['limit'] = get_option( 'wcvendors_orders_per_page', 20 );
+            $default_args['limit'] = self::$orders_per_page;
         }
 
         if ( $show_refunded_orders ) {
@@ -113,7 +144,7 @@ class WCV_Vendor_Controller {
         );
 
         if ( $pagination ) {
-            $args['limit'] = get_option( 'wcvendors_orders_per_page', 20 );
+            $args['limit'] = self::$orders_per_page;
         }
 
         if ( $date_range ) {
@@ -152,13 +183,12 @@ class WCV_Vendor_Controller {
         $all_vendor_order_ids = apply_filters( 'wcvendors_get_orders2_vendor_orders_ids', $all_vendor_order_ids, $vendor_id, $args );
 
         if ( $pagination ) {
-            $orders_per_page = get_option( 'wcvendors_orders_per_page', 20 );
-            $max_pages       = ceil( count( $all_vendor_order_ids ) / $orders_per_page );
-            $paged           = min( $paged, $max_pages );
-            $offset          = ( $paged - 1 ) * $orders_per_page;
+            $max_pages = ceil( count( $all_vendor_order_ids ) / self::$orders_per_page );
+            $paged     = min( $paged, $max_pages );
+            $offset    = ( $paged - 1 ) * self::$orders_per_page;
 
-            $args['limit'] = $orders_per_page;
-            if ( count( $all_vendor_order_ids ) > $orders_per_page ) {
+            $args['limit'] = self::$orders_per_page;
+            if ( count( $all_vendor_order_ids ) > self::$orders_per_page ) {
                 $args['offset'] = $offset;
             }
 

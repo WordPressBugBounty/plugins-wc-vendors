@@ -44,7 +44,7 @@ class="order_note_form wcv-form">
 
             <div class="modal-body" id="modalContent">
                 <div class="order_note_details">
-                    <?php if ( '' !== $notes ) : ?>
+                    <?php if ( '' !== $notes || null !== $notes ) : ?>
                         <?php echo wp_kses( $notes, wcv_allowed_html_tags() ); ?>
                     <?php endif; ?>
 

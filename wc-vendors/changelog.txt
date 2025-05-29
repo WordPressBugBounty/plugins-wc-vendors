@@ -1,5 +1,22 @@
 Changelog for WC Vendors Marketplace
 
+Version 2.5.7 - 23rd May 2025
+
+ * Improvement: Update language files
+ * Improvement: Vendor dashboard UI
+ * Improvement: Revamp WC Vendors Setup Wizard
+ * Improvement: Add badge count and smooth date range transition on Marketplace Dashboard
+ * Bug Fix: Fatal error on All Vendors Page due to invalid Vendor ID
+ * Bug Fix: Remove user from vendor list if store is inactive
+ * Bug Fix: Missing Product qty field in simple product edit template
+ * Bug Fix: Incorrect Link for Orders and Ratings Buttons on Vendor Dashboard
+ * Bug Fix: Function WC_Order_Data_Store_CPT query was called incorrectly
+ * Bug Fix: Fatal error on Vendor Dashboard – division type mismatch
+ * Bug Fix: Admin reports SQL Injection Vulnerability
+ * Bug Fix: Update Shipping Tracking redirecting to the wrong page
+ * Bug Fix: Product Search not working in Vendor Dashboard
+ * Bug Fix: All Vendors page breaking due to 3rd party plugin database capabilities
+
 Version 2.5.6 - 28th April 2025
 
  * Feature: Marketplace Admin Dashboard

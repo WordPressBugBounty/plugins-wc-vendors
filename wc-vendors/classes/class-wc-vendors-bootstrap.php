@@ -131,6 +131,24 @@ class WC_Vendors_Bootstrap {
         add_action( 'after_setup_theme', array( $this, 'init_plugin_installer' ) );
 
         $this->define_public_hooks();
+
+        // Add setup wizard.
+        add_action( 'admin_init', array( $this, 'maybe_launch_setup_wizard' ) );
+    }
+
+    /**
+     * Maybe launch the setup wizard after activating the plugin.
+     *
+     * @return void
+     * @version 2.4.9
+     * @since   2.4.9
+     */
+    public function maybe_launch_setup_wizard() {
+        if ( ! get_option( 'wcvendors_wizard_complete', false ) && wc_string_to_bool( get_transient( 'wcvendors_activation_redirect' ) ) ) {
+            delete_transient( 'wcvendors_activation_redirect' );
+            wp_safe_redirect( admin_url( 'admin.php?page=wcv-setup' ) );
+            exit;
+        }
     }
 
     /**
@@ -664,7 +682,6 @@ class WC_Vendors_Bootstrap {
         add_action( 'wp_ajax_wcv_json_add_variation', array( $this->product_controller, 'json_add_variation' ) );
         add_action( 'wp_ajax_wcv_json_link_all_variations', array( $this->product_controller, 'json_link_all_variations' ) );
 
-        add_filter( 'wcvendors_table_row_args_product', array( $this->product_controller, 'product_search_args' ) );
         add_filter( 'wcvendors_table_columns_product', array( $this->product_controller, 'table_columns' ) );
         add_filter( 'wcvendors_table_rows_product', array( $this->product_controller, 'table_rows' ), 10, 2 );
         add_filter( 'wcvendors_table_action_column_product', array( $this->product_controller, 'table_action_column' ) );

@@ -3,7 +3,7 @@ Contributors: jkohlbach, RymeraWebCo, Rymera01, smub
 Tags: multivendor, marketplace, multi vendor, product vendors, woocommerce commissions
 Requires at least: 5.5.0
 Tested up to: 6.8
-Stable tag: 2.5.6
+Stable tag: 2.5.7
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -299,6 +299,22 @@ Please [get in touch](https://www.wcvendors.com/contact-us/?utm_campaign=faq&utm
 
 == Changelog ==
 
+= Version 2.5.7 - 23rd May 2025 =
+ * Improvement: Update language files
+ * Improvement: Vendor dashboard UI
+ * Improvement: Revamp WC Vendors Setup Wizard
+ * Improvement: Add badge count and smooth date range transition on Marketplace Dashboard
+ * Bug Fix: Fatal error on All Vendors Page due to invalid Vendor ID
+ * Bug Fix: Remove user from vendor list if store is inactive
+ * Bug Fix: Missing Product qty field in simple product edit template
+ * Bug Fix: Incorrect Link for Orders and Ratings Buttons on Vendor Dashboard
+ * Bug Fix: Function WC_Order_Data_Store_CPT query was called incorrectly
+ * Bug Fix: Fatal error on Vendor Dashboard – division type mismatch
+ * Bug Fix: Admin reports SQL Injection Vulnerability
+ * Bug Fix: Update Shipping Tracking redirecting to the wrong page
+ * Bug Fix: Product Search not working in Vendor Dashboard
+ * Bug Fix: All Vendors page breaking due to 3rd party plugin database capabilities
+
 = Version 2.5.6 - 28th April 2025 =
  * Feature: Marketplace Admin Dashboard
  * Improvement: Review Request
@@ -357,16 +373,3 @@ Please [get in touch](https://www.wcvendors.com/contact-us/?utm_campaign=faq&utm
  * Bug Fix: Risk on Deleting Variations and Saving Seller Info and Store Description
  * Bug Fix: The Vendors List doesn't show on the Vendors page
 
-= Version 2.5.3 - 17th September 2024 =
- * Improvement: Implement product count/post count for vendor list shortcode
- * Improvement: Change the default stock quantity to 1 when the "Manage stock?" option is enabled 
- * Improvement: Implement product count/post count for vendor list shortcode 
- * Improvement: Add the {customer_name} placeholder option on the subject and heading of the vendor emails
- * Bug Fix: Links that have a "_blank" target attribute do not open in a new tab 
- * Bug Fix: Typographical error on "Vendor singluar term"
- * Bug Fix: Script tag is shown when a customer is accessing the vendor dashboard page 
- * Bug Fix: Re-activated stores have missing products 
- * Bug Fix: Notice: Function WC_Order_Data_Store_CPT::query was called incorrectly 
- * Bug Fix: Wrong text domain 
- * Bug Fix: The refunded order is showing up even though the show reversed orders option is disabled
- * Bug Fix: Vendor Registration Form Redirect is broken

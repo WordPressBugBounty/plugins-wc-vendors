@@ -68,7 +68,7 @@ $allow_add_order_note = wc_string_to_bool( get_option( 'wcvendors_capability_ord
 
                 <div class="billing-details">
                     <h4><?php esc_html_e( 'Billing Details', 'wc-vendors' ); ?></h4>
-                    <?php if ( $show_billing_address ) : ?>
+                    <?php if ( $show_billing_address || $show_customer_billing_name ) : ?>
                         <div class="wcv-order-address">
                             <?php if ( $order->get_formatted_billing_address() ) : ?>
                                 <p>
@@ -125,7 +125,7 @@ $allow_add_order_note = wc_string_to_bool( get_option( 'wcvendors_capability_ord
 
                 <div class="shipping-details">
                     <h4><?php esc_attr_e( 'Shipping details', 'wc-vendors' ); ?></h4>
-                    <?php if ( $show_shipping_address ) : ?>
+                    <?php if ( $show_shipping_address || $show_customer_shipping_name ) : ?>
                         <div class="wcv-order-address">
                             <?php if ( $order->get_formatted_shipping_address() ) : ?>
                                 <p>

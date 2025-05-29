@@ -296,7 +296,7 @@ $show_class = $variation_attribute_found ? 'hide-all' : '';
         <div class="wcv-cols-group wcv-horizontal-gutters variations-toolbar wcv-flex <?php echo esc_attr( $hide_class ); ?>">
             <div class="all-40 small-50">
                 <button type="button" class="wcv-button wcv-button-outline text-blue wcv_single_add_variation">
-                    <?php echo wcv_get_icon( 'wcv-icon wcv-icon-sm wcv-icon-middle wcv-icon-left', 'wcv-icon-plus-circle' ); //phpcs:ignore ?>
+                    <?php echo wcv_get_icon( 'wcv-icon wcv-icon-24 wcv-icon-middle wcv-icon-left', 'wcv-icon-plus-circle' ); //phpcs:ignore ?>
                     <span class="vertical-middle"><strong><?php esc_html_e( 'Add Variation', 'wc-vendors' ); ?></strong></span>
                 </button>
             </div>
@@ -334,7 +334,7 @@ $show_class = $variation_attribute_found ? 'hide-all' : '';
             </div>
             <div class="all-100 align-center <?php echo $variation_attribute_found ? '' : 'hide-all'; ?>">
                 <button type="button" class="wcv-button wcv-button-link text-blue wcv_single_add_variation bottom">
-                    <?php echo wcv_get_icon( 'wcv-icon wcv-icon-sm wcv-icon-middle wcv-icon-left', 'wcv-icon-plus-circle' ); //phpcs:ignore ?>
+                    <?php echo wcv_get_icon( 'wcv-icon wcv-icon-24 wcv-icon-middle wcv-icon-left', 'wcv-icon-plus-circle' ); //phpcs:ignore ?>
                     <span class="vertical-middle"><strong><?php esc_html_e( 'Add Variation', 'wc-vendors' ); ?></strong></span>
                 </button>
             </div>

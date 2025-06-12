@@ -373,13 +373,13 @@ class WCV_Vendor_Dashboard {
     public function get_dashboard_pages() {
 
         $disable_duplicate   = ! wc_string_to_bool( get_option( 'wcvendors_capability_product_duplicate', 'no' ) );
-        $lock_edit_products  = get_user_meta( get_current_user_id(), '_wcv_lock_edit_products_vendor', true );
-        $lock_new_products   = get_user_meta( get_current_user_id(), '_wcv_lock_new_products_vendor', true );
         $can_submit          = wc_string_to_bool( get_option( 'wcvendors_capability_products_enabled', 'no' ) );
         $viewstore_disabled  = wc_string_to_bool( get_option( 'wcvendors_view_store_cap', 'no' ) );
         $can_export_orders   = wc_string_to_bool( get_option( 'wcvendors_capability_orders_export', 'no' ) );
         $product_templates   = WCV_Product_Controller::get_product_templates();
         $after_product_label = '';
+        $lock_new_products   = ( 'yes' === get_user_meta( get_current_user_id(), '_wcv_lock_new_products_vendor', true ) ) ? true : false;
+        $lock_edit_products  = ( 'yes' === get_user_meta( get_current_user_id(), '_wcv_lock_edit_products_vendor', true ) ) ? true : false;
 
         ob_start();
         wc_get_template(

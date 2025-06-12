@@ -511,21 +511,23 @@ jQuery(function($) {
     },
 
     openMediaUploader: function(callback) {
+      // Always create a new instance or clear previous handlers
       if (wcv_product_variations_media.mediaUploader) {
-        wcv_product_variations_media.mediaUploader.open();
-        return;
+        // Remove all previous 'select' event handlers
+        wcv_product_variations_media.mediaUploader.off('select');
+      } else {
+        wcv_product_variations_media.mediaUploader = wp.media.frames.file_frame = wp.media(
+          {
+            title: wcv_product_variation.i18n_choose_image,
+            button: {
+              text: wcv_product_variation.i18n_set_image
+            },
+            multiple: false
+          }
+        );
       }
 
-      wcv_product_variations_media.mediaUploader = wp.media.frames.file_frame = wp.media(
-        {
-          title: wcv_product_variation.i18n_choose_image,
-          button: {
-            text: wcv_product_variation.i18n_set_image
-          },
-          multiple: false
-        }
-      );
-
+      // Attach the new event handler
       wcv_product_variations_media.mediaUploader.on('select', function() {
         var attachment = wcv_product_variations_media.mediaUploader
           .state()

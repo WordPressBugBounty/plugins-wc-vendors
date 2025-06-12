@@ -97,7 +97,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     ?>
     <?php do_action( 'wcvendors_setup_wizard_after_wcvendors_allow_tracking' ); ?>
 
-    <p class="wcv-setup-actions step alignright">
+    <p class="wcv-setup-actions step align-right">
         <button type="submit" class="button button-secondary" name="previous_step" value="<?php esc_attr_e( 'Previous', 'wc-vendors' ); ?>">
             <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24">
                 <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m12 19l-7-7l7-7m7 7H5" />

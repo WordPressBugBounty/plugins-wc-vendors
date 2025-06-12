@@ -3,7 +3,7 @@ Contributors: jkohlbach, RymeraWebCo, Rymera01, smub
 Tags: multivendor, marketplace, multi vendor, product vendors, woocommerce commissions
 Requires at least: 5.5.0
 Tested up to: 6.8
-Stable tag: 2.5.7
+Stable tag: 2.5.8
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -278,9 +278,9 @@ Also be sure to visit our documentation [https://docs.wcvendors.com/](https://do
 
 WC Vendors Marketplace does not work with multisite WordPress. There are no plans to support this.
 
-= Where do I report security bugs found in this plugin? =
+= How can I report security bugs? =
 
-Please [get in touch](https://www.wcvendors.com/contact-us/?utm_campaign=faq&utm_source=wporg&utm_medium=web) with our team directly.
+You can report security bugs through the Patchstack Vulnerability Disclosure Program. The Patchstack team helps validate, triage and handle any security vulnerabilities. [Report a security vulnerability.](https://patchstack.com/database/vdp/9e5fba29-b791-439b-84ed-46fa509549e1)
 
 == Screenshots ==
 
@@ -298,6 +298,14 @@ Please [get in touch](https://www.wcvendors.com/contact-us/?utm_campaign=faq&utm
 12. Email notifications for admins, customers and vendors
 
 == Changelog ==
+
+= Version 2.5.8 - 9th June 2025 = 
+ * Improvement: Add Patchstack VDP disclaimer to FAQ on readme
+ * Bug Fix: Store description content is not saving correctly when using HTML tags from the admin panel
+ * Bug fix: New orders do not appear on Marketplace Dashboard when dashboard cache is enabled
+ * Bug Fix: General box should hide when Variable product type selected
+ * Bug Fix: Difficulties in Adding Variation Images
+ * Bug Fix: Setup Wizard: Can not click on the Next button on small screen
 
 = Version 2.5.7 - 23rd May 2025 =
  * Improvement: Update language files

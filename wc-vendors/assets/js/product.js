@@ -3,6 +3,7 @@
 /* Front end product meta boxes */
 jQuery(function($) {
   $(document).ready(function() {
+    hideEmptyTabs();
     // PRODUCT TYPE SPECIFIC OPTIONS
     $('select#product-type')
       .on('change', function() {
@@ -24,12 +25,8 @@ jQuery(function($) {
         }
 
         show_and_hide_panels();
-        // $('ul.tabs-nav li').removeClass('active');
-        // if ($('ul.tabs-nav:visible').length) {
-        //   $('ul.tabs-nav li a')
-        //     .filter(':visible')[0]
-        //     .click();
-        // }
+        hideEmptyTabs();
+        activateFirstVisibleTab();
         $('body').trigger(
           'woocommerce-product-type-change',
           select_val,
@@ -81,6 +78,49 @@ jQuery(function($) {
       $('.sale_schedule').show();
       return false;
     });
+
+    function activateFirstVisibleTab() {
+      const wcvTabTarget = document.getElementById('product-meta-accordion');
+      if (!wcvTabTarget) return;
+
+      requestAnimationFrame(() => {
+        const tabs = wcvTabTarget.querySelectorAll('.wcv-accordion-title');
+        for (const tab of tabs) {
+          if (tab.offsetWidth > 0 && tab.offsetHeight > 0) {
+            if (!tab.classList.contains('active')) {
+              tab.click();
+            }
+            break;
+          }
+        }
+      });
+    }
+
+    function hideEmptyTabs() {
+      const tabs = document.querySelectorAll('.wcv-accordion-title');
+      for (const tab of tabs) {
+        let parent = tab.parentNode;
+        const tabContent = parent.querySelector('.tabs-content');
+        const tabContentChildren = tabContent.children;
+        const childCount = tabContentChildren.length;
+        let isHidden = 0;
+
+        Array.from(tabContentChildren).forEach(child => {
+          if (child.style.display === 'none' || child.children.length == 0) {
+            isHidden++;
+          }
+        });
+
+        if (isHidden === childCount) {
+          parent.style.display = 'none';
+          parent.classList.add('hide-all');
+        } else {
+          tab.classList.remove('is_hidden');
+          parent.classList.remove('is_hidden');
+          parent.classList.remove('hide-all');
+        }
+      }
+    }
 
     function show_and_hide_panels() {
       var product_type = $('#product-type').val();
@@ -1541,48 +1581,6 @@ jQuery(function($) {
         $(this).removeClass('is-uploading');
       }
     );
-
-    const wcvTabTarget =
-      document.getElementById('product-meta-accordion') || null;
-
-    // MutationObserver watch wcvTabTarget change then click the first visible tab
-    const mutationObserverCallback = function(mutationsList, observer) {
-      for (const mutation of mutationsList) {
-        if (
-          mutation.type === 'attributes' &&
-          mutation.attributeName === 'data-type'
-        ) {
-          const tabs = mutation.target.querySelectorAll('.wcv-accordion-title');
-          for (const tab of tabs) {
-            if (tab.getBoundingClientRect().width > 0) {
-              // check if do not have active class then click
-              if (!tab.classList.contains('active')) {
-                tab.click();
-              }
-              break;
-            }
-          }
-        }
-      }
-    };
-
-    const mObserver = new MutationObserver(mutationObserverCallback);
-
-    if (wcvTabTarget) {
-      mObserver.observe(wcvTabTarget, {
-        attributes: true,
-        childList: false,
-        subtree: false
-      });
-
-      const tabs = wcvTabTarget.querySelectorAll('.wcv-accordion-title');
-      for (const tab of tabs) {
-        if (tab.style.display !== 'none') {
-          tab.click();
-          break;
-        }
-      }
-    }
 
     $('.wcv-exporter-wrapper .select2').select2();
   });

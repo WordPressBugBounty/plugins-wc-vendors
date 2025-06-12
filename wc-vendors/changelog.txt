@@ -1,5 +1,14 @@
 Changelog for WC Vendors Marketplace
 
+Version 2.5.8 - 9th June 2025
+
+ * Improvement: Add Patchstack VDP disclaimer to FAQ on readme
+ * Bug Fix: Store description content is not saving correctly when using HTML tags from the admin panel
+ * Bug fix: New orders do not appear on Marketplace Dashboard when dashboard cache is enabled
+ * Bug Fix: General box should hide when Variable product type selected
+ * Bug Fix: Difficulties in Adding Variation Images
+ * Bug Fix: Setup Wizard: Can not click on the Next button on small screen
+
 Version 2.5.7 - 23rd May 2025
 
  * Improvement: Update language files

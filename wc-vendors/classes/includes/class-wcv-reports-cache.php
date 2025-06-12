@@ -110,9 +110,12 @@ class WCV_Reports_Cache {
      * @return array Date range.
      */
     public function calculate_date_in_range( $start_date, $end_date ) {
-        $dates    = array();
-        $today    = gmdate( 'Y-m-d' );
-        $end_date = $today;
+        $dates = array();
+        $today = gmdate( 'Y-m-d' );
+
+        if ( $end_date === $today ) {
+            $end_date = gmdate( 'Y-m-d', strtotime( '-1 day' ) );
+        }
 
         while ( $start_date <= $end_date ) {
             $dates[]    = $start_date;
@@ -144,6 +147,14 @@ class WCV_Reports_Cache {
     public function get_cache( $start_date, $end_date, $fields ) {
         global $wpdb;
 
+        $today                = gmdate( 'Y-m-d' );
+        $should_include_today = false;
+
+        if ( $end_date === $today ) {
+            $should_include_today = true;
+            $end_date             = gmdate( 'Y-m-d', strtotime( '-1 day' ) );
+        }
+
         $sql = $wpdb->prepare(
             "SELECT report_data, report_date FROM {$wpdb->prefix}wcv_reports_cache WHERE report_date BETWEEN %s AND %s",
             $start_date,
@@ -152,37 +163,29 @@ class WCV_Reports_Cache {
 
         $cache_data            = $wpdb->get_results( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
         $serialized_cache_data = array();
+
         foreach ( $cache_data as $cache ) {
             $serialized_cache_data[ $cache->report_date ] = maybe_unserialize( $cache->report_data );
         }
+
         // Calculate missing dates.
-        $cached_dates  = array_keys( $serialized_cache_data );
-        $dates         = $this->calculate_date_in_range( $start_date, $end_date );
-        $missing_dates = array_diff( $dates, $cached_dates );
+        $cached_dates      = array_keys( $serialized_cache_data );
+        $dates             = $this->calculate_date_in_range( $start_date, $end_date );
+        $missing_dates     = array_diff( $dates, $cached_dates );
+        $report_controller = new WCV_Reports( 0, false );
 
         foreach ( $missing_dates as $date ) {
-            $report_controller = new WCV_Reports( 0, false );
-            $report_controller->set_period( $date, $date );
-            $report_data = array();
 
-            foreach ( $fields as $field ) {
-                switch ( $field ) {
-                    case 'commissions':
-                        $report_data['commissions'] = $report_controller->get_total_commissions();
-                        break;
-                    case 'revenue':
-                    $report_data['revenue'] = $report_controller->get_total_revenue();
-                        break;
-                    case 'orders':
-                    $report_data['orders'] = $report_controller->get_total_orders();
-                        break;
-                    case 'top_vendors':
-                        $report_data['top_vendors'] = $report_controller->get_top_vendors();
-                        break;
-                }
+            if ( ! isset( $serialized_cache_data[ $date ] ) ) {
+                $report_data                    = $this->get_live_data( $report_controller, $date, $fields );
+                $serialized_cache_data[ $date ] = $report_data;
+                $report_controller->clear_total_commissions_and_revenue_cache();
             }
+        }
 
-            $serialized_cache_data[ $date ] = $report_data;
+        if ( $should_include_today ) {
+            $serialized_cache_data[ $today ] = $this->get_live_data( $report_controller, $today, $fields );
+            $report_controller->clear_total_commissions_and_revenue_cache();
         }
 
         // Calculate cache hit percentage.
@@ -204,12 +207,51 @@ class WCV_Reports_Cache {
     }
 
     /**
+     * Get live data for date
+     *
+     * @since 2.5.8
+     *
+     * @param WCV_Reports $report_controller Report controller.
+     * @param string      $date Date.
+     * @param array       $fields Fields.
+     * @return array Live data.
+     */
+    private function get_live_data( $report_controller, $date, $fields ) {
+
+        if ( ! $report_controller || ! is_a( $report_controller, 'WCV_Reports' ) ) {
+            $report_controller = new WCV_Reports( 0, false );
+        }
+
+        $report_controller->set_period( $date, $date );
+        $report_data = array();
+
+        foreach ( $fields as $field ) {
+            switch ( $field ) {
+                case 'commissions':
+                    $report_data['commissions'] = $report_controller->get_total_commissions();
+                    break;
+                case 'revenue':
+                    $report_data['revenue'] = $report_controller->get_total_revenue();
+                    break;
+                case 'orders':
+                    $report_data['orders'] = $report_controller->get_total_orders();
+                    break;
+                case 'top_vendors':
+                    $report_data['top_vendors'] = $report_controller->get_top_vendors();
+                    break;
+            }
+        }
+
+        return $report_data;
+    }
+
+    /**
      * Format top vendors
      *
      * @param array $serialized_cache_data Serialized cache data.
      * @return array Formatted top vendors.
      */
-    public function format_top_vendors( $serialized_cache_data ) {
+    private function format_top_vendors( $serialized_cache_data ) {
 
         $filtered_serialized_cache_data = array_filter( $serialized_cache_data );
 
@@ -279,16 +321,17 @@ class WCV_Reports_Cache {
             return;
         }
 
+        $periods           = $this->get_periods();
+        $report_controller = new WCV_Reports( 0, false );
+        $today             = gmdate( 'Y-m-d' );
+
         // Remove today's cache.
         $wpdb->query(
             $wpdb->prepare(
                 "DELETE FROM {$wpdb->prefix}wcv_reports_cache WHERE report_date = %s",
-                gmdate( 'Y-m-d' )
+                $today
             )
         );
-
-        $periods           = $this->get_periods();
-        $report_controller = new WCV_Reports( 0, false );
 
         // Remove old cache order than 1 year.
         $wpdb->query(
@@ -313,6 +356,8 @@ class WCV_Reports_Cache {
             $cached_dates = $wpdb->get_col( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
             $dates = array_diff( $dates, $cached_dates );
+            // Exclude current date from caching.
+            $dates = array_diff( $dates, array( $today ) );
 
             if ( empty( $dates ) ) {
                 continue;
@@ -342,30 +387,31 @@ class WCV_Reports_Cache {
      * @return array Periods.
      */
     public function get_periods() {
-        $periods = array(
+        $yesterday = gmdate( 'Y-m-d', strtotime( '-1 day' ) );
+        $periods   = array(
             'last_7_days'   => array(
                 'start_date' => gmdate( 'Y-m-d', strtotime( '-7 days' ) ),
-                'end_date'   => gmdate( 'Y-m-d' ),
+                'end_date'   => $yesterday,
             ),
             'last_14_days'  => array(
                 'start_date' => gmdate( 'Y-m-d', strtotime( '-14 days' ) ),
-                'end_date'   => gmdate( 'Y-m-d' ),
+                'end_date'   => $yesterday,
             ),
             'last_30_days'  => array(
                 'start_date' => gmdate( 'Y-m-d', strtotime( '-30 days' ) ),
-                'end_date'   => gmdate( 'Y-m-d' ),
+                'end_date'   => $yesterday,
             ),
             'last_3_months' => array(
                 'start_date' => gmdate( 'Y-m-d', strtotime( '-3 months' ) ),
-                'end_date'   => gmdate( 'Y-m-d' ),
+                'end_date'   => $yesterday,
             ),
             'last_6_months' => array(
                 'start_date' => gmdate( 'Y-m-d', strtotime( '-6 months' ) ),
-                'end_date'   => gmdate( 'Y-m-d' ),
+                'end_date'   => $yesterday,
             ),
             'last_year'     => array(
                 'start_date' => gmdate( 'Y-m-d', strtotime( '-1 year' ) ),
-                'end_date'   => gmdate( 'Y-m-d' ),
+                'end_date'   => $yesterday,
             ),
         );
         return $periods;

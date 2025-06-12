@@ -8,7 +8,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Language-Team: WC Vendors <translate@wcvendors.com>\n"
 "Last-Translator: Jamie Madden <translate@wcvendors.com>\n"
-"POT-Creation-Date: 2025-05-23 08:10+0000\n"
+"POT-Creation-Date: 2025-06-09 02:10+0000\n"
 "Report-Msgid-Bugs-To: https://www.wcvendors.com\n"
 "X-Poedit-Basepath: ..\n"
 "X-Poedit-KeywordsList: __;_e;_ex:1,2c;_n:1,2;_n_noop:1,2;_nx:1,2,4c;_nx_noop:1,2,3c;_x:1,2c;esc_attr__;esc_attr_e;esc_attr_x:1,2c;esc_html__;esc_html_e;esc_html_x:1,2c\n"
@@ -345,47 +345,47 @@ msgstr ""
 msgid "Invalid vendor ID"
 msgstr ""
 
-#: classes/class-vendor-settings.php:572, classes/class-vendor-settings.php:606, classes/class-vendor-settings.php:617, classes/class-vendor-settings.php:640
+#: classes/class-vendor-settings.php:585, classes/class-vendor-settings.php:619, classes/class-vendor-settings.php:630, classes/class-vendor-settings.php:653
 msgid "Percent: "
 msgstr ""
 
-#: classes/class-vendor-settings.php:578, classes/class-vendor-settings.php:600
+#: classes/class-vendor-settings.php:591, classes/class-vendor-settings.php:613
 msgid "Default"
 msgstr ""
 
-#: classes/class-vendor-settings.php:600, classes/admin/settings/class-wcv-settings-form.php:68, classes/admin/settings/class-wcv-settings-form.php:80, classes/front/forms/class-wcv-store-form.php:79
+#: classes/class-vendor-settings.php:613, classes/admin/settings/class-wcv-settings-form.php:68, classes/admin/settings/class-wcv-settings-form.php:80, classes/front/forms/class-wcv-store-form.php:79
 msgid "Store"
 msgstr ""
 
-#: classes/class-vendor-settings.php:610, classes/class-vendor-settings.php:624
+#: classes/class-vendor-settings.php:623, classes/class-vendor-settings.php:637
 msgid "Fixed: "
 msgstr ""
 
-#: classes/class-vendor-settings.php:617, classes/class-vendor-settings.php:624
+#: classes/class-vendor-settings.php:630, classes/class-vendor-settings.php:637
 msgid "Fee: "
 msgstr ""
 
-#: classes/class-vendor-settings.php:628, classes/includes/wcv-all-vendors-page-setting-fields.php:508
+#: classes/class-vendor-settings.php:641, classes/includes/wcv-all-vendors-page-setting-fields.php:508
 msgid "Vendor Sales"
 msgstr ""
 
-#: classes/class-vendor-settings.php:632, classes/includes/wcv-all-vendors-page-setting-fields.php:509
+#: classes/class-vendor-settings.php:645, classes/includes/wcv-all-vendors-page-setting-fields.php:509
 msgid "Product Sales"
 msgstr ""
 
-#: classes/class-vendor-settings.php:636, classes/includes/wcv-all-vendors-page-setting-fields.php:510
+#: classes/class-vendor-settings.php:649, classes/includes/wcv-all-vendors-page-setting-fields.php:510
 msgid "Product Price"
 msgstr ""
 
-#: classes/class-vendor-settings.php:687, classes/front/class-wcv-product-controller.php:3336, classes/includes/wcv-all-vendors-page-i18n.php:9
+#: classes/class-vendor-settings.php:700, classes/front/class-wcv-product-controller.php:3336, classes/includes/wcv-all-vendors-page-i18n.php:9
 msgid "Pending"
 msgstr ""
 
-#: classes/class-vendor-settings.php:688, classes/includes/wcv-all-vendors-page-i18n.php:7, classes/includes/wcv-marketplace-dashboard-i18n.php:68
+#: classes/class-vendor-settings.php:701, classes/includes/wcv-all-vendors-page-i18n.php:7, classes/includes/wcv-marketplace-dashboard-i18n.php:68
 msgid "Inactive"
 msgstr ""
 
-#: classes/class-vendor-settings.php:689, classes/includes/wcv-all-vendors-page-i18n.php:6, classes/includes/wcv-marketplace-dashboard-i18n.php:67
+#: classes/class-vendor-settings.php:702, classes/includes/wcv-all-vendors-page-i18n.php:6, classes/includes/wcv-marketplace-dashboard-i18n.php:67
 msgid "Active"
 msgstr ""
 
@@ -4243,39 +4243,39 @@ msgstr ""
 msgid "Period"
 msgstr ""
 
-#: classes/includes/wcv-template-functions.php:126
+#: classes/includes/wcv-template-functions.php:137
 msgid "Commission subtotal:"
 msgstr ""
 
-#: classes/includes/wcv-template-functions.php:133
+#: classes/includes/wcv-template-functions.php:144
 msgid "Discount:"
 msgstr ""
 
-#: classes/includes/wcv-template-functions.php:146
+#: classes/includes/wcv-template-functions.php:157
 msgid "Product subtotal:"
 msgstr ""
 
-#: classes/includes/wcv-template-functions.php:154
+#: classes/includes/wcv-template-functions.php:165
 msgid "Shipping:"
 msgstr ""
 
-#: classes/includes/wcv-template-functions.php:162
+#: classes/includes/wcv-template-functions.php:173
 msgid "Tax:"
 msgstr ""
 
-#: classes/includes/wcv-template-functions.php:170
+#: classes/includes/wcv-template-functions.php:181
 msgid "Payment method:"
 msgstr ""
 
-#: classes/includes/wcv-template-functions.php:179
+#: classes/includes/wcv-template-functions.php:190
 msgid "Commission total:"
 msgstr ""
 
-#: classes/includes/wcv-template-functions.php:191
+#: classes/includes/wcv-template-functions.php:202
 msgid "Product total:"
 msgstr ""
 
-#: classes/includes/wcv-template-functions.php:362, classes/includes/wcv-template-functions.php:363
+#: classes/includes/wcv-template-functions.php:373, classes/includes/wcv-template-functions.php:374
 msgid "Not available"
 msgstr ""
 

@@ -461,8 +461,20 @@ class Vendors_Settings {
             return false;
         }
 
-        $media_fields  = $this->get_media_fields();
-        $vacation_mode = isset( $changes['vacation_mode'] ) ? $changes['vacation_mode'] : 'no';
+        $media_fields       = $this->get_media_fields();
+        $vacation_mode      = isset( $changes['vacation_mode'] ) ? $changes['vacation_mode'] : 'no';
+        $lock_new_products  = isset( $changes['lock_new_products'] ) ? $changes['lock_new_products'] : 'no';
+        $lock_edit_products = isset( $changes['lock_edit_products'] ) ? $changes['lock_edit_products'] : 'no';
+        if ( 'yes' !== $lock_new_products ) {
+            delete_user_meta( $this->vendor_id, '_wcv_lock_new_products_vendor' );
+            delete_user_meta( $this->vendor_id, '_wcv_lock_new_products_vendor_msg' );
+            unset( $changes['lock_new_products_msg'] );
+        }
+        if ( 'yes' !== $lock_edit_products ) {
+            delete_user_meta( $this->vendor_id, '_wcv_lock_edit_products_vendor' );
+            delete_user_meta( $this->vendor_id, '_wcv_lock_edit_products_vendor_msg' );
+            unset( $changes['lock_edit_products_msg'] );
+        }
         if ( 'yes' !== $vacation_mode ) {
             delete_user_meta( $this->vendor_id, '_wcv_vacation_mode' );
             delete_user_meta( $this->vendor_id, '_wcv_vacation_mode_msg' );
@@ -471,8 +483,9 @@ class Vendors_Settings {
             unset( $changes['disable_cart'] );
             unset( $changes['vacation_mode'] );
         }
-        $allow_shop_desc_html = wc_string_to_bool( get_option( 'wcvendors_display_shop_description_html', 'no' ) );
-        $allow_markup         = wc_string_to_bool( get_option( 'wcvendors_allow_form_markup', 'no' ) );
+        $allow_shop_desc_html    = wc_string_to_bool( get_option( 'wcvendors_display_shop_description_html', 'no' ) );
+        $override_shop_desc_html = wc_string_to_bool( isset( $changes['html_enabled'] ) ? $changes['html_enabled'] : 'no' );
+        $allow_markup            = wc_string_to_bool( get_option( 'wcvendors_allow_form_markup', 'no' ) );
         foreach ( $changes as $field => $value ) {
             $section = $this->get_section( $field );
             if ( 'wp' === $section ) {
@@ -491,7 +504,7 @@ class Vendors_Settings {
             }
 
             if ( 'shop_description' === $field ) {
-                $striped_store_description = $allow_shop_desc_html ? wp_kses( $value, wcv_allowed_html_tags() ) : wp_strip_all_tags( $value );
+                $striped_store_description = $allow_shop_desc_html || $override_shop_desc_html ? wp_kses( $value, wcv_allowed_html_tags() ) : wp_strip_all_tags( $value );
                 $value                     = $striped_store_description;
             }
 
@@ -506,7 +519,7 @@ class Vendors_Settings {
             }
 
             $manual_sanitize_fields = array(
-                'store_description',
+                'shop_description',
                 'seller_info',
                 'shipping_policy',
                 'return_policy',

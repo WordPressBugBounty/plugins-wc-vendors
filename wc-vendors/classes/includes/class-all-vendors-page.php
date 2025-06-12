@@ -166,7 +166,8 @@ class WCV_All_Vendors_Page {
             'opening_days'      => ! $is_pro_active ? array() : wcv_days_labels(),
             'map_zoom_level'    => get_option( 'wcvendors_pro_google_maps_zoom_level', 18 ),
             'html_settings'     => array(
-                'use_media' => wc_string_to_bool( get_option( 'wcvendors_allow_editor_media', 'no' ) ),
+                'use_media'         => wc_string_to_bool( get_option( 'wcvendors_allow_editor_media', 'no' ) ),
+                'shop_html_enabled' => wc_string_to_bool( get_option( 'wcvendors_display_shop_description_html', 'no' ) ),
             ),
             'maybe_init_map'    => $maybe_init_map,
             'map_api_key'       => $map_api_key,

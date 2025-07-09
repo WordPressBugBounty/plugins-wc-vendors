@@ -465,16 +465,19 @@ class Vendors_Settings {
         $vacation_mode      = isset( $changes['vacation_mode'] ) ? $changes['vacation_mode'] : 'no';
         $lock_new_products  = isset( $changes['lock_new_products'] ) ? $changes['lock_new_products'] : 'no';
         $lock_edit_products = isset( $changes['lock_edit_products'] ) ? $changes['lock_edit_products'] : 'no';
+
         if ( 'yes' !== $lock_new_products ) {
             delete_user_meta( $this->vendor_id, '_wcv_lock_new_products_vendor' );
             delete_user_meta( $this->vendor_id, '_wcv_lock_new_products_vendor_msg' );
             unset( $changes['lock_new_products_msg'] );
         }
+
         if ( 'yes' !== $lock_edit_products ) {
             delete_user_meta( $this->vendor_id, '_wcv_lock_edit_products_vendor' );
             delete_user_meta( $this->vendor_id, '_wcv_lock_edit_products_vendor_msg' );
             unset( $changes['lock_edit_products_msg'] );
         }
+
         if ( 'yes' !== $vacation_mode ) {
             delete_user_meta( $this->vendor_id, '_wcv_vacation_mode' );
             delete_user_meta( $this->vendor_id, '_wcv_vacation_mode_msg' );
@@ -483,9 +486,12 @@ class Vendors_Settings {
             unset( $changes['disable_cart'] );
             unset( $changes['vacation_mode'] );
         }
+
         $allow_shop_desc_html    = wc_string_to_bool( get_option( 'wcvendors_display_shop_description_html', 'no' ) );
         $override_shop_desc_html = wc_string_to_bool( isset( $changes['html_enabled'] ) ? $changes['html_enabled'] : 'no' );
         $allow_markup            = wc_string_to_bool( get_option( 'wcvendors_allow_form_markup', 'no' ) );
+        $policy_html             = wc_string_to_bool( get_option( 'wcvendors_allow_settings_policy_html', 'no' ) );
+
         foreach ( $changes as $field => $value ) {
             $section = $this->get_section( $field );
             if ( 'wp' === $section ) {
@@ -499,6 +505,7 @@ class Vendors_Settings {
             if ( in_array( $field, $media_fields, true ) ) {
                 $value = (string) $value['id'];
             }
+
             if ( ! isset( $this->data_keys[ $section ][ $field ] ) ) {
                 continue;
             }
@@ -513,17 +520,27 @@ class Vendors_Settings {
                 $value               = $striped_seller_info;
             }
 
-            if ( 'shipping_policy' === $field || 'return_policy' === $field || 'privacy_policy' === $field ) {
-                $striped_policy = $allow_markup ? wp_kses( $value, wcv_allowed_html_tags() ) : wp_strip_all_tags( $value );
+            if ( 'terms_and_conditions' === $field || 'privacy_policy' === $field ) {
+                $striped_policy = $policy_html ? wp_kses( $value, wcv_allowed_html_tags() ) : wp_strip_all_tags( $value );
                 $value          = $striped_policy;
+            }
+
+            if ( 'shipping_flat_rate' === $field ) {
+
+                if ( isset( $value['shipping_policy'] ) ) {
+                    $value['shipping_policy'] = $policy_html ? wp_kses( $value['shipping_policy'], wcv_allowed_html_tags() ) : wp_strip_all_tags( $value['shipping_policy'] );
+                }
+                if ( isset( $value['return_policy'] ) ) {
+                    $value['return_policy'] = $policy_html ? wp_kses( $value['return_policy'], wcv_allowed_html_tags() ) : wp_strip_all_tags( $value['return_policy'] );
+                }
             }
 
             $manual_sanitize_fields = array(
                 'shop_description',
                 'seller_info',
-                'shipping_policy',
-                'return_policy',
                 'privacy_policy',
+                'terms_and_conditions',
+                'shipping_flat_rate',
             );
 
             if ( ! in_array( $field, $manual_sanitize_fields, true ) ) {

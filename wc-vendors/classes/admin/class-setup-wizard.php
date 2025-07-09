@@ -565,6 +565,12 @@ class WCVendors_Admin_Setup_Wizard {
             update_option( 'wcvendors_wizard_complete', current_time( 'mysql' ) );
             delete_transient( 'wcvendors_activation_redirect' );
 
+            WCVendors_Admin_Notices::remove_notice( 'install' );
+
+            if ( is_wcv_pro_active() && class_exists( 'WCVendors_Pro_Admin_Notices' ) ) {
+                WCVendors_Pro_Admin_Notices::remove_notice( 'install' );
+            }
+
             do_action( 'wcvendors_setup_wizard_after_save_one_click_setup' );
 
             return true;

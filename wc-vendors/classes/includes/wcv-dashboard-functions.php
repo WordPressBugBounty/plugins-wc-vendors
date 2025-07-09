@@ -181,3 +181,23 @@ function attributes_cmp( $a, $b ) {
 
     return ( $a['position'] < $b['position'] ) ? -1 : 1;
 }
+
+
+/**
+ * Get the order display options.
+ *
+ * @since 2.5.9
+ * @version 2.5.9
+ *
+ * @return array
+ */
+function wcv_get_order_details_display_options() {
+    return array(
+        'name'             => wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_name', 'no' ) ),
+        'email'            => wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_email', 'no' ) ),
+        'phone'            => wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_phone', 'no' ) ),
+        'shipping_name'    => wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_shipping_name', 'no' ) ),
+        'shipping_address' => wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_shipping', 'no' ) ),
+        'billing_address'  => wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_billing', 'no' ) ),
+    );
+}

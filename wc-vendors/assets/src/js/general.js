@@ -381,6 +381,8 @@ jQuery(function($) {
     $('#_wcv_shipping_status_input').val('');
 
     $('#_wcv_order_status_input').val('');
+    $('#wcv_order_search_input').val('');
+    $('#wcv_order_search_filter').val('all');
 
     $('.wcv-order-header .wcv-form').trigger('submit');
   });

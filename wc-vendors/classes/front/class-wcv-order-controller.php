@@ -2,6 +2,7 @@
 namespace WC_Vendors\Classes\Front;
 
 use WCV_Vendor_Dashboard;
+use function WC_Vendors\Classes\Includes\wcv_get_order_details_display_options;
 
 /**
  * The WC Vendors order Controller class
@@ -141,6 +142,47 @@ class WCV_Order_Controller {
     public $date_format;
 
     /**
+     * Search input
+     *
+     * @since 2.5.9
+     * @access public
+     *
+     * @var string $search_input search input
+     */
+    public $search_input;
+
+    /**
+     * Search filter
+     *
+     * @since 2.5.9
+     * @access public
+     *
+     * @var string $search_filter search filter
+     */
+    public $search_filter;
+
+
+    /**
+     * Vendor ID
+     *
+     * @since 2.5.9
+     * @access public
+     *
+     * @var int $vendor_id vendor id
+     */
+    public $vendor_id;
+
+    /**
+     * Order details display options
+     *
+     * @since 2.5.9
+     * @access public
+     *
+     * @var array $details_display_options order details display options
+     */
+    public $details_display_options;
+
+    /**
      * Initialize the class and set its properties.
      *
      * @since    2.5.2
@@ -175,14 +217,17 @@ class WCV_Order_Controller {
         $this->base_dir        = plugin_dir_path( WCV_PLUGIN_FILE );
         $this->controller_type = 'order';
 
-        $orders_sales_range  = get_option( 'wcvendors_orders_sales_range', 'monthly' );
-        $this->date_format   = is_wcv_pro_active() ? get_option( 'wcvendors_dashboard_date_format', 'Y-m-d' ) : 'Y-m-d';
-        $this->default_start = '';
-        $this->per_page      = get_option( 'wcvendors_orders_per_page', 20 );
+        $orders_sales_range            = get_option( 'wcvendors_orders_sales_range', 'monthly' );
+        $this->date_format             = is_wcv_pro_active() ? get_option( 'wcvendors_dashboard_date_format', 'Y-m-d' ) : 'Y-m-d';
+        $this->default_start           = '';
+        $this->per_page                = get_option( 'wcvendors_orders_per_page', 20 );
+        $this->details_display_options = wcv_get_order_details_display_options();
 
         if ( empty( $this->per_page ) ) {
             $this->per_page = 20;
         }
+
+        $this->vendor_id = get_current_user_id();
 
         switch ( $orders_sales_range ) {
             case 'annually':
@@ -531,6 +576,10 @@ class WCV_Order_Controller {
             )
         );
 
+        if ( ! $this->details_display_options['shipping_name'] && ! $this->details_display_options['email'] && ! $this->details_display_options['phone'] && ! $this->details_display_options['shipping_address'] ) {
+            unset( $columns['customer'] );
+        }
+
         return $columns;
     }
 
@@ -556,9 +605,26 @@ class WCV_Order_Controller {
          * @since 1.7.10
          */
         $show_refunded_orders = wcv_is_show_reversed_order() ? true : false;
-        $_all_orders          = array();
 
-        $_all_orders = WCV_Vendor_Controller::get_orders2( get_current_user_id(), $date_range, $show_refunded_orders, true, true );
+        $this->search_input  = isset( $_POST['wcv_order_search_input'] ) ? sanitize_text_field( wp_unslash( $_POST['wcv_order_search_input'] ) ) : ''; // phpcs:ignore
+        $this->search_filter = isset( $_POST['wcv_order_search_filter'] ) ? sanitize_text_field( wp_unslash( $_POST['wcv_order_search_filter'] ) ) : ''; // phpcs:ignore
+
+        $_all_orders = array();
+
+        if ( ! empty( $this->search_input ) ) {
+            $_all_orders = $this->search_orders();
+
+            if ( empty( $_all_orders ) ) {
+                $_all_orders = array(
+                    'all_order_ids'     => array(),
+                    'total_orders'      => array(),
+                    'max_pages'         => 1,
+                    'total_order_count' => 0,
+                );
+            }
+        } else {
+            $_all_orders = WCV_Vendor_Controller::get_orders2( get_current_user_id(), $date_range, $show_refunded_orders, true, true );
+        }
 
         $this->_all_orders       = $_all_orders;
         $this->max_num_pages     = $_all_orders['max_pages'];
@@ -1231,21 +1297,22 @@ class WCV_Order_Controller {
         wc_get_template(
             'order_details.php',
             array(
-                'order'              => $order,
-                '_order'             => $order_row,
-                'order_currency'     => $order->get_currency(),
-                'order_date'         => $order->get_date_created(),
-                'order_id'           => $order->get_order_number(),
-                'line_items'         => $line_items,
-                'shipping_tax'       => $shipping_tax,
-                'order_taxes'        => $order_taxes,
-                'billing_fields'     => $billing_fields,
-                'shipping_fields'    => $shipping_fields,
-                'order_item_details' => $order_item_details,
-                'customer_note'      => $customer_note,
-                'is_order_refund'    => $is_order_refund,
-                'total_refund'       => $total_refund,
-                'shipped'            => isset( $order_row->shipped ) ? $order_row->shipped : false,
+                'order'                   => $order,
+                '_order'                  => $order_row,
+                'order_currency'          => $order->get_currency(),
+                'order_date'              => $order->get_date_created(),
+                'order_id'                => $order->get_order_number(),
+                'line_items'              => $line_items,
+                'shipping_tax'            => $shipping_tax,
+                'order_taxes'             => $order_taxes,
+                'billing_fields'          => $billing_fields,
+                'shipping_fields'         => $shipping_fields,
+                'order_item_details'      => $order_item_details,
+                'customer_note'           => $customer_note,
+                'is_order_refund'         => $is_order_refund,
+                'total_refund'            => $total_refund,
+                'shipped'                 => isset( $order_row->shipped ) ? $order_row->shipped : false,
+                'details_display_options' => $this->details_display_options,
             ),
             'wc-vendors/dashboard/order/',
             $this->base_dir . 'templates/dashboard/order/'
@@ -1969,7 +2036,6 @@ class WCV_Order_Controller {
         }
     }
 
-
     /**
      * Count orders by statuses
      *
@@ -2156,5 +2222,245 @@ class WCV_Order_Controller {
         }
 
         return $filtered_orders;
+    }
+
+    /**
+     * Search orders
+     *
+     * @since 2.5.9
+     * @version 2.5.9
+     *
+     * @return array $orders The orders.
+     */
+    public function search_orders() {
+
+        $orders = array();
+
+        if ( empty( $this->search_input ) ) {
+            return $orders;
+        }
+
+        $order_ids = array();
+
+        switch ( $this->search_filter ) {
+        case 'customer':
+            $order_ids = $this->search_orders_by_customer( $this->search_input );
+            break;
+        case 'product':
+            $order_ids = $this->search_orders_by_product( $this->search_input );
+            break;
+        case 'order_id':
+            $order_ids = $this->search_orders_by_order_id( $this->search_input );
+            break;
+        default:
+            $order_ids = $this->search_orders_by_all( $this->search_input );
+            break;
+        }
+
+        if ( ! empty( $order_ids ) ) {
+            $orders = wcv_get_vendor_orders(
+                array(
+                    'type'     => 'shop_order_vendor',
+                    'post__in' => $order_ids,
+                    'limit'    => -1,
+                )
+            );
+
+            $orders = WCV_Vendor_Controller::format_order_details( $orders, $this->vendor_id );
+
+            $orders = array(
+                'all_order_ids'     => $order_ids,
+                'total_orders'      => $orders,
+                'max_pages'         => 1,
+                'total_order_count' => count( $order_ids ),
+            );
+        }
+
+        return $orders;
+    }
+
+    /**
+     * Search orders by all criteria
+     *
+     * @param string $search_input The search input.
+     * @return array $orders The orders.
+     */
+    public function search_orders_by_all( $search_input ) {
+        global $wpdb;
+        $is_hpos = wcv_hpos_enabled();
+
+        $order_id_column  = $is_hpos ? 'id' : 'ID';
+        $table_name       = $is_hpos ? $wpdb->prefix . 'wc_orders' : $wpdb->prefix . 'posts';
+        $meta_table_name  = $is_hpos ? $wpdb->prefix . 'wc_orders_meta' : $wpdb->prefix . 'postmeta';
+        $order_type_col   = $is_hpos ? 'type' : 'post_type';
+        $order_status_col = $is_hpos ? 'status' : 'post_status';
+        $meta_order_id    = $is_hpos ? 'order_id' : 'post_id';
+        $order_item_table = $wpdb->prefix . 'woocommerce_order_items';
+        $parent_order_id  = $is_hpos ? 'parent_order_id' : 'post_parent';
+
+        // phpcs:disable
+        $query = $wpdb->prepare(
+            "
+            SELECT DISTINCT o.{$order_id_column} AS order_id
+            FROM {$table_name} o
+            INNER JOIN {$meta_table_name} vendor_meta ON o.{$order_id_column} = vendor_meta.{$meta_order_id}
+            INNER JOIN {$table_name} parent_order ON o.{$parent_order_id} = parent_order.{$order_id_column}
+            LEFT JOIN {$meta_table_name} parent_meta ON parent_order.{$order_id_column} = parent_meta.{$meta_order_id}
+            LEFT JOIN {$order_item_table} oi ON o.{$order_id_column} = oi.order_id
+            WHERE o.{$order_type_col} = %s
+            AND o.{$order_status_col} IN ('wc-processing', 'wc-completed')
+            AND vendor_meta.meta_key = 'wcv_vendor_id'
+            AND vendor_meta.meta_value = %s
+            AND (
+                o.{$parent_order_id} = %s
+                OR (
+                    parent_meta.meta_key IN ('_billing_address_index', '_shipping_address_index')
+                    AND parent_meta.meta_value LIKE %s
+                )
+                OR (
+                    oi.order_item_type = 'line_item'
+                    AND oi.order_item_name LIKE %s
+                )
+            )
+            ",
+            'shop_order_vendor',
+            $this->vendor_id,
+            $search_input,
+            '%' . $wpdb->esc_like( $search_input ) . '%',
+            '%' . $wpdb->esc_like( $search_input ) . '%'
+        );
+        // phpcs:enable
+
+        $order_ids = $wpdb->get_col( $query ); // phpcs:ignore
+
+        return $order_ids;
+    }
+
+    /**
+     * Search orders by customer
+     *
+     * @param string $search_input The search input.
+     * @return array $orders The orders.
+     */
+    public function search_orders_by_customer( $search_input ) {
+        global $wpdb;
+        $is_hpos = wcv_hpos_enabled();
+
+        $order_id_column  = $is_hpos ? 'id' : 'ID';
+        $table_name       = $is_hpos ? $wpdb->prefix . 'wc_orders' : $wpdb->prefix . 'posts';
+        $meta_table_name  = $is_hpos ? $wpdb->prefix . 'wc_orders_meta' : $wpdb->prefix . 'postmeta';
+        $order_type_col   = $is_hpos ? 'type' : 'post_type';
+        $order_status_col = $is_hpos ? 'status' : 'post_status';
+        $meta_order_id    = $is_hpos ? 'order_id' : 'post_id';
+        $parent_order_id  = $is_hpos ? 'parent_order_id' : 'post_parent';
+
+        // phpcs:disable
+        $query = $wpdb->prepare(
+            "
+            SELECT DISTINCT o.{$order_id_column} AS order_id
+            FROM {$table_name} o
+            INNER JOIN {$meta_table_name} vendor_meta ON o.{$order_id_column} = vendor_meta.{$meta_order_id}
+            WHERE o.{$order_type_col} = %s
+            AND o.{$order_status_col} IN ('wc-processing', 'wc-completed')
+            AND vendor_meta.meta_key = 'wcv_vendor_id'
+            AND vendor_meta.meta_value = %s
+            AND o.{$parent_order_id} IN (
+                SELECT parent.{$order_id_column}
+                FROM {$table_name} parent
+                INNER JOIN {$meta_table_name} parent_meta ON parent.{$order_id_column} = parent_meta.{$meta_order_id}
+                WHERE parent_meta.meta_key IN ('_billing_address_index', '_shipping_address_index')
+                AND parent_meta.meta_value LIKE %s
+            )
+            ",
+            'shop_order_vendor',
+            $this->vendor_id,
+            '%' . $wpdb->esc_like( $search_input ) . '%'
+        );
+        // phpcs:enable
+
+        $order_ids = $wpdb->get_col( $query ); // phpcs:ignore
+        return $order_ids;
+    }
+
+    /**
+     * Search orders by product
+     *
+     * @param string $search_input The search input.
+     * @return array $orders The orders.
+     */
+    public function search_orders_by_product( $search_input ) {
+        global $wpdb;
+        $is_hpos = wcv_hpos_enabled();
+
+        $order_id_column       = $is_hpos ? 'id' : 'ID';
+        $table_name            = $is_hpos ? $wpdb->prefix . 'wc_orders' : $wpdb->prefix . 'posts';
+        $meta_table_name       = $is_hpos ? $wpdb->prefix . 'wc_orders_meta' : $wpdb->prefix . 'postmeta';
+        $meta_order_id         = $is_hpos ? 'order_id' : 'post_id';
+        $order_item_table_name = $wpdb->prefix . 'woocommerce_order_items';
+        $meta_order_id         = $is_hpos ? 'order_id' : 'post_id';
+        $order_status_col      = $is_hpos ? 'status' : 'post_status';
+        // phpcs:disable
+        $query             = $wpdb->prepare(
+            "
+            SELECT o.{$order_id_column} AS order_id,
+            MAX(CASE WHEN pm.meta_key = 'wcv_vendor_id' THEN pm.meta_value END) AS vendor_id,
+            MAX(CASE WHEN oi.order_item_type = 'line_item' THEN oi.order_item_name END) AS order_item_name
+            FROM {$table_name} o
+            INNER JOIN {$meta_table_name} pm ON o.{$order_id_column} = pm.{$meta_order_id}
+            INNER JOIN {$order_item_table_name} oi ON o.{$order_id_column} = oi.`order_id`
+            WHERE o.{$order_status_col} IN ('wc-processing', 'wc-completed')
+            AND pm.meta_key IN ('wcv_vendor_id')
+            AND oi.order_item_type = 'line_item'
+            GROUP BY o.{$order_id_column}
+            HAVING vendor_id = %s
+            AND order_item_name LIKE %s
+        ",
+            $this->vendor_id,
+            '%' . $search_input . '%'
+        );
+        // phpcs:enable
+        $order_ids = $wpdb->get_col( $query ); // phpcs:ignore
+
+        return $order_ids;
+    }
+
+    /**
+     * Search orders by order id
+     *
+     * @param string $search_input The search input.
+     * @return array $orders The orders.
+     */
+    public function search_orders_by_order_id( $search_input ) {
+        global $wpdb;
+        $is_hpos = wcv_hpos_enabled();
+
+        $order_id_column  = $is_hpos ? 'id' : 'ID';
+        $table_name       = $is_hpos ? $wpdb->prefix . 'wc_orders' : $wpdb->prefix . 'posts';
+        $meta_table_name  = $is_hpos ? $wpdb->prefix . 'wc_orders_meta' : $wpdb->prefix . 'postmeta';
+        $order_type_col   = $is_hpos ? 'type' : 'post_type';
+        $order_status_col = $is_hpos ? 'status' : 'post_status';
+        $meta_order_id    = $is_hpos ? 'order_id' : 'post_id';
+        $parent_order_id  = $is_hpos ? 'parent_order_id' : 'post_parent';
+
+        // phpcs:disable
+        $query = $wpdb->prepare(
+            "
+            SELECT o.{$order_id_column} AS order_id
+            FROM {$table_name} o
+            INNER JOIN {$meta_table_name} vendor_meta ON o.{$order_id_column} = vendor_meta.{$meta_order_id}
+            WHERE o.{$order_type_col} = %s
+            AND o.{$order_status_col} IN ('wc-processing', 'wc-completed')
+            AND vendor_meta.meta_key = 'wcv_vendor_id'
+            AND vendor_meta.meta_value = %s
+            AND o.{$parent_order_id} = %s
+            ",
+            'shop_order_vendor',
+            $this->vendor_id,
+            $search_input
+        );
+        // phpcs:enable
+
+        $order_ids = $wpdb->get_col( $query ); // phpcs:ignore
+        return $order_ids;
     }
 }

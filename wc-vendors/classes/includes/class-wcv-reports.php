@@ -156,26 +156,28 @@ class WCV_Reports {
             return (int) $wpdb->get_var( $query ); // phpcs:ignore
         }
         if ( $is_hpos_enabled ) {
-            // HPOS query using wc_orders table.
+            // HPOS query using wc_orders and wc_orders_meta tables.
             $orders_table = wc_get_container()->get( \Automattic\WooCommerce\Internal\DataStores\Orders\OrdersTableDataStore::class )->get_orders_table_name();
+            $meta_table   = wc_get_container()->get( \Automattic\WooCommerce\Internal\DataStores\Orders\OrdersTableDataStore::class )->get_meta_table_name();
 
             $query = $wpdb->prepare(
-                'SELECT COUNT(id) as total_orders 
-                FROM `' . esc_sql( $orders_table ) . "` 
-                WHERE type = 'shop_order' 
-                AND date_created_gmt BETWEEN %s AND %s 
-                AND status NOT IN ('trash', 'auto-draft')",
+                'SELECT COUNT(DISTINCT o.id) as total_orders 
+                FROM ' . esc_sql( $orders_table ) . " o 
+                WHERE o.type = %s 
+                AND o.date_created_gmt BETWEEN %s AND %s 
+                AND o.status IN ('wc-processing', 'wc-completed')",
+                'shop_order',
                 $period['start_date'],
                 $period['end_date']
             );
         } else {
             // Traditional posts table query.
             $query = $wpdb->prepare(
-                "SELECT COUNT(ID) as total_orders 
-                FROM {$wpdb->posts} 
-                WHERE post_type = 'shop_order' 
-                AND post_date_gmt BETWEEN %s AND %s 
-                AND post_status NOT IN ('trash', 'auto-draft')",
+                "SELECT COUNT(DISTINCT p.ID) as total_orders 
+                FROM {$wpdb->posts} p
+                WHERE p.post_type = 'shop_order' 
+                AND p.post_date_gmt BETWEEN %s AND %s 
+                AND p.post_status IN ('wc-completed', 'wc-processing')",
                 $period['start_date'],
                 $period['end_date']
             );
@@ -386,23 +388,25 @@ class WCV_Reports {
         if ( $is_hpos_enabled ) {
             // HPOS version.
             $orders_table = wc_get_container()->get( \Automattic\WooCommerce\Internal\DataStores\Orders\OrdersTableDataStore::class )->get_orders_table_name();
+            $meta_table   = wc_get_container()->get( \Automattic\WooCommerce\Internal\DataStores\Orders\OrdersTableDataStore::class )->get_meta_table_name();
 
             // Escape table names for security.
             $orders_table           = esc_sql( $orders_table );
+            $meta_table             = esc_sql( $meta_table );
             $operational_data_table = esc_sql( $wpdb->prefix . 'wc_order_operational_data' );
 
             // Build query with properly escaped tables and prepared values.
             $query = "
                 SELECT 
-                    COALESCE(SUM(o.total_amount), 0) AS revenue,
-                    COALESCE(SUM(o.tax_amount), 0) AS tax,
-                    COALESCE(SUM(od.shipping_total_amount), 0) AS shipping,
-                    COALESCE(SUM(od.shipping_tax_amount), 0) AS shipping_tax
-                FROM {$orders_table} o
-                LEFT JOIN {$operational_data_table} od ON o.id = od.order_id
-                WHERE o.status IN ('wc-processing', 'wc-completed') 
-                AND o.type = 'shop_order'
-                AND o.date_created_gmt BETWEEN %s AND %s
+                COALESCE(SUM(o.total_amount), 0) AS revenue,
+                COALESCE(SUM(o.tax_amount), 0) AS tax,
+                COALESCE(SUM(od.shipping_total_amount), 0) AS shipping,
+                COALESCE(SUM(od.shipping_tax_amount), 0) AS shipping_tax
+            FROM {$orders_table} o
+            LEFT JOIN {$operational_data_table} od ON o.id = od.order_id
+            WHERE o.status IN ('wc-processing', 'wc-completed') 
+            AND o.type = 'shop_order'
+            AND o.date_created_gmt BETWEEN %s AND %s
             ";
 
             $revenue_query = $wpdb->prepare(
@@ -440,6 +444,25 @@ class WCV_Reports {
             );
         }
 
+        $manage_woocommerce_user_ids = get_users(
+            array(
+                'capability' => 'manage_woocommerce',
+                'fields'     => 'ID',
+            )
+        );
+
+        $admin_product_total_query = $wpdb->prepare(
+            "SELECT SUM(product_net_revenue) as total_revenue
+            FROM {$wpdb->prefix}wc_order_product_lookup
+            WHERE date_created BETWEEN %s AND %s
+            AND product_id IN (SELECT ID FROM {$wpdb->posts} WHERE post_type IN ('product', 'product_variation') AND post_author IN (" . implode( ',', $manage_woocommerce_user_ids ) . '))', // phpcs:ignore
+            $period['start_date'],
+            $period['end_date']
+        );
+
+        $admin_product_total_result = $wpdb->get_row( $admin_product_total_query ); // phpcs:ignore
+        $admin_product_total        = $admin_product_total_result ? floatval( $admin_product_total_result->total_revenue ) : 0;
+
         $revenue_result = $wpdb->get_row( $revenue_query ); // phpcs:ignore
 
         $total_revenue  = $revenue_result ? floatval( $revenue_result->revenue ) : 0;
@@ -448,7 +471,7 @@ class WCV_Reports {
         $shipping_tax   = $revenue_result ? floatval( $revenue_result->shipping_tax ) : 0;
 
         return array(
-            'commissions' => $total_revenue - ( $total_tax + $total_shipping + $shipping_tax ) - $total_commission,
+            'commissions' => $total_revenue - ( $total_tax + $total_shipping + $shipping_tax ) - $total_commission - $admin_product_total,
             'revenue'     => $total_revenue,
         );
     }

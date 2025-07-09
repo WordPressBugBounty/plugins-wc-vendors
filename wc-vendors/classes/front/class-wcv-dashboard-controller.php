@@ -5,6 +5,7 @@ use WC_Vendors;
 use WCV_Vendors;
 
 use function WC_Vendors\Classes\Includes\wcv_get_default_product_template;
+use function WC_Vendors\Classes\Includes\wcv_get_order_details_display_options;
 /**
  * Dashboard Controller for new Dashboard tab
  *
@@ -389,8 +390,8 @@ class WCV_Dashboard_Controller {
     public function get_latest_orders() {
 
         global $wpdb;
-
-        $commission_rows = $wpdb->get_results(
+        $show_customer_name = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_name', 'no' ) );
+        $commission_rows    = $wpdb->get_results(
             $wpdb->prepare(
                 "SELECT * FROM {$wpdb->prefix}pv_commission WHERE vendor_id = %d ORDER BY order_id DESC LIMIT 7",
                 $this->vendor_id,
@@ -427,7 +428,7 @@ class WCV_Dashboard_Controller {
             $detail_popup      = $this->get_order_popup_details( $commission_rows, $order );
             $formated_orders[] = array(
                 'order_id'     => $order->get_id(),
-                'customer'     => $order->get_billing_first_name() . ' ' . $order->get_billing_last_name(),
+                'customer'     => $show_customer_name ? $order->get_billing_first_name() . ' ' . $order->get_billing_last_name() : '',
                 'view_order'   => $order->get_view_order_url(),
                 'status'       => $order_status,
                 'total_prod'   => $vendor_product_count,
@@ -461,17 +462,20 @@ class WCV_Dashboard_Controller {
             }
         );
 
+        $show_customer_email = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_email', 'no' ) );
+        $show_customer_phone = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_phone', 'no' ) );
+
         $billing_details = array(
             'name'    => $order->get_billing_first_name() . ' ' . $order->get_billing_last_name(),
-            'email'   => $order->get_billing_email(),
-            'phone'   => $order->get_billing_phone(),
+            'email'   => $show_customer_email ? $order->get_billing_email() : '',
+            'phone'   => $show_customer_phone ? $order->get_billing_phone() : '',
             'address' => $order->get_formatted_billing_address(),
         );
 
         $shipping_details = array(
             'name'    => $order->get_shipping_first_name() . ' ' . $order->get_shipping_last_name(),
-            'email'   => $order->get_billing_email(),
-            'phone'   => $order->get_shipping_phone(),
+            'email'   => $show_customer_email ? $order->get_billing_email() : '',
+            'phone'   => $show_customer_phone ? $order->get_shipping_phone() : '',
             'address' => $order->get_formatted_shipping_address(),
         );
 
@@ -524,23 +528,26 @@ class WCV_Dashboard_Controller {
             );
         }
 
+        $details_display_options = wcv_get_order_details_display_options();
+
         ob_start();
         wc_get_template(
             'order-popup-details.php',
             array(
-                'billing_details'  => $billing_details,
-                'shipping_details' => $shipping_details,
-                'order_details'    => $order_details,
-                'order_items'      => $order_items,
-                'order_id'         => $order_id,
-                'order_total'      => $order_total,
-                'order_shipping'   => $order_shipping,
-                'order_tax'        => $order_tax,
-                'refunded_amount'  => $refunded_amount,
-                'order_currency'   => $order->get_currency(),
-                'order_commission' => $order_commission,
-                'shipping_tax'     => $shipping_tax,
-                'order'            => $order,
+                'billing_details'         => $billing_details,
+                'shipping_details'        => $shipping_details,
+                'order_details'           => $order_details,
+                'order_items'             => $order_items,
+                'order_id'                => $order_id,
+                'order_total'             => $order_total,
+                'order_shipping'          => $order_shipping,
+                'order_tax'               => $order_tax,
+                'refunded_amount'         => $refunded_amount,
+                'order_currency'          => $order->get_currency(),
+                'order_commission'        => $order_commission,
+                'shipping_tax'            => $shipping_tax,
+                'order'                   => $order,
+                'details_display_options' => $details_display_options,
             ),
             'wcvendors/dashboard/',
             plugin_dir_path( WCV_PLUGIN_FILE ) . 'templates/dashboard/'

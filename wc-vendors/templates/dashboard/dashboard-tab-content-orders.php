@@ -32,7 +32,9 @@
                 <thead>
                     <tr>
                         <th><?php esc_html_e( 'Order', 'wc-vendors' ); ?></th>
-                        <th><?php esc_html_e( 'Customer', 'wc-vendors' ); ?></th>
+                        <?php if ( $show_customer_name ) : ?>
+                            <th><?php esc_html_e( 'Customer', 'wc-vendors' ); ?></th>
+                        <?php endif; ?>
                         <th><?php esc_html_e( 'Status', 'wc-vendors' ); ?></th>
                         <th><?php esc_html_e( 'Actions', 'wc-vendors' ); ?></th>
                     </tr>
@@ -44,9 +46,11 @@
                                 <td class="strong">
                                 &#35;&nbsp;<?php echo esc_html( $od['order_id'] ); ?>
                                 </td>
-                                <td>
-                                    <?php printf( '%s (%d %s)', esc_html( $od['customer'] ), esc_html( $od['total_prod'] ), esc_html__( 'x products', 'wc-vendors' ) ); ?>
-                                </td>
+                                <?php if ( $show_customer_name ) : ?>
+                                    <td>
+                                        <?php printf( '%s (%d %s)', esc_html( $od['customer'] ), esc_html( $od['total_prod'] ), esc_html__( 'x products', 'wc-vendors' ) ); ?>
+                                    </td>
+                                <?php endif; ?>
                                 <td>
                                     <?php echo esc_html( $od['status'] ); ?>
                                 </td>

@@ -32,13 +32,13 @@ if ( ! defined( 'ABSPATH' ) ) {
         </tr>
         <?php if ( isset( $row_data['sku'] ) ) : ?>
             <tr>
-                <th><?php esc_html_e( 'SKU:' ); ?></th>
+                <th><?php esc_html_e( 'SKU:', 'wc-vendors' ); ?></th>
                 <td><?php echo esc_html( $row_data['sku'] ); ?></td>
             </tr>
         <?php endif; ?>
         <?php if ( isset( $row_data['stock'] ) ) : ?>
             <tr>
-                <th><?php esc_html_e( 'Stock:' ); ?></th>
+                <th><?php esc_html_e( 'Stock:', 'wc-vendors' ); ?></th>
                 <td>
                     <span class="wcv-status product-status--<?php echo esc_attr( $row_data['stock']['class'] ); ?>">
                         <?php echo esc_html( $row_data['stock']['label'] ); ?>
@@ -48,7 +48,7 @@ if ( ! defined( 'ABSPATH' ) ) {
         <?php endif; ?>
         <?php if ( isset( $row_data['product_categories'] ) && ! empty( $row_data['product_categories'] ) ) : ?>
             <tr>
-                <th><?php esc_html_e( 'Categories:' ); ?></th>
+                <th><?php esc_html_e( 'Categories:', 'wc-vendors' ); ?></th>
                 <td>
                     <?php foreach ( $row_data['product_categories'] as $category ) : ?>
                         <a class="wcv-product-cat" href="<?php echo esc_url( $category['url'] ); ?>"><?php echo esc_html( $category['name'] ); ?></a>
@@ -59,7 +59,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
         <?php if ( isset( $row_data['product_tags'] ) && ! empty( $row_data['product_tags'] ) ) : ?>
             <tr>
-                <th><?php esc_html_e( 'Tags:' ); ?></th>
+                <th><?php esc_html_e( 'Tags:', 'wc-vendors' ); ?></th>
                 <td>
                     <?php foreach ( $row_data['product_tags'] as $ptag ) : ?>
                         <a class="wcv-product-tag" href="<?php echo esc_url( $ptag['url'] ); ?>"><?php echo esc_html( $ptag['name'] ); ?></a>

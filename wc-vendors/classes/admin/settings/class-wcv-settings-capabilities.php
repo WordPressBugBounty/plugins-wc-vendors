@@ -128,7 +128,7 @@ if ( ! class_exists( 'WCVendors_Settings_Capabilities', false ) ) :
                                     'inventory'      => __( 'Inventory', 'wc-vendors' ),
                                     'shipping'       => __( 'Shipping', 'wc-vendors' ),
                                     'linked_product' => __( 'Linked Products', 'wc-vendors' ),
-                                    'attribute'      => __( 'Attributes', 'wc-vendors' ),
+                                    'attributes'     => __( 'Attributes', 'wc-vendors' ),
                                     'variations'     => __( 'Variations', 'wc-vendors' ),
                                     'advanced'       => __( 'Advanced', 'wc-vendors' ),
                                 )

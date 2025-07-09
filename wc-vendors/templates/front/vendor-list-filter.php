@@ -26,11 +26,11 @@ if ( 'grid' === $display_mode ) {
 }
 ?>
 <div class="wcv-vendor-list-filter">
-    <label for="search-vendors-toggle-checkbox" class="button search-vendors-toggle-button" title="<?php esc_attr_e( 'Search vendors', 'wc-vendors' ); ?>"><span class="dashicons dashicons-search"></span></label>
+    <label for="search-vendors-toggle-checkbox" class="button search-vendors-toggle-button" title="<?php /* translators: %s: vendor name (plural) */ printf( esc_attr__( 'Search %s', 'wc-vendors' ), esc_attr( wcv_get_vendor_name( false, false ) ) ); ?>"><span class="dashicons dashicons-search"></span></label>
     <input type="checkbox" id="search-vendors-toggle-checkbox" class="search-vendors-toggle-checkbox" />
     <div class="wcv-vendor-list-search">
         <form action="" method="GET" class="wcv-form">
-            <input type="text" value="<?php echo esc_attr( $search_term ); ?>" name="search" id="wcv-vendor-list-search" placeholder="<?php esc_attr_e( 'Search for a vendor', 'wc-vendors' ); ?>" />
+            <input type="text" value="<?php echo esc_attr( $search_term ); ?>" name="search" id="wcv-vendor-list-search" placeholder="<?php /* translators: %s: vendor name (singular) */ printf( esc_attr__( 'Search for a %s', 'wc-vendors' ), esc_attr( wcv_get_vendor_name( true, false ) ) ); ?>" />
             <input type="submit" class="wcv-button" value="<?php esc_attr_e( 'Search', 'wc-vendors' ); ?>" />
         </form>
     </div>
@@ -43,7 +43,11 @@ if ( 'grid' === $display_mode ) {
 <div class="vendor-search-result-text">
     <?php
     if ( $vendors_count > 0 ) {
-        $vendors_found_str = 1 === $vendors_count ? __( 'vendor found', 'wc-vendors' ) : __( 'vendors found', 'wc-vendors' );
+        /* translators: %s: vendor name (singular) */
+        $vendor_found_singular = sprintf( __( '%s found', 'wc-vendors' ), esc_html( wcv_get_vendor_name( true, false ) ) );
+        /* translators: %s: vendor name (plural) */
+        $vendor_found_plural = sprintf( __( '%s found', 'wc-vendors' ), esc_html( wcv_get_vendor_name( false, false ) ) );
+        $vendors_found_str   = 1 === (int) $vendors_count ? $vendor_found_singular : $vendor_found_plural;
         printf(
             /* translators: %1$s: number of vendors found, %2$s: vendors found string */
             esc_html__( '%1$s %2$s', 'wc-vendors' ),
@@ -51,7 +55,8 @@ if ( 'grid' === $display_mode ) {
             esc_html( $vendors_found_str )
         );
     } else {
-        esc_html_e( 'No vendors found', 'wc-vendors' );
+        /* translators: %s: vendor name (plural) */
+        printf( esc_html__( 'No %s found', 'wc-vendors' ), esc_html( wcv_get_vendor_name( false, false ) ) );
     }
     ?>
     <!-- Clear search button -->

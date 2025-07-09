@@ -1243,8 +1243,9 @@ class WCV_Product_Form {
      * @param     int $post_id post_id for this meta if any.
      */
     public static function tax( $post_id ) {
+        $hide_tax_field = wc_string_to_bool( get_option( 'wcvendors_capability_product_taxes', 'no' ) ) || wc_string_to_bool( get_option( 'wcvendors_hide_product_general_tax', 'no' ) );
 
-        if ( 'yes' !== get_option( 'wcvendors_hide_product_general_tax', 'no' ) ) {
+        if ( ! $hide_tax_field ) {
 
             if ( wc_tax_enabled() ) {
 
@@ -1261,7 +1262,7 @@ class WCV_Product_Form {
                             'post_id'           => $post_id,
                             'id'                => '_tax_status',
                             'label'             => __( 'Tax status', 'wc-vendors' ),
-                            'wrapper_start'     => '<div class="all-50">',
+                            'wrapper_start'     => '<div class="wcv-cols-group wcv-horizontal-gutters"><div class="all-50">',
                             'style'             => 'width: 100%;',
                             'wrapper_end'       => '</div>',
                             'custom_attributes' => $custom_attributes,
@@ -1296,7 +1297,7 @@ class WCV_Product_Form {
                             'options'       => $classes_options,
                             'style'         => 'width: 100%;',
                             'wrapper_start' => '<div class="all-50">',
-                            'wrapper_end'   => '</div>',
+                            'wrapper_end'   => '</div></div>',
                             'no_margin'     => true,
                         )
                     )

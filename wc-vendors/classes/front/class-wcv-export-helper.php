@@ -95,6 +95,7 @@ class WCV_Export_Helper {
      * @version 1.8.8
      * @since   1.8.8 - Added HPOS Compatibility.
      * @since   2.5.2
+     * @since   2.5.9 - Added shipped status.
      *
      * @param array $all_orders All the orders to export.
      *
@@ -122,8 +123,10 @@ class WCV_Export_Helper {
                 $need_shipping_items[] = $product->needs_shipping() ? 1 : 0;
                 $item_qty              = $item->get_quantity();
                 $item_name             = $item->get_name();
-                $products             .= "$item_qty x $item_name \r";
+                $products             .= "$item_qty x $item_name\n";
             }
+            $products            = rtrim( $products, "\n" );
+            $products            = rtrim( $products, ';' );
             $need_shipping_items = array_filter( $need_shipping_items );
             $need_shipping       = count( $need_shipping_items ) > 0 ? true : false;
             $shippers            = (array) $parent_order->get_meta( 'wc_pv_shipped' );
@@ -159,7 +162,8 @@ class WCV_Export_Helper {
                 $new_row['phone'] = $parent_order->get_billing_phone();
             }
             $new_row['total']      = $order_row->total;
-            $new_row['status']     = wp_sprintf( '%s / %s', wc_get_order_status_name( $parent_order->get_status() ), $shipped );
+            $new_row['status']     = wc_get_order_status_name( $parent_order->get_status() );
+            $new_row['shipped']    = $shipped;
             $new_row['order_date'] = date_i18n( 'Y-m-d', strtotime( $order_date ) );
 
             $rows[] = $new_row;
@@ -210,8 +214,9 @@ class WCV_Export_Helper {
     /**
      * Headers for the orders export CSV
      *
-     * @version 2.5.2
+     * @version 2.5.9
      * @since   2.5.2
+     * @since   2.5.9 - Added shipped status.
      *
      * @return array
      */
@@ -228,7 +233,8 @@ class WCV_Export_Helper {
             'email'    => __( 'Email address', 'wc-vendors' ),
             'phone'    => __( 'Phone', 'wc-vendors' ),
             'total'    => __( 'Order Total', 'wc-vendors' ),
-            'status'   => __( 'Order Status / Shipped', 'wc-vendors' ),
+            'status'   => __( 'Order Status', 'wc-vendors' ),
+            'shipped'  => __( 'Shipped', 'wc-vendors' ),
             'date'     => __( 'Date', 'wc-vendors' ),
         );
 

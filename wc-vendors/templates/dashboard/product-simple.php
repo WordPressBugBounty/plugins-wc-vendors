@@ -71,9 +71,8 @@ $post_status               = ( isset( $product ) && null !== $product ) ? $post-
         <?php do_action( 'wcv_after_product_prices', $object_id ); ?>
     </div>
 
-    <div class="wcv-cols-group wcv-horizontal-gutters">
-        <?php WCV_Product_Form::tax( $object_id ); ?>
-    </div>
+    <?php WCV_Product_Form::tax( $object_id ); ?>
+
     
     <!-- SKU  -->
     <?php WCV_Product_Form::sku( $object_id ); ?>
@@ -96,10 +95,10 @@ $post_status               = ( isset( $product ) && null !== $product ) ? $post-
     <?php do_action( 'wcv_product_options_sold_individually', $object_id ); ?>
 
     <?php do_action( 'wcv_product_options_inventory_product_data', $object_id ); ?>
-    <div class="wcv-gap-top wcv-gap-top-small"></div>
-    <!-- Private listing  -->
-    <?php WCV_Product_Form::private_listing( $object_id ); ?>
-    
+    <div class="wcv-gap-top wcv-gap-top-small wcv-gap-bottom wcv-gap-bottom-small">
+        <!-- Private listing  -->
+        <?php WCV_Product_Form::private_listing( $object_id ); ?>
+    </div>
     <?php do_action( 'wcv_after_product_simple_after', $object_id ); ?>
 
         <!-- Upsells and grouping -->

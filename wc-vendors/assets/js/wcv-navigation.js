@@ -286,6 +286,16 @@
 
     addAccordion();
     productEditAccordion();
+
+    // Handle tabs-tab click to update form action
+    $(document).on('click', '.tabs-tab', function(e) {
+      const href = $(this).attr('href');
+      const form = $('#wcv-store-settings');
+
+      if (href && form.length) {
+        form.attr('action', href);
+      }
+    });
   });
 })(jQuery, Ink);
 

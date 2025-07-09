@@ -118,38 +118,99 @@ use WC_Vendors\Classes\Front\WCV_Form_Helper;
                 )
             );
 
+            echo '<div class="all-100 wcv-gap-bottom"><div class="wcv-cols-group wcv-horizontal-gutters wcv-cols-group-narrow wcv-filter-wrapper wcv-flex wcv-flex-wrap">';
+
+            // Filter by select.
+            WCV_Form_Helper::select(
+                apply_filters(
+                    'wcv_order_filter_select',
+                    array(
+                        'id'            => 'wcv_order_search_filter',
+                        'class'         => 'wcv-dashboard-filter wcv-custom-select',
+                        'value'         => $this->search_filter,
+                        'placeholder'   => __( 'All', 'wc-vendors' ),
+                        'wrapper_start' => '<div class="all-20 small-100 medium-100">',
+                        'wrapper_end'   => '</div>',
+                        'options'       => array(
+                            'all'      => __( 'All', 'wc-vendors' ),
+                            'customer' => __( 'Customer', 'wc-vendors' ),
+                            'product'  => __( 'Product', 'wc-vendors' ),
+                            'order_id' => __( 'Order ID', 'wc-vendors' ),
+                        ),
+                        'multiple'      => false,
+                        'label'         => __( 'Search by', 'wc-vendors' ),
+                    )
+                )
+            );
+
+            echo '<div class="all-50 medium-100 small-100  control-group"><label for="wcv_order_search_input">' . esc_html__( 'Search Orders', 'wc-vendors' ) . '</label><div class="wcv-search-box-wrapper wcv-flex">';
+
+
+            // Search input.
+            WCV_Form_Helper::input(
+                apply_filters(
+                    'wcv_order_search_input',
+                    array(
+                        'id'          => 'wcv_order_search_input',
+                        'type'        => 'text',
+                        'class'       => 'wcv-dashboard-filter wcv-search-box-input',
+                        'value'       => $this->search_input,
+                        'placeholder' => __( 'Search by ID, customer, product, or customer email', 'wc-vendors' ),
+                        'before_text' => wcv_get_icon( 'wcv-icon wcv-icon-24', 'wcv-icon-search' ) . '<span>',
+                        'label'       => '',
+                    )
+                )
+            );
+
+            // Search button.
+            WCV_Form_Helper::button(
+                apply_filters(
+                    'wcv_order_search_button',
+                    array(
+                        'id'          => 'order_search_button',
+                        'button_text' => __( 'Search', 'wc-vendors' ),
+                        'class'       => 'wcv-search-button wcv-flex',
+                        'before_text' => wcv_get_icon( 'wcv-icon wcv-icon-24', 'wcv-icon-search' ) . '<span>',
+                        'type'        => 'submit',
+                    )
+                )
+            );
+
+            echo '</div></div>';
+            echo '<div class="all-30 small-100 medium-100 wcv-flex wcv-flex-end">';
             // Update Button.
             WCV_Form_Helper::button(
                 apply_filters(
                     'wcv_order_update_button',
                     array(
-                        'id'            => 'update_button',
-                        'value'         => __( 'Update', 'wc-vendors' ),
-                        'type'          => 'submit',
-                        'button_text'   => __( 'Update', 'wc-vendors' ),
-                        'after_text'    => '</span>',
-                        'class'         => 'wcv-button wcv-inline-flex wcv-button-link-secondary text-blue',
-                        'wrapper_start' => '<div class="all-100 medium-30 small-100 tiny-100 push-right wcv-flex wcv-flex-end"><div class="control-group"><div class="control">',
-                        'wrapper_end'   => '</div></div>',
-                        'before_text'   => wcv_get_icon( 'wcv-icon wcv-icon-24', 'wcv-icon-round-update' ) . '<span>',
+                        'id'          => 'update_button',
+                        'value'       => __( 'Update', 'wc-vendors' ),
+                        'type'        => 'submit',
+                        'button_text' => __( 'Update', 'wc-vendors' ),
+                        'after_text'  => '</span>',
+                        'class'       => 'wcv-button wcv-inline-flex wcv-button-link-secondary text-blue',
+                        'before_text' => wcv_get_icon( 'wcv-icon wcv-icon-24', 'wcv-icon-round-update' ) . '<span>',
+
                     )
                 )
             );
 
-            // Update Button.
+            // Clear Button.
             WCV_Form_Helper::button(
                 apply_filters(
                     'wcv_order_filter_clear_button',
                     array(
-                        'id'            => 'clear_button',
-                        'button_text'   => __( 'Clear', 'wc-vendors' ),
-                        'class'         => 'wcv-button wcv-flex wcv-button-link-danger',
-                        'type'          => 'reset',
-                        'wrapper_start' => '<div class="control-group"><div class="control">',
-                        'wrapper_end'   => '</div></div></div>',
+                        'id'          => 'clear_button',
+                        'button_text' => __( 'Clear', 'wc-vendors' ),
+                        'class'       => 'wcv-button wcv-flex wcv-button-link-danger',
+                        'type'        => 'reset',
                     )
                 )
             );
+
+            echo '</div>';
+
+            echo '</div></div>';
 
             wp_nonce_field( 'wcv-order-date-update', 'wcv_order_date_update' );
             ?>

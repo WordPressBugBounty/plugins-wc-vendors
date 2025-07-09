@@ -120,6 +120,7 @@ class WCV_Vendor_Dashboard {
         }
 
         add_action( 'template_redirect', array( $this, 'redirect_old_slug' ) );
+        add_action( 'wcvendors_after_dashboard_nav', array( $this, 'lock_new_products_notice' ) );
     }
 
     /**
@@ -1184,21 +1185,22 @@ class WCV_Vendor_Dashboard {
         $lock_new_products_notice  = get_user_meta( get_current_user_id(), '_wcv_lock_new_products_vendor_msg', true );
         $lock_edit_products        = ( 'yes' === get_user_meta( get_current_user_id(), '_wcv_lock_edit_products_vendor', true ) ) ? true : false;
         $lock_edit_products_notice = get_user_meta( get_current_user_id(), '_wcv_lock_edit_products_vendor_msg', true );
+        $notices                   = array();
         $notice                    = '';
 
         if ( $lock_new_products ) {
-            $notice .= $lock_new_products_notice;
+            $notices[] = $lock_new_products_notice;
         }
         if ( $lock_edit_products ) {
-            $notice .= ' ' . $lock_edit_products_notice;
+            $notices[] = $lock_edit_products_notice;
         }
 
-        if ( $lock_new_products || $lock_edit_products ) {
+        if ( ! empty( $notices ) ) {
 
             wc_get_template(
                 'dashboard-notice.php',
                 array(
-                    'vendor_dashboard_notice' => $notice,
+                    'vendor_dashboard_notice' => implode( '<br/>', $notices ),
                     'notice_type'             => 'error',
                 ),
                 'wc-vendors/dashboard/',

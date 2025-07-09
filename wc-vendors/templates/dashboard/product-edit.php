@@ -113,9 +113,7 @@ $post_status               = ( isset( $product ) && null !== $product ) ? $post_
                 <?php if ( wc_tax_enabled() ) : ?>
                 <div class="show_if_simple show_if_external show_if_variable">
                     <!-- Tax -->
-                    <div class="wcv-cols-group wcv-horizontal-gutters">
-                        <?php WCV_Product_Form::tax( $object_id ); ?>
-                    </div>
+                    <?php WCV_Product_Form::tax( $object_id ); ?>
                 </div>
                 <?php endif; ?>
 

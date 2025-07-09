@@ -1,5 +1,23 @@
 Changelog for WC Vendors Marketplace
 
+Version 2.5.9 - 8th July 2025
+
+ * Improvement: Order search functionality for Vendors
+ * Improvement: Separate order status and shipped status in Export Vendor Orders CSV
+ * Bug Fix: Missing text domains in wc-vendors-product-table-row-details.php template strings
+ * Bug Fix: Saving settings of other tabs redirects to the store tab
+ * Bug Fix: Revert to include admin orders and fix marketplace commission calculation
+ * Bug Fix: All products page broken with AIO SEO when language/profile language is Netherlands
+ * Bug Fix: One click setup does not dismiss the setup wizard message from the admin screen
+ * Bug Fix: Orders widget on the Vendor Dashboard ignores customer info visibility settings
+ * Bug Fix: Remove extra line breaks in product titles on Export Vendor Orders CSV
+ * Bug Fix: Store policies content is not saving correctly when using HTML tags from the All Vendors Page
+ * Bug Fix: The marketplace dashboard includes with the admin product order as well
+ * Bug Fix: Lock new/edit product messages not displaying on Vendor Dashboard
+ * Bug Fix: The Vendor singular term option is not applied to the vendor list search placeholder
+ * Bug Fix: Products created with downloadable/virtual template not filtered by WooCommerce Price Widget
+ * Bug Fix: The tax fields and attribute tab still visible to vendors despite settings to hide them
+
 Version 2.5.8 - 9th June 2025
 
  * Improvement: Add Patchstack VDP disclaimer to FAQ on readme

@@ -1350,6 +1350,8 @@ jQuery(function($) {
 
     // Check for required fields
     $('#wcv-product-edit').on('submit', function(e) {
+      var validationFailed = false;
+
       // Check if featured image is required
       if (wcv_frontend_product.require_featured_image == 1) {
         if ($('#_featured_image_id').val() === '') {
@@ -1357,6 +1359,7 @@ jQuery(function($) {
             wcv_frontend_product.require_featured_image_msg
           );
           e.preventDefault();
+          validationFailed = true;
         }
       }
 
@@ -1367,6 +1370,7 @@ jQuery(function($) {
             wcv_frontend_product.require_gallery_image_msg
           );
           e.preventDefault();
+          validationFailed = true;
         }
       }
 
@@ -1375,55 +1379,72 @@ jQuery(function($) {
         var $download_file_table = $('.download_file_table');
         var file_count = $download_file_table.length;
         var validated = true;
+        const inputType = $('#_downloadable').attr('type');
 
-        if (!$('#_downloadable').is(':checked')) {
-          return;
-        }
+        if (
+          (inputType === 'hidden' && $('#_downloadable').val() === 'yes') ||
+          (inputType === 'checkbox' && $('#_downloadable').is(':checked'))
+        ) {
+          if ($('.downloadable_files').length) {
+            if ($download_file_table.find('.download_file').length == 0) {
+              validated = false;
+            }
 
-        if ($('.downloadable_files').length) {
-          if ($download_file_table.find('.download_file').length == 0) {
-            validated = false;
-          }
+            if (file_count > 0) {
+              $('.download_file').each(function() {
+                if (
+                  $(this)
+                    .find('td.file_name')
+                    .find('input')
+                    .val() === '' ||
+                  $(this)
+                    .find('td.file_url')
+                    .find('input')
+                    .val() === ''
+                ) {
+                  validated = false;
+                }
+              });
+            } else {
+              validated = false;
+            }
 
-          if (file_count > 0) {
-            $('.download_file').each(function() {
-              if (
-                $(this)
-                  .find('td.file_name')
-                  .find('input')
-                  .val() === '' ||
-                $(this)
-                  .find('td.file_url')
-                  .find('input')
-                  .val() === ''
-              ) {
-                validated = false;
-              }
-            });
-          } else {
-            validated = false;
-          }
-
-          if (!validated) {
-            $('.downloadable_files').append(
-              '<span class="wcv_required_form_msg">' +
-                wcv_frontend_product.require_download_file_msg +
-                '</span>'
-            );
-            $('.download_file_table').css({
-              color: '#b94a48',
-              'background-color': '#f2dede',
-              border: '1px solid #cc0000'
-            });
-            e.preventDefault();
+            if (!validated) {
+              $('.downloadable_files').append(
+                '<span class="wcv_required_form_msg">' +
+                  wcv_frontend_product.require_download_file_msg +
+                  '</span>'
+              );
+              $('.download_file_table').css({
+                color: '#b94a48',
+                'background-color': '#f2dede',
+                border: '1px solid #cc0000'
+              });
+              // Scroll to the download file table
+              e.preventDefault();
+              validationFailed = true;
+              document
+                .getElementById('files_download')
+                .scrollIntoView({ behavior: 'smooth' });
+            }
           }
         }
       } // END:  Download file is required
 
-      validateAttributesRequired();
+      // Check attributes validation
+      if (!validateAttributesRequired()) {
+        validationFailed = true;
+      }
+
       const saveBtn = $('#product_save_button');
-      if (saveBtn !== undefined) {
-        saveBtn.attr('disabled', 'disabled');
+      if (saveBtn.length) {
+        if (validationFailed) {
+          // Re-enable the button if validation failed
+          saveBtn.removeAttr('disabled');
+        } else {
+          // Disable the button only if validation passed
+          saveBtn.attr('disabled', 'disabled');
+        }
       }
     });
     // END: Check for required fields

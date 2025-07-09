@@ -3,7 +3,7 @@ Contributors: jkohlbach, RymeraWebCo, Rymera01, smub
 Tags: multivendor, marketplace, multi vendor, product vendors, woocommerce commissions
 Requires at least: 5.5.0
 Tested up to: 6.8
-Stable tag: 2.5.8
+Stable tag: 2.5.9
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -299,6 +299,23 @@ You can report security bugs through the Patchstack Vulnerability Disclosure Pro
 
 == Changelog ==
 
+= Version 2.5.9 - 8th July 2025 =
+ * Improvement: Order search functionality for Vendors
+ * Improvement: Separate order status and shipped status in Export Vendor Orders CSV
+ * Bug Fix: Missing text domains in wc-vendors-product-table-row-details.php template strings
+ * Bug Fix: Saving settings of other tabs redirects to the store tab
+ * Bug Fix: Revert to include admin orders and fix marketplace commission calculation
+ * Bug Fix: All products page broken with AIO SEO when language/profile language is Netherlands
+ * Bug Fix: One click setup does not dismiss the setup wizard message from the admin screen
+ * Bug Fix: Orders widget on the Vendor Dashboard ignores customer info visibility settings
+ * Bug Fix: Remove extra line breaks in product titles on Export Vendor Orders CSV
+ * Bug Fix: Store policies content is not saving correctly when using HTML tags from the All Vendors Page
+ * Bug Fix: The marketplace dashboard includes with the admin product order as well
+ * Bug Fix: Lock new/edit product messages not displaying on Vendor Dashboard
+ * Bug Fix: The Vendor singular term option is not applied to the vendor list search placeholder
+ * Bug Fix: Products created with downloadable/virtual template not filtered by WooCommerce Price Widget
+ * Bug Fix: The tax fields and attribute tab still visible to vendors despite settings to hide them
+
 = Version 2.5.8 - 9th June 2025 = 
  * Improvement: Add Patchstack VDP disclaimer to FAQ on readme
  * Bug Fix: Store description content is not saving correctly when using HTML tags from the admin panel
@@ -335,7 +352,6 @@ You can report security bugs through the Patchstack Vulnerability Disclosure Pro
  * Bug Fix: When Gallery display is Disabled it breaks the product editor form
 
 = Version 2.5.5.1 - 9th April 2025 =
-
  * Improvement: Update WooCommerce version
 
 = Version 2.5.5 - 31th March 2025 =
@@ -353,31 +369,4 @@ You can report security bugs through the Patchstack Vulnerability Disclosure Pro
 = Version 2.5.4.1 - 14th March 2025 =
  * Bug Fix: Fix the critical error on product edit
 
-= Version 2.5.4 - 5th March 2025 =
- * Improvement: Add Vendor lists shortcode to sort by random
- * Improvement: Handle New Vendor Progress According to Marketplace Settings
- * Improvement: Make Dashboard Follow Display Color in WC Vendor Settings
- * Improvement: Vendor dashboard revamp
- * Improvement: Make Commission follow WooCommerce Decimal Point Settings
- * Improvement: The usage tracking: Total vendor should be a weekly total
- * Improvement: Remove the spacing between the "Sold By Separator" and "Sold By Label"
- * Improvement: Restrict wp_enqueue_media() from running on every page
- * Bug Fix: Vendor Dashboard - Orders: The Clear button is not working properly
- * Bug Fix: Multiple issues with variable products on the new dashboard
- * Bug Fix: Sales Snapshot View All Orders Link is returning 404
- * Bug Fix: Hide Downloadable and Virtual option is not removing them from the variable bulk action toggle
- * Bug Fix: The "Vendor notify denied" email is not sent if the vendor is rejected via the All Vendors page
- * Bug Fix: All Popup windows on the order page are shrunk on Safari
- * Bug Fix: Vendors can still view their orders from the Vendor Dashboard when the "View Orders" option is disabled
- * Bug Fix: The Order Status column displays "No"/"Yes" instead of the correct status in the exported CSV file
- * Bug Fix: Huge logging of creating sub-orders for deleted vendor
- * Bug Fix: HTML Editor not working as intended
- * Bug Fix: The vendor listing search shows duplicate results but does not display anything when searching using the full name
- * Bug Fix: Not Approved Vendor Showing In Vendor List
- * Bug Fix: HTML Product Editor Option Breaks Product Form when there are required description fields
- * Bug Fix: Customer can purchase a product from a deactivated vendor
- * Bug Fix: Support Candy Integration: Cannot show "Order totals" and "Product totals" charts on the Vendor Dashboard
- * Bug Fix: Critical error on the vendor product editor when WCV Pro is inactive but "Checklist" was enabled for the "Category Display" option
- * Bug Fix: Risk on Deleting Variations and Saving Seller Info and Store Description
- * Bug Fix: The Vendors List doesn't show on the Vendors page
 

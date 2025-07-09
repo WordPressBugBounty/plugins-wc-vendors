@@ -13,12 +13,6 @@ $label_colspan = wc_tax_enabled() && $order->get_total_tax() > 0 ? 6 : 5;
 $refund_class  = $is_order_refund ? 'has-refund' : '';
 $order_id      = $order->get_id();
 
-$show_customer_billing_name  = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_name', 'no' ) );
-$show_customer_shipping_name = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_shipping_name', 'no' ) );
-$show_customer_email         = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_email', 'no' ) );
-$show_customer_phone         = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_phone', 'no' ) );
-$show_billing_address        = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_billing', 'no' ) );
-$show_shipping_address       = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_shipping', 'no' ) );
 
 $allow_add_order_note = wc_string_to_bool( get_option( 'wcvendors_capability_order_update_notes', 'no' ) );
 ?>
@@ -65,10 +59,10 @@ $allow_add_order_note = wc_string_to_bool( get_option( 'wcvendors_capability_ord
             <?php do_action( 'wcvendors_order_before_customer_detail' ); ?>
 
             <div class="wcv-order-customer-details wcv-flex wcv-flex-wrap">
-
+                <?php if ( $details_display_options['billing_address'] || $details_display_options['email'] || $details_display_options['phone'] ) : ?>
                 <div class="billing-details">
                     <h4><?php esc_html_e( 'Billing Details', 'wc-vendors' ); ?></h4>
-                    <?php if ( $show_billing_address || $show_customer_billing_name ) : ?>
+                    <?php if ( $details_display_options['billing_address'] ) : ?>
                         <div class="wcv-order-address">
                             <?php if ( $order->get_formatted_billing_address() ) : ?>
                                 <p>
@@ -86,7 +80,7 @@ $allow_add_order_note = wc_string_to_bool( get_option( 'wcvendors_capability_ord
                         </div>
                     <?php endif; ?>
                     <p class="wcv_mobile">&nbsp;</p>
-                    <?php if ( $show_customer_email ) : ?>
+                    <?php if ( $details_display_options['email'] ) : ?>
                         <div class="wcv-order-email">
                             <?php if ( $order->get_billing_email() ) : ?>
                                 <p>
@@ -104,7 +98,7 @@ $allow_add_order_note = wc_string_to_bool( get_option( 'wcvendors_capability_ord
                         </div>
                     <?php endif; ?>
                     
-                    <?php if ( $show_customer_phone ) : ?>
+                    <?php if ( $details_display_options['phone'] ) : ?>
                         <div class="wcv-order-phone">
                             <?php if ( $order->get_billing_phone() ) : ?>
                                 <p>
@@ -122,10 +116,12 @@ $allow_add_order_note = wc_string_to_bool( get_option( 'wcvendors_capability_ord
                         </div>
                     <?php endif; ?>
                 </div>  <!-- // billing details  -->
+                <?php endif; ?>
 
+                <?php if ( $details_display_options['shipping_address'] || $details_display_options['email'] || $details_display_options['phone'] ) : ?>
                 <div class="shipping-details">
                     <h4><?php esc_attr_e( 'Shipping details', 'wc-vendors' ); ?></h4>
-                    <?php if ( $show_shipping_address || $show_customer_shipping_name ) : ?>
+                    <?php if ( $details_display_options['shipping_address'] ) : ?>
                         <div class="wcv-order-address">
                             <?php if ( $order->get_formatted_shipping_address() ) : ?>
                                 <p>
@@ -143,7 +139,7 @@ $allow_add_order_note = wc_string_to_bool( get_option( 'wcvendors_capability_ord
                         </div>
                     <?php endif; ?>
                     <p class="wcv_mobile">&nbsp;</p>
-                    <?php if ( $show_customer_email ) : ?>
+                    <?php if ( $details_display_options['email'] ) : ?>
                         <div class="wcv-order-email">
                             <?php if ( $order->get_billing_email() ) : ?>
                                 <p>
@@ -162,7 +158,7 @@ $allow_add_order_note = wc_string_to_bool( get_option( 'wcvendors_capability_ord
                     <?php endif; ?>
 
                     
-                    <?php if ( $show_customer_phone ) : ?>
+                    <?php if ( $details_display_options['phone'] ) : ?>
                         <div class="wcv-order-phone">
                             <?php if ( $order->get_shipping_phone() ) : ?>
                                 <p>
@@ -180,6 +176,7 @@ $allow_add_order_note = wc_string_to_bool( get_option( 'wcvendors_capability_ord
                         </div>
                     <?php endif; ?>
                 </div> <!-- //shipping details  -->
+                <?php endif; ?>
             </div>
 
             <div class="wcv_desktop" style="height: 0px; background-color: #e5e5e5; margin: 44px 0;"></div>

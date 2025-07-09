@@ -11,7 +11,8 @@
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
-$time = time();
+$time               = time();
+$show_customer_name = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_name', 'no' ) );
 
 do_action( 'wcvendors_dashboard_tab_content_heading_before' );
 wc_get_template(
@@ -52,6 +53,7 @@ wc_get_template(
         'latest_reviews'          => $latest_reviews,
         'time'                    => $time,
         'should_show_ratings'     => $should_show_ratings,
+        'show_customer_name'      => $show_customer_name,
     ),
     'wc-vendors/dashboard/',
     plugin_dir_path( WCV_PLUGIN_FILE ) . 'templates/'

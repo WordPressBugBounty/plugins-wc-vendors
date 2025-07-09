@@ -48,21 +48,38 @@ if ( ! defined( 'ABSPATH' ) ) {
         </div>
 
         <div class="modal-body">
+
             <div class="wcv-order-customer-details wcv-flex wcv-flex-wrap">
+                <?php if ( $details_display_options['billing_address'] || $details_display_options['email'] || $details_display_options['phone'] ) : ?>
                 <div class="billing-details">
                     <h4><?php esc_html_e( 'Billing Details', 'wc-vendors' ); ?></h4>
-                    <div><p><small><?php esc_html_e( 'Address', 'wc-vendors' ); ?></small> <?php echo $billing_details['address'] ? wp_kses( $billing_details['address'], array( 'br' => array() ) ) : esc_html__( 'Not set', 'wc-vendors' ); ?></p></div>
-                    <div><p><small><?php esc_html_e( 'Email', 'wc-vendors' ); ?></small> <?php echo $billing_details['email'] ? esc_html( $billing_details['email'] ) : esc_html__( 'Not set', 'wc-vendors' ); ?></p></div>
-                    <div><p><small><?php esc_html_e( 'Phone', 'wc-vendors' ); ?></small> <?php echo $billing_details['phone'] ? esc_html( $billing_details['phone'] ) : esc_html__( 'Not set', 'wc-vendors' ); ?></p></div>
+                    <?php if ( $details_display_options['billing_address'] ) : ?>
+                        <div><p><small><?php esc_html_e( 'Address', 'wc-vendors' ); ?></small> <?php echo $billing_details['address'] ? wp_kses( $billing_details['address'], array( 'br' => array() ) ) : esc_html__( 'Not set', 'wc-vendors' ); ?></p></div>
+                    <?php endif; ?>
+                    <?php if ( $details_display_options['email'] ) : ?>
+                        <div><p><small><?php esc_html_e( 'Email', 'wc-vendors' ); ?></small> <?php echo $billing_details['email'] ? esc_html( $billing_details['email'] ) : esc_html__( 'Not set', 'wc-vendors' ); ?></p></div>
+                    <?php endif; ?>
+                    <?php if ( $details_display_options['phone'] ) : ?>
+                        <div><p><small><?php esc_html_e( 'Phone', 'wc-vendors' ); ?></small> <?php echo $billing_details['phone'] ? esc_html( $billing_details['phone'] ) : esc_html__( 'Not set', 'wc-vendors' ); ?></p></div>
+                    <?php endif; ?>
                     
                 </div>
+                <?php endif; ?>
 
+                <?php if ( $details_display_options['shipping_address'] || $details_display_options['email'] || $details_display_options['phone'] ) : ?>
                 <div class="shipping-details">
                     <h4><?php esc_html_e( 'Shipping Details', 'wc-vendors' ); ?></h4>
-                    <div><p><small><?php esc_html_e( 'Address', 'wc-vendors' ); ?></small> <?php echo $shipping_details['address'] ? wp_kses( $shipping_details['address'], array( 'br' => array() ) ) : esc_html__( 'Not set', 'wc-vendors' ); ?></p></div>
-                    <div><p><small><?php esc_html_e( 'Email', 'wc-vendors' ); ?></small> <?php echo $shipping_details['email'] ? esc_html( $shipping_details['email'] ) : esc_html__( 'Not set', 'wc-vendors' ); ?></p></div>
-                    <div><p><small><?php esc_html_e( 'Phone', 'wc-vendors' ); ?></small> <?php echo $shipping_details['phone'] ? esc_html( $shipping_details['phone'] ) : esc_html__( 'Not set', 'wc-vendors' ); ?></p></div>
+                    <?php if ( $details_display_options['shipping_address'] ) : ?>
+                        <div><p><small><?php esc_html_e( 'Address', 'wc-vendors' ); ?></small> <?php echo $shipping_details['address'] ? wp_kses( $shipping_details['address'], array( 'br' => array() ) ) : esc_html__( 'Not set', 'wc-vendors' ); ?></p></div>
+                    <?php endif; ?>
+                    <?php if ( $details_display_options['email'] ) : ?>
+                        <div><p><small><?php esc_html_e( 'Email', 'wc-vendors' ); ?></small> <?php echo $shipping_details['email'] ? esc_html( $shipping_details['email'] ) : esc_html__( 'Not set', 'wc-vendors' ); ?></p></div>
+                    <?php endif; ?>
+                    <?php if ( $details_display_options['phone'] ) : ?>
+                        <div><p><small><?php esc_html_e( 'Phone', 'wc-vendors' ); ?></small> <?php echo $shipping_details['phone'] ? esc_html( $shipping_details['phone'] ) : esc_html__( 'Not set', 'wc-vendors' ); ?></p></div>
+                    <?php endif; ?>
                 </div>
+                <?php endif; ?>
             </div>
             <div class="wcv-order-popup-details wcv-gap-top wcv_desktop wcv-order-items-details wcv-order-details">
                 <table class="wcv-table wcv-order-table">

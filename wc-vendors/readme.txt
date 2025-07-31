@@ -3,7 +3,7 @@ Contributors: jkohlbach, RymeraWebCo, Rymera01, smub
 Tags: multivendor, marketplace, multi vendor, product vendors, woocommerce commissions
 Requires at least: 5.5.0
 Tested up to: 6.8
-Stable tag: 2.5.9
+Stable tag: 2.6.0
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -299,6 +299,14 @@ You can report security bugs through the Patchstack Vulnerability Disclosure Pro
 
 == Changelog ==
 
+= Version 2.6.0 - 29th July 2025 =
+ * Bug Fix: Vendors should not be able to review their own products
+ * Bug Fix: The Vendor should not be able to purchase their own products
+ * Bug Fix: Hide the Mark Shipped button setting does not apply to order detail view
+ * Bug Fix: Child vendor order date not syncing with parent order
+ * Bug Fix: Vendor singular term not applied to My Account dashboard menu
+ * Bug Fix: Total Discount Coupon displayed in the vendor's new order email instead of the amount per vendor coupon
+
 = Version 2.5.9 - 8th July 2025 =
  * Improvement: Order search functionality for Vendors
  * Improvement: Separate order status and shipped status in Export Vendor Orders CSV
@@ -315,6 +323,7 @@ You can report security bugs through the Patchstack Vulnerability Disclosure Pro
  * Bug Fix: The Vendor singular term option is not applied to the vendor list search placeholder
  * Bug Fix: Products created with downloadable/virtual template not filtered by WooCommerce Price Widget
  * Bug Fix: The tax fields and attribute tab still visible to vendors despite settings to hide them
+ * Bug Fix: Remove the incorrect png image file
 
 = Version 2.5.8 - 9th June 2025 = 
  * Improvement: Add Patchstack VDP disclaimer to FAQ on readme

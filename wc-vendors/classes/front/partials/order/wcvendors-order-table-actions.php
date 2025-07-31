@@ -6,6 +6,7 @@
  */
 
 use WC_Vendors\Classes\Front\WCV_Form_Helper;
+use function WC_Vendors\Classes\Includes\wcv_is_vendor_shipping_disabled;
 ?>
 
 <div class="wcv_dashboard_table_header wcv_actions wcv-cols-group horizontal-gutters wcv-order-header">
@@ -74,7 +75,7 @@ use WC_Vendors\Classes\Front\WCV_Form_Helper;
                     )
                 )
             );
-
+            if ( ! wcv_is_vendor_shipping_disabled() ) {
             WCV_Form_Helper::select(
                 apply_filters(
                     'wcv_shipping_status_input',
@@ -95,6 +96,7 @@ use WC_Vendors\Classes\Front\WCV_Form_Helper;
                     )
                 )
             );
+            }
 
             WCV_Form_Helper::select(
                 apply_filters(

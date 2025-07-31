@@ -334,24 +334,24 @@ class WCV_Vendors {
 
             if ( $is_vendor ) {
 
-                $shipping_given += $give_shipping ? $shipping : 0;
-                $tax_given      += $give_tax ? $total_tax : 0;
+                $shipping_given += $give_shipping ? (float) $shipping : 0;
+                $tax_given      += $give_tax ? (float) $total_tax : 0;
 
                 $give  = 0;
-                $give += ! empty( $receiver[ $author ]['total'] ) ? $receiver[ $author ]['total'] : 0;
-                $give += $give_shipping ? $shipping : 0;
-                $give += $commission;
-                $give += $give_tax ? $total_tax : 0;
+                $give += ! empty( $receiver[ $author ]['total'] ) ? (float) $receiver[ $author ]['total'] : 0;
+                $give += $give_shipping ? (float) $shipping : 0;
+                $give += (float) $commission;
+                $give += $give_tax ? (float) $total_tax : 0;
 
                 if ( $group ) {
 
                     $receiver[ $author ] = array(
                         'vendor_id'  => (int) $author,
-                        'commission' => ! empty( $receiver[ $author ]['commission'] ) ? $receiver[ $author ]['commission'] + $commission : $commission,
-                        'shipping'   => $give_shipping ? ( ! empty( $receiver[ $author ]['shipping'] ) ? $receiver[ $author ]['shipping'] + $shipping : $shipping ) : 0,
-                        'tax'        => $give_tax ? ( ! empty( $receiver[ $author ]['tax'] ) ? $receiver[ $author ]['tax'] + $total_tax : $total_tax ) : 0,
-                        'qty'        => ! empty( $receiver[ $author ]['qty'] ) ? $receiver[ $author ]['qty'] + $order_item['qty'] : $order_item['qty'],
-                        'total'      => $give,
+                        'commission' => ! empty( $receiver[ $author ]['commission'] ) ? (float) $receiver[ $author ]['commission'] + (float) $commission : (float) $commission,
+                        'shipping'   => $give_shipping ? ( ! empty( $receiver[ $author ]['shipping'] ) ? (float) $receiver[ $author ]['shipping'] + (float) $shipping : (float) $shipping ) : 0,
+                        'tax'        => $give_tax ? ( ! empty( $receiver[ $author ]['tax'] ) ? (float) $receiver[ $author ]['tax'] + (float) $total_tax : (float) $total_tax ) : 0,
+                        'qty'        => ! empty( $receiver[ $author ]['qty'] ) ? (int) $receiver[ $author ]['qty'] + (int) $order_item['qty'] : (int) $order_item['qty'],
+                        'total'      => (float) $give,
                     );
 
                 } else {
@@ -359,58 +359,58 @@ class WCV_Vendors {
                     $receiver[ $author ][ $key ] = array(
                         'vendor_id'  => (int) $author,
                         'product_id' => $product_id,
-                        'commission' => $commission,
-                        'shipping'   => $give_shipping ? $shipping : 0,
-                        'tax'        => $give_tax ? $total_tax : 0,
-                        'qty'        => $order_item['qty'],
-                        'total'      => ( $give_shipping ? $shipping : 0 ) + $commission + ( $give_tax ? $total_tax : 0 ),
+                        'commission' => (float) $commission,
+                        'shipping'   => $give_shipping ? (float) $shipping : 0,
+                        'tax'        => $give_tax ? (float) $total_tax : 0,
+                        'qty'        => (int) $order_item['qty'],
+                        'total'      => ( $give_shipping ? (float) $shipping : 0 ) + (float) $commission + ( $give_tax ? (float) $total_tax : 0 ),
                     );
 
                 }
             }
 
-            $admin_comm = $order_item['line_subtotal'] - $commission;
+            $admin_comm = (float) $order_item['line_subtotal'] - (float) $commission;
 
             if ( $group ) {
                 $receiver[1] = array(
                     'vendor_id'  => 1,
-                    'qty'        => ! empty( $receiver[1]['qty'] ) ? $receiver[1]['qty'] + $order_item['qty'] : $order_item['qty'],
-                    'commission' => ! empty( $receiver[1]['commission'] ) ? $receiver[1]['commission'] + $admin_comm : $admin_comm,
-                    'total'      => ! empty( $receiver[1] ) ? $receiver[1]['total'] + $admin_comm : $admin_comm,
+                    'qty'        => ! empty( $receiver[1]['qty'] ) ? (int) $receiver[1]['qty'] + (int) $order_item['qty'] : (int) $order_item['qty'],
+                    'commission' => ! empty( $receiver[1]['commission'] ) ? (float) $receiver[1]['commission'] + (float) $admin_comm : (float) $admin_comm,
+                    'total'      => ! empty( $receiver[1] ) ? (float) $receiver[1]['total'] + (float) $admin_comm : (float) $admin_comm,
                 );
             } else {
                 $receiver[1][ $key ] = array(
                     'vendor_id'  => 1,
                     'product_id' => $product_id,
-                    'commission' => $admin_comm,
+                    'commission' => (float) $admin_comm,
                     'shipping'   => 0,
                     'tax'        => 0,
-                    'qty'        => $order_item['qty'],
-                    'total'      => $admin_comm,
+                    'qty'        => (int) $order_item['qty'],
+                    'total'      => (float) $admin_comm,
                 );
             }
         }
 
         // Add remainders on end to admin.
-        $discount = $order->get_total_discount();
-        $shipping = round( ( $order->get_shipping_total() - $shipping_given ), 2 );
-        $tax      = round( $order->get_total_tax() - $tax_given, 2 );
-        $total    = ( $tax + $shipping ) - $discount;
+        $discount = (float) $order->get_total_discount();
+        $shipping = round( ( (float) $order->get_shipping_total() - (float) $shipping_given ), 2 );
+        $tax      = round( ( (float) $order->get_total_tax() - (float) $tax_given ), 2 );
+        $total    = ( (float) $tax + (float) $shipping ) - (float) $discount;
 
         if ( ! empty( $receiver ) ) {
             if ( $group ) {
-                $r_total                   = round( $receiver[1]['total'], 2 );
-                $receiver[1]['commission'] = round( $receiver[1]['commission'], 2 ) - round( $discount, 2 );
-                $receiver[1]['shipping']   = $shipping;
-                $receiver[1]['tax']        = $tax;
-                $receiver[1]['total']      = $r_total + round( $total, 2 );
+                $r_total                   = round( (float) $receiver[1]['total'], 2 );
+                $receiver[1]['commission'] = round( (float) $receiver[1]['commission'], 2 ) - round( (float) $discount, 2 );
+                $receiver[1]['shipping']   = (float) $shipping;
+                $receiver[1]['tax']        = (float) $tax;
+                $receiver[1]['total']      = (float) $r_total + round( (float) $total, 2 );
             } elseif ( ! empty( $item_keys ) ) {
                 foreach ( $item_keys as $key ) {
-                    $r_total                           = round( $receiver[1][ $key ]['total'], 2 );
-                    $receiver[1][ $key ]['commission'] = round( $receiver[1][ $key ]['commission'], 2 ) - round( $discount, 2 );
-                    $receiver[1][ $key ]['shipping']   = ( $order->get_shipping_total() - $shipping_given );
-                    $receiver[1][ $key ]['tax']        = $tax;
-                    $receiver[1][ $key ]['total']      = $r_total + round( $total, 2 );
+                    $r_total                           = round( (float) $receiver[1][ $key ]['total'], 2 );
+                    $receiver[1][ $key ]['commission'] = round( (float) $receiver[1][ $key ]['commission'], 2 ) - round( (float) $discount, 2 );
+                    $receiver[1][ $key ]['shipping']   = ( (float) $order->get_shipping_total() - (float) $shipping_given );
+                    $receiver[1][ $key ]['tax']        = (float) $tax;
+                    $receiver[1][ $key ]['total']      = (float) $r_total + round( (float) $total, 2 );
                 }
             }
         }

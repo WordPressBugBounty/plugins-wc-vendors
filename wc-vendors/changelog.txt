@@ -1,5 +1,14 @@
 Changelog for WC Vendors Marketplace
 
+Version 2.6.0 - 29th July 2025
+
+ * Bug Fix: Vendors should not be able to review their own products
+ * Bug Fix: The Vendor should not be able to purchase their own products
+ * Bug Fix: Hide the Mark Shipped button setting does not apply to order detail view
+ * Bug Fix: Child vendor order date not syncing with parent order
+ * Bug Fix: Vendor singular term not applied to My Account dashboard menu
+ * Bug Fix: Total Discount Coupon displayed in the vendor's new order email instead of the amount per vendor coupon
+
 Version 2.5.9 - 8th July 2025
 
  * Improvement: Order search functionality for Vendors
@@ -17,6 +26,7 @@ Version 2.5.9 - 8th July 2025
  * Bug Fix: The Vendor singular term option is not applied to the vendor list search placeholder
  * Bug Fix: Products created with downloadable/virtual template not filtered by WooCommerce Price Widget
  * Bug Fix: The tax fields and attribute tab still visible to vendors despite settings to hide them
+ * Bug Fix: Remove the incorrect png image file
 
 Version 2.5.8 - 9th June 2025
 

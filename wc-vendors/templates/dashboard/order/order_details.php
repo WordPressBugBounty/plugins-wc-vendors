@@ -118,7 +118,7 @@ $allow_add_order_note = wc_string_to_bool( get_option( 'wcvendors_capability_ord
                 </div>  <!-- // billing details  -->
                 <?php endif; ?>
 
-                <?php if ( $details_display_options['shipping_address'] || $details_display_options['email'] || $details_display_options['phone'] ) : ?>
+                <?php if ( ( $details_display_options['shipping_address'] || $details_display_options['email'] || $details_display_options['phone'] ) && ! $vendor_shipping_disabled ) : ?>
                 <div class="shipping-details">
                     <h4><?php esc_attr_e( 'Shipping details', 'wc-vendors' ); ?></h4>
                     <?php if ( $details_display_options['shipping_address'] ) : ?>
@@ -262,6 +262,7 @@ $allow_add_order_note = wc_string_to_bool( get_option( 'wcvendors_capability_ord
                 <div class="push-right wcv-order-table">
                     <div class="wcv-order-totals">
                         <!-- Shipping -->
+                        <?php if ( ! $vendor_shipping_disabled ) : ?>
                         <div class="wcv-order-row shipping">
                             <span class="wcv-order-label">
                                 <?php esc_html_e( 'Shipping', 'wc-vendors' ); ?>:
@@ -270,6 +271,7 @@ $allow_add_order_note = wc_string_to_bool( get_option( 'wcvendors_capability_ord
                                 <?php echo wp_kses_post( wc_price( $_order->total_shipping, array( 'currency' => $order_currency ) ) ); ?>
                             </span>
                         </div>
+                        <?php endif; ?>
 
                         <!-- Tax Totals -->
                         <?php if ( wc_tax_enabled() ) : ?>
@@ -284,7 +286,7 @@ $allow_add_order_note = wc_string_to_bool( get_option( 'wcvendors_capability_ord
                                 </div>
                             <?php endforeach; ?>
 
-                            <?php if ( $shipping_tax > 0 ) : ?>
+                            <?php if ( $shipping_tax > 0 && ! $vendor_shipping_disabled ) : ?>
                                 <div class="wcv-order-row shipping-tax">
                                     <span class="wcv-order-label">
                                         <?php esc_html_e( 'Shipping tax', 'wc-vendors' ); ?>:
@@ -387,14 +389,16 @@ $allow_add_order_note = wc_string_to_bool( get_option( 'wcvendors_capability_ord
                         </div>
                         <div class="all-70" style="font-size: 12px;">
                             <table class="wcv-order-table-mobile">
-                            <tr class="shipping wcv-order-shipping">
-                                <td class="wcv-order-totals-label right-space">
-                                    <?php esc_html_e( 'Shipping', 'wc-vendors' ); ?>:
-                                </td>
+                            <?php if ( ! $vendor_shipping_disabled ) : ?>
+                                <tr class="shipping wcv-order-shipping">
+                                    <td class="wcv-order-totals-label right-space">
+                                        <?php esc_html_e( 'Shipping', 'wc-vendors' ); ?>:
+                                    </td>
                                 <td>
                                     <?php echo wp_kses_post( wc_price( $_order->total_shipping, array( 'currency' => $order_currency ) ) ); ?>
                                 </td>
                             </tr>
+                            <?php endif; ?>
 
                             <?php if ( wc_tax_enabled() ) : ?>
                                 <?php foreach ( $order->get_tax_totals() as $code => $tax_line ) : ?>
@@ -465,15 +469,17 @@ $allow_add_order_note = wc_string_to_bool( get_option( 'wcvendors_capability_ord
         <div class="modal-footer">
             <div class="wcv-cols-group wcv-horizontal-gutters">
                 <div class="all-100 wcv-button-group">
-                    <?php if ( true === $shipped ) : ?>
-                        <a href="?wcv_mark_unshipped=<?php echo esc_attr( $order_id ); ?>" class="mark-order-unshipped wcv-button wcv-button-outline text-blue">
-                            <span><?php echo esc_attr( __( 'Mark Unshipped', 'wc-vendors' ) ); ?></span>
-                        </a>
-                    <?php endif; ?>
-                    <?php if ( false === $shipped ) : ?>
-                        <a href="?wcv_mark_shipped=<?php echo esc_attr( $order_id ); ?>" class="mark-order-shipped wcv-button">
-                            <span><?php echo esc_attr( __( 'Mark Shipped', 'wc-vendors' ) ); ?></span>
-                        </a>
+                    <?php if ( ! $_order->hide_mark_shipped ) : ?>
+                        <?php if ( true === $shipped && ! $vendor_shipping_disabled ) : ?>
+                            <a href="?wcv_mark_unshipped=<?php echo esc_attr( $order_id ); ?>" class="mark-order-unshipped wcv-button wcv-button-outline text-blue">
+                                <span><?php echo esc_attr( __( 'Mark Unshipped', 'wc-vendors' ) ); ?></span>
+                            </a>
+                        <?php endif; ?>
+                        <?php if ( false === $shipped && ! $vendor_shipping_disabled ) : ?>
+                            <a href="?wcv_mark_shipped=<?php echo esc_attr( $order_id ); ?>" class="mark-order-shipped wcv-button">
+                                <span><?php echo esc_attr( __( 'Mark Shipped', 'wc-vendors' ) ); ?></span>
+                            </a>
+                        <?php endif; ?>
                     <?php endif; ?>
                     <?php if ( $allow_add_order_note ) : ?>
                         <button class="wcv-button wcv-button-outline wcv-open-popup-add-note modal-close wcv-dismiss text-blue" data-modal="open-order-note-modal-<?php echo esc_attr( $order_id ); ?>">

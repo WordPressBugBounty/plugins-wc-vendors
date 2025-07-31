@@ -379,8 +379,19 @@ class WCV_Order_Data_Synchronizer {
         remove_action( 'woocommerce_new_order', array( $this, 'handle_updated_order' ), 999 );
         remove_action( 'woocommerce_update_order', array( $this, 'handle_updated_order' ), 0 );
 
-        $status       = $order->get_status();
-        $order_status = 'wc-' !== substr( $status, 0, 3 ) ? 'wc-' . $status : $status;
+        $status              = $order->get_status();
+        $order_status        = 'wc-' !== substr( $status, 0, 3 ) ? 'wc-' . $status : $status;
+        $order_date_created  = $order->get_date_created();
+        $order_date_modified = $order->get_date_modified();
+
+                        // Optimize sub order date updates.
+        if ( ! empty( $sub_orders ) ) {
+            foreach ( $sub_orders as $sub_order ) {
+                $sub_order->set_date_created( $order_date_created );
+                $sub_order->set_date_modified( $order_date_modified );
+                $sub_order->save();
+            }
+        }
 
         if ( wcv_cot_enabled() && $this->data_sync_is_enabled() ) {
 
@@ -412,19 +423,28 @@ class WCV_Order_Data_Synchronizer {
                 $vendor_order_transaction = $vendor_order->get_transaction_id();
                 $vendor_order_transaction = '' !== $vendor_order_transaction ? $vendor_order_transaction : $order_details['transaction_id'];
 
-                update_post_meta( $vendor_order_id, '_customer_user', $order_details['customer_id'] );
-                update_post_meta( $vendor_order_id, '_payment_method', $order_details['payment_method'] );
-                update_post_meta( $vendor_order_id, '_transaction_id', $vendor_order_transaction );
-                update_post_meta( $vendor_order_id, '_payment_method_title', $order_details['method_title'] );
-                update_post_meta( $vendor_order_id, '_order_tax', $order->get_total_tax() );
-                update_post_meta( $vendor_order_id, '_order_shipping_tax', $order->get_shipping_tax() );
-                update_post_meta( $vendor_order_id, '_order_total', $order->get_total() );
+                // Batch update post meta for better performance.
+                $meta_updates = array(
+                    '_customer_user'        => $order_details['customer_id'],
+                    '_payment_method'       => $order_details['payment_method'],
+                    '_transaction_id'       => $vendor_order_transaction,
+                    '_payment_method_title' => $order_details['method_title'],
+                    '_order_tax'            => $order->get_total_tax(),
+                    '_order_shipping_tax'   => $order->get_shipping_tax(),
+                    '_order_total'          => $order->get_total(),
+                );
+
+                $this->bulk_update_post_meta( $vendor_order_id, $meta_updates );
 
                 $vendor_order->set_billing_email( $order->get_billing_email() );
                 $vendor_order->save();
+
+                // Free memory for large datasets.
+                unset( $meta_updates, $vendor_order_transaction, $post_data );
             }
 
             update_post_meta( $order_id, 'wcv_sub_orders', $sub_orders_ids );
+            unset( $sub_orders_ids );
         } elseif ( ! wcv_cot_enabled() && $this->data_sync_is_enabled() ) {
 
             $order_table_name = OrdersTableDataStore::get_orders_table_name();
@@ -614,22 +634,26 @@ class WCV_Order_Data_Synchronizer {
             $sub_order_items = $sub_order->get_items();
 
             foreach ( $sub_order_items as $sub_order_item ) {
-                $this->log( 'Found ' . count( $sub_order_items ) . ' items for sub order.' );
+                // Ensure we have a product item before processing.
+                if ( ! is_a( $sub_order_item, 'WC_Order_Item_Product' ) ) {
+                    continue;
+                }
+
+                $product_id = $sub_order_item->get_variation_id() ? $sub_order_item->get_variation_id() : $sub_order_item->get_product_id();
+
                 foreach ( $vendors_product_ids as $vendor_id => $item_ids ) {
-                    $wcv_product_ids = $vendors_product_ids[ $vendor_id ];
-
-                    $this->log( 'Checking vendor item ids: ' . implode( ',', $item_ids ) );
-
-                    if ( ! in_array( $sub_order_item->get_product_id(), $item_ids, true ) ) {
+                    if ( ! in_array( $product_id, $item_ids, true ) ) {
                         continue;
                     }
 
                     $this->log( 'WC Vendors: Adding order item ids to sub order #' . $sub_order->get_id() );
 
                     $sub_order->add_meta_data( 'wcv_vendor_id', $vendor_id, true );
-                    $sub_order->add_meta_data( 'wcv_product_ids', $wcv_product_ids, true );
 
-                    unset( $wcv_product_ids );
+                    $sub_order->add_meta_data( 'wcv_product_ids', $vendors_product_ids[ $vendor_id ], true );
+
+                    // Break after finding the first match to avoid duplicate processing.
+                    break;
                 }
             }
 
@@ -1075,6 +1099,63 @@ class WCV_Order_Data_Synchronizer {
      * Utils
      * ============================================
      */
+
+
+
+    /**
+     * Bulk update post meta for better performance.
+     *
+     * @param int   $post_id The post ID.
+     * @param array $meta_updates Array of meta_key => meta_value pairs.
+     * @return void
+     * @version 2.5.0
+     * @since   2.5.0
+     */
+    private function bulk_update_post_meta( $post_id, $meta_updates ) {
+        global $wpdb;
+
+        if ( empty( $meta_updates ) || ! $post_id ) {
+            return;
+        }
+
+        foreach ( $meta_updates as $meta_key => $meta_value ) {
+            $meta_value = maybe_serialize( $meta_value );
+
+            $existing = $wpdb->get_var(
+                $wpdb->prepare(
+                    "SELECT meta_id FROM {$wpdb->postmeta} WHERE post_id = %d AND meta_key = %s",
+                    $post_id,
+                    $meta_key
+                )
+            );
+
+            if ( $existing ) {
+                $wpdb->update(
+                    $wpdb->postmeta,
+                    array( 'meta_value' => $meta_value ),
+                    array(
+                        'post_id'  => $post_id,
+                        'meta_key' => $meta_key,
+                    ),
+                    array( '%s' ),
+                    array( '%d', '%s' )
+                );
+            } else {
+                $wpdb->insert(
+                    $wpdb->postmeta,
+                    array(
+                        'post_id'    => $post_id,
+                        'meta_key'   => $meta_key,
+                        'meta_value' => $meta_value,
+                    ),
+                    array( '%d', '%s', '%s' )
+                );
+            }
+        }
+
+        // Clear the cache for this post.
+        wp_cache_delete( $post_id, 'post_meta' );
+    }
 
     /**
      * Log a message in the debug log

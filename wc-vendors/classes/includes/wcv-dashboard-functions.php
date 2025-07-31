@@ -130,6 +130,28 @@ function wcv_is_vendors_shipping_enabled() {
 }
 
 /**
+ * Check if vendor shipping is disabled
+ *
+ * This function lazy-loads the vendor shipping disabled status to ensure
+ * that Pro plugin filters are available when this is called.
+ *
+ * @return bool
+ * @since 2.5.9
+ */
+function wcv_is_vendor_shipping_disabled() {
+    static $vendor_shipping_disabled = null;
+
+    if ( null === $vendor_shipping_disabled ) {
+
+        $vendor_shipping_disabled_option = get_option( 'wcvendors_shipping_management_cap', 'no' );
+        $vendor_shipping_disabled        = is_wcv_pro_active() && wc_string_to_bool( $vendor_shipping_disabled_option );
+
+    }
+    $vendor_shipping_disabled = apply_filters( 'wcvendors_is_vendor_shipping_disabled', $vendor_shipping_disabled );
+    return $vendor_shipping_disabled;
+}
+
+/**
  * Variable option required.
  *
  * Check if variation option is required, return empty or required.

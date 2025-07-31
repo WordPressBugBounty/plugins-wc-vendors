@@ -5,11 +5,13 @@
                 <h3 class="wcv-sub-heading"><?php esc_html_e( 'Orders', 'wc-vendors' ); ?></h3>
                 <p class="wcv-recent-orders-pending wcv_mobile" style="margin: 12px; text-align: center;">
                 <?php
-                printf(
-                    '%s <strong>%s</strong>',
-                    esc_html__( 'Awaiting shipping:', 'wc-vendors' ),
-                    esc_html( count( $pending_shipping_orders ) ),
-                );
+                if ( ! $vendor_shipping_disabled ) {
+                    printf(
+                        '%s <strong>%s</strong>',
+                        esc_html__( 'Awaiting shipping:', 'wc-vendors' ),
+                        esc_html( count( $pending_shipping_orders ) ),
+                    );
+                }
                 ?>
                 </p>
                 <a href="<?php echo esc_url( \WCV_Vendor_Dashboard::get_dashboard_page_url( 'order' ) ); ?>" class="wcv-view-more">
@@ -20,11 +22,13 @@
                 </a>
                 <p class="wcv-recent-orders-pending wcv_desktop" style="margin: 0; width: 100%;">
                 <?php
-                printf(
-                    '%s <strong>%s</strong>',
-                    esc_html__( 'Awaiting shipping:', 'wc-vendors' ),
-                    esc_html( count( $pending_shipping_orders ) ),
-                );
+                    if ( ! $vendor_shipping_disabled ) {
+                    printf(
+                        '%s <strong>%s</strong>',
+                        esc_html__( 'Awaiting shipping:', 'wc-vendors' ),
+                        esc_html( count( $pending_shipping_orders ) ),
+                    );
+                }
                 ?>
                 </p>
             </div>

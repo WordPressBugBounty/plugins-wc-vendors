@@ -89,20 +89,13 @@ if ( ! function_exists( 'wcv_get_vendor_item_totals' ) ) {
         $commission_total    = 0;
         $tax                 = 0;
         $shipping            = 0;
-        $total               = 0;
         $total_rows          = array();
         $discount            = 0;
-        $coupons             = $order->get_items( 'coupon' );
 
-        if ( ! empty( $coupons ) ) {
-            foreach ( $coupons as $coupon ) {
-                $coupon_obj = new WC_Coupon( $coupon->get_code() );
-                $coupon_id  = $coupon_obj->get_id();
-                $author     = get_post_field( 'post_author', $coupon_id );
-                if ( absint( $author ) === absint( $vendor_id ) ) {
-                    $discount = $order->get_discount_total();
-                }
-            }
+        // Calculate vendor specific discount.
+        foreach ( $items as $item ) {
+            // Get the product discount.
+            $discount += ( $item->get_subtotal() - $item->get_total() );
         }
 
         $vendor_commissions = WCV_Vendors::get_vendor_dues_from_order( $order );

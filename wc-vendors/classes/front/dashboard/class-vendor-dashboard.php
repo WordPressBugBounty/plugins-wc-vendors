@@ -121,6 +121,24 @@ class WCV_Vendor_Dashboard {
 
         add_action( 'template_redirect', array( $this, 'redirect_old_slug' ) );
         add_action( 'wcvendors_after_dashboard_nav', array( $this, 'lock_new_products_notice' ) );
+
+        add_filter( 'the_title', array( $this, 'filter_dashboard_page_title' ), 10, 2 );
+    }
+
+    /**
+     * Filter the dashboard page title
+     *
+     * @param string $title The title of the page.
+     * @param int    $id    The ID of the page.
+     */
+    public function filter_dashboard_page_title( $title, $id ) {
+        $dashboard_page_id = get_option( 'wcvendors_vendor_dashboard_page_id', false );
+        if ( (int) $id === (int) $dashboard_page_id ) {
+            /* translators: %s: vendor name */
+            return sprintf( __( '%s Dashboard', 'wc-vendors' ), wcv_get_vendor_name( true ) );
+        }
+
+        return $title;
     }
 
     /**
@@ -150,7 +168,8 @@ class WCV_Vendor_Dashboard {
         $dashboard_page_id = get_option( 'wcvendors_vendor_dashboard_page_id', false );
 
         if ( empty( $dashboard_page_id ) ) {
-            return '<h2>' . esc_html__( 'Please ensure you have set a page for the Vendor Dashboard.', 'wc-vendors' ) . '</h2>';
+            /* translators: %s: vendor name */
+            return sprintf( '<h2>' . esc_html__( 'Please ensure you have set a page for the %s Dashboard.', 'wc-vendors' ) . '</h2>', wcv_get_vendor_name( true ) );
         }
 
         ob_start();
@@ -1268,7 +1287,13 @@ class WCV_Vendor_Dashboard {
     public function add_vendor_dashboard_item( $items ) {
         $vendor_dashboard_page_id = get_option( 'wcvendors_vendor_dashboard_page_id' );
         if ( $vendor_dashboard_page_id ) {
-            $items['vendor-dashboard'] = __( 'Vendor Dashboard', 'wc-vendors' );
+
+            $vendor_singular = wcv_get_vendor_name( true, true );
+            if ( empty( $vendor_singular ) ) {
+                $vendor_singular = __( 'Vendor', 'wc-vendors' );
+            }
+
+            $items['vendor-dashboard'] = $vendor_singular . ' ' . __( 'Dashboard', 'wc-vendors' );
         }
 
         // Move vendor-dashboard above logout.

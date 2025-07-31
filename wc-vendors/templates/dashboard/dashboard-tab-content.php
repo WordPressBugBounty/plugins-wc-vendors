@@ -47,13 +47,14 @@ do_action( 'wcvendors_dashboard_tab_content_orders_before' );
 wc_get_template(
     'dashboard/dashboard-tab-content-orders.php',
     array(
-        'latest_orders'           => $latest_orders,
-        'pending_shipping_orders' => $pending_shipping_orders,
-        'is_pro_active'           => $is_pro_active,
-        'latest_reviews'          => $latest_reviews,
-        'time'                    => $time,
-        'should_show_ratings'     => $should_show_ratings,
-        'show_customer_name'      => $show_customer_name,
+        'latest_orders'            => $latest_orders,
+        'pending_shipping_orders'  => $pending_shipping_orders,
+        'is_pro_active'            => $is_pro_active,
+        'latest_reviews'           => $latest_reviews,
+        'time'                     => $time,
+        'should_show_ratings'      => $should_show_ratings,
+        'show_customer_name'       => $show_customer_name,
+        'vendor_shipping_disabled' => $vendor_shipping_disabled,
     ),
     'wc-vendors/dashboard/',
     plugin_dir_path( WCV_PLUGIN_FILE ) . 'templates/'

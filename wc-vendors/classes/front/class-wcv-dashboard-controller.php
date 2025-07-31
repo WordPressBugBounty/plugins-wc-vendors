@@ -6,6 +6,7 @@ use WCV_Vendors;
 
 use function WC_Vendors\Classes\Includes\wcv_get_default_product_template;
 use function WC_Vendors\Classes\Includes\wcv_get_order_details_display_options;
+use function WC_Vendors\Classes\Includes\wcv_is_vendor_shipping_disabled;
 /**
  * Dashboard Controller for new Dashboard tab
  *
@@ -354,30 +355,32 @@ class WCV_Dashboard_Controller {
      * Display Dashboard
      */
     public function display_dashboard() {
-        $is_pro_active       = is_wcv_pro_active();
-        $welcome_message     = $this->get_welcome_message();
-        $store_setup_steps   = $this->get_store_setup_steps();
-        $sales_snapshot      = $this->calculate_order_sales_snapshot();
-        $latest_orders       = $this->get_latest_orders();
-        $latest_reviews      = $is_pro_active ? $this->get_ratings() : array();
-        $chart_data          = $this->get_total_orders_chart_data();
-        $vendor_id           = get_current_user_id();
-        $should_show_ratings = apply_filters( 'wcvendors_dashboard_should_show_ratings', false );
+        $is_pro_active            = is_wcv_pro_active();
+        $vendor_shipping_disabled = wcv_is_vendor_shipping_disabled();
+        $welcome_message          = $this->get_welcome_message();
+        $store_setup_steps        = $this->get_store_setup_steps();
+        $sales_snapshot           = $this->calculate_order_sales_snapshot();
+        $latest_orders            = $this->get_latest_orders( $vendor_shipping_disabled );
+        $latest_reviews           = $is_pro_active ? $this->get_ratings() : array();
+        $chart_data               = $this->get_total_orders_chart_data();
+        $vendor_id                = get_current_user_id();
+        $should_show_ratings      = apply_filters( 'wcvendors_dashboard_should_show_ratings', false );
         $this->dashboard_quick_links();
 
         wc_get_template(
             'dashboard-tab-content.php',
             array(
-                'welcome_message'         => $welcome_message,
-                'store_setup_steps'       => $store_setup_steps,
-                'sales_snapshot'          => $sales_snapshot,
-                'latest_orders'           => $latest_orders,
-                'pending_shipping_orders' => $this->pending_shipping_orders,
-                'latest_reviews'          => $latest_reviews,
-                'chart_data'              => $chart_data,
-                'is_pro_active'           => $is_pro_active,
-                'is_dismissed'            => wc_string_to_bool( get_user_meta( $vendor_id, 'wcv_store_setup_dismissed_step', true ) ),
-                'should_show_ratings'     => $should_show_ratings,
+                'welcome_message'          => $welcome_message,
+                'store_setup_steps'        => $store_setup_steps,
+                'sales_snapshot'           => $sales_snapshot,
+                'latest_orders'            => $latest_orders,
+                'pending_shipping_orders'  => $this->pending_shipping_orders,
+                'latest_reviews'           => $latest_reviews,
+                'chart_data'               => $chart_data,
+                'is_pro_active'            => $is_pro_active,
+                'is_dismissed'             => wc_string_to_bool( get_user_meta( $vendor_id, 'wcv_store_setup_dismissed_step', true ) ),
+                'should_show_ratings'      => $should_show_ratings,
+                'vendor_shipping_disabled' => $vendor_shipping_disabled,
             ),
             'wcvendors/dashboard/',
             plugin_dir_path( WCV_PLUGIN_FILE ) . 'templates/dashboard/'
@@ -386,8 +389,15 @@ class WCV_Dashboard_Controller {
 
     /**
      * Get latest orders
+     *
+     * @since 2.6.0
+     * @version 2.6.0
+     *
+     * @param bool $vendor_shipping_disabled Vendor shipping disabled.
+     *
+     * @return array Latest orders.
      */
-    public function get_latest_orders() {
+    public function get_latest_orders( $vendor_shipping_disabled ) {
 
         global $wpdb;
         $show_customer_name = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_name', 'no' ) );
@@ -424,7 +434,7 @@ class WCV_Dashboard_Controller {
                     $vendor_product_count += $item['quantity'];
                 }
             }
-            $order_status      = in_array( $this->vendor_id, $shipped, true ) ? 'Shipped' : $status[ "wc-{$order->get_status()}" ];
+            $order_status      = in_array( $this->vendor_id, $shipped, true ) && ! $vendor_shipping_disabled ? __( 'Shipped', 'wc-vendors' ) : $status[ "wc-{$order->get_status()}" ];
             $detail_popup      = $this->get_order_popup_details( $commission_rows, $order );
             $formated_orders[] = array(
                 'order_id'     => $order->get_id(),
@@ -534,20 +544,21 @@ class WCV_Dashboard_Controller {
         wc_get_template(
             'order-popup-details.php',
             array(
-                'billing_details'         => $billing_details,
-                'shipping_details'        => $shipping_details,
-                'order_details'           => $order_details,
-                'order_items'             => $order_items,
-                'order_id'                => $order_id,
-                'order_total'             => $order_total,
-                'order_shipping'          => $order_shipping,
-                'order_tax'               => $order_tax,
-                'refunded_amount'         => $refunded_amount,
-                'order_currency'          => $order->get_currency(),
-                'order_commission'        => $order_commission,
-                'shipping_tax'            => $shipping_tax,
-                'order'                   => $order,
-                'details_display_options' => $details_display_options,
+                'billing_details'          => $billing_details,
+                'shipping_details'         => $shipping_details,
+                'order_details'            => $order_details,
+                'order_items'              => $order_items,
+                'order_id'                 => $order_id,
+                'order_total'              => $order_total,
+                'order_shipping'           => $order_shipping,
+                'order_tax'                => $order_tax,
+                'refunded_amount'          => $refunded_amount,
+                'order_currency'           => $order->get_currency(),
+                'order_commission'         => $order_commission,
+                'shipping_tax'             => $shipping_tax,
+                'order'                    => $order,
+                'details_display_options'  => $details_display_options,
+                'vendor_shipping_disabled' => wcv_is_vendor_shipping_disabled(),
             ),
             'wcvendors/dashboard/',
             plugin_dir_path( WCV_PLUGIN_FILE ) . 'templates/dashboard/'
@@ -742,6 +753,10 @@ class WCV_Dashboard_Controller {
             'url'   => add_query_arg( array( 'report-this-month' => 'true' ), \WCV_Vendor_Dashboard::get_dashboard_page_url( 'reports' ) ),
             'label' => __( 'Sales Report: This month', 'wc-vendors' ),
         );
+
+        if ( wcv_is_vendor_shipping_disabled() ) {
+            unset( $quick_links['order'] );
+        }
 
         return apply_filters( 'wcv_dashboard_quick_links', $quick_links );
     }

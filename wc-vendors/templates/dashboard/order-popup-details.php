@@ -66,7 +66,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                 </div>
                 <?php endif; ?>
 
-                <?php if ( $details_display_options['shipping_address'] || $details_display_options['email'] || $details_display_options['phone'] ) : ?>
+                <?php if ( ! $vendor_shipping_disabled && ( $details_display_options['shipping_address'] || $details_display_options['email'] || $details_display_options['phone'] ) ) : ?>
                 <div class="shipping-details">
                     <h4><?php esc_html_e( 'Shipping Details', 'wc-vendors' ); ?></h4>
                     <?php if ( $details_display_options['shipping_address'] ) : ?>
@@ -144,6 +144,7 @@ if ( ! defined( 'ABSPATH' ) ) {
             <div class="push-right wcv-order-table wcv_desktop">
                 <div class="wcv-order-totals">
                     <!-- Shipping -->
+                    <?php if ( ! $vendor_shipping_disabled ) : ?>
                     <div class="wcv-order-row shipping">
                         <span class="wcv-order-label">
                             <?php esc_html_e( 'Shipping', 'wc-vendors' ); ?>:
@@ -152,6 +153,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                             <?php echo wp_kses_post( wc_price( $order_shipping, array( 'currency' => $order_currency ) ) ); ?>
                         </span>
                     </div>
+                    <?php endif; ?>
 
                     <!-- Tax Totals -->
                     <?php if ( wc_tax_enabled() ) : ?>
@@ -166,7 +168,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                             </div>
                         <?php endforeach; ?>
 
-                        <?php if ( $shipping_tax > 0 ) : ?>
+                        <?php if ( ! $vendor_shipping_disabled && $shipping_tax > 0 ) : ?>
                             <div class="wcv-order-row shipping-tax">
                                 <span class="wcv-order-label">
                                     <?php esc_html_e( 'Shipping tax', 'wc-vendors' ); ?>:
@@ -267,6 +269,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                         </div>
                         <div class="all-70" style="font-size: 12px;">
                             <table class="wcv-order-table-mobile">
+                            <?php if ( ! $vendor_shipping_disabled ) : ?>
                             <tr class="shipping wcv-order-shipping">
                                 <td class="wcv-order-totals-label right-space">
                                     <?php esc_html_e( 'Shipping', 'wc-vendors' ); ?>:
@@ -275,6 +278,7 @@ if ( ! defined( 'ABSPATH' ) ) {
                                     <?php echo wp_kses_post( wc_price( $order_shipping, array( 'currency' => $order_currency ) ) ); ?>
                                 </td>
                             </tr>
+                            <?php endif; ?>
 
                             <?php if ( wc_tax_enabled() ) : ?>
                                 <?php foreach ( $order->get_tax_totals() as $code => $tax_line ) : ?>

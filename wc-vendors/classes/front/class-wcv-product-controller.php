@@ -84,6 +84,7 @@ class WCV_Product_Controller {
         add_action( 'woocommerce_check_cart_items', array( $this, 'remove_inactive_vendor_products_from_cart' ) );
 
         add_filter( 'wcvendors_table_row_args_product', array( $this, 'process_search_and_filter' ) );
+        add_filter( 'pre_comment_on_post', array( $this, 'prevent_vendor_self_review' ) );
     }
 
     /**
@@ -3419,6 +3420,15 @@ class WCV_Product_Controller {
             return false;
         }
 
+        // Prevent vendors from purchasing their own products.
+        if ( is_user_logged_in() && \WCV_Vendors::is_vendor( get_current_user_id() ) ) {
+            $current_user_id = get_current_user_id();
+            if ( $current_user_id === (int) $author_id ) {
+                wc_add_notice( __( 'You cannot purchase your own products.', 'wc-vendors' ), 'error' );
+                return false;
+            }
+        }
+
         return $is_valid;
     }
 
@@ -3428,8 +3438,9 @@ class WCV_Product_Controller {
      * @since 2.5.4
      */
     public function remove_inactive_vendor_products_from_cart() {
-        $cart         = WC()->cart->get_cart();
-        $cart_updated = false;
+        $cart                 = WC()->cart->get_cart();
+        $cart_updated         = false;
+        $own_products_removed = false;
 
         foreach ( $cart as $cart_key => $cart_item ) {
             $product_id    = $cart_item['product_id'];
@@ -3440,10 +3451,48 @@ class WCV_Product_Controller {
                 WC()->cart->remove_cart_item( $cart_key );
                 $cart_updated = true;
             }
+
+            // Remove vendor's own products from cart.
+            if ( is_user_logged_in() && \WCV_Vendors::is_vendor( get_current_user_id() ) ) {
+                $current_user_id = get_current_user_id();
+                if ( $current_user_id === (int) $author_id ) {
+                    WC()->cart->remove_cart_item( $cart_key );
+                    $own_products_removed = true;
+                }
+            }
         }
 
         if ( $cart_updated ) {
             wc_add_notice( __( 'Some products have been removed from your cart as the vendor is inactive.', 'wc-vendors' ), 'error' );
+        }
+
+        if ( $own_products_removed ) {
+            wc_add_notice( __( 'You cannot purchase your own products. These items have been removed from your cart.', 'wc-vendors' ), 'error' );
+        }
+    }
+
+    /**
+     * Prevent vendors from reviewing their own products
+     *
+     * @param int $post_id The post ID.
+     *
+     * @since 2.6.0
+     * @version 2.6.0
+     */
+    public function prevent_vendor_self_review( $post_id ) {
+        $author_id         = (int) get_post_field( 'post_author', $post_id );
+        $current_user_id   = get_current_user_id();
+        $is_product_review = false;
+        $referer           = wp_get_referer();
+
+        if ( isset( $_POST['comment_post_ID'] ) && 'product' === get_post_type( $_POST['comment_post_ID'] ) && isset( $_POST['rating'] ) ) {
+            $is_product_review = true;
+        }
+
+        if ( $is_product_review && $author_id === $current_user_id ) {
+            wc_add_notice( __( 'You cannot review your own product.', 'wc-vendors' ), 'error' );
+            wp_safe_redirect( $referer );
+            exit;
         }
     }
 }

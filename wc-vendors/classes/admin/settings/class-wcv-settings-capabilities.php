@@ -378,6 +378,30 @@ if ( ! class_exists( 'WCVendors_Settings_Capabilities', false ) ) :
                         ),
 
                         array(
+                            'title'   => __( 'Purchase Own Products', 'wc-vendors' ),
+                            'desc'    => sprintf(
+                                /* translators: %s vendor name */
+                                __( 'Allow %s to purchase their own products', 'wc-vendors' ),
+                                wcv_get_vendor_name( false, false )
+                            ),
+                            'id'      => 'wcvendors_capability_products_purchase_own',
+                            'default' => 'no',
+                            'type'    => 'checkbox',
+                        ),
+
+                        array(
+                            'title'   => __( 'Review Own Products', 'wc-vendors' ),
+                            'desc'    => sprintf(
+                                /* translators: %s vendor name */
+                                __( 'Allow %s to review their own products', 'wc-vendors' ),
+                                wcv_get_vendor_name( false, false )
+                            ),
+                            'id'      => 'wcvendors_capability_products_review_own',
+                            'default' => 'no',
+                            'type'    => 'checkbox',
+                        ),
+
+                        array(
                             'type' => 'sectionend',
                             'id'   => 'permissions_products_options',
                         ),

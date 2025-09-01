@@ -8,7 +8,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Language-Team: WC Vendors <translate@wcvendors.com>\n"
 "Last-Translator: Jamie Madden <translate@wcvendors.com>\n"
-"POT-Creation-Date: 2025-07-29 06:37+0000\n"
+"POT-Creation-Date: 2025-08-27 07:45+0000\n"
 "Report-Msgid-Bugs-To: https://www.wcvendors.com\n"
 "X-Poedit-Basepath: ..\n"
 "X-Poedit-KeywordsList: __;_e;_ex:1,2c;_n:1,2;_n_noop:1,2;_nx:1,2,4c;_nx_noop:1,2,3c;_x:1,2c;esc_attr__;esc_attr_e;esc_attr_x:1,2c;esc_html__;esc_html_e;esc_html_x:1,2c\n"
@@ -365,19 +365,19 @@ msgstr ""
 msgid "Fee: "
 msgstr ""
 
-#: classes/class-vendor-settings.php:658, classes/includes/wcv-all-vendors-page-setting-fields.php:508
+#: classes/class-vendor-settings.php:658, classes/includes/wcv-all-vendors-page-setting-fields.php:507
 msgid "Vendor Sales"
 msgstr ""
 
-#: classes/class-vendor-settings.php:662, classes/includes/wcv-all-vendors-page-setting-fields.php:509
+#: classes/class-vendor-settings.php:662, classes/includes/wcv-all-vendors-page-setting-fields.php:508
 msgid "Product Sales"
 msgstr ""
 
-#: classes/class-vendor-settings.php:666, classes/includes/wcv-all-vendors-page-setting-fields.php:510
+#: classes/class-vendor-settings.php:666, classes/includes/wcv-all-vendors-page-setting-fields.php:509
 msgid "Product Price"
 msgstr ""
 
-#: classes/class-vendor-settings.php:717, classes/front/class-wcv-product-controller.php:3337, classes/includes/wcv-all-vendors-page-i18n.php:9
+#: classes/class-vendor-settings.php:717, classes/front/class-wcv-product-controller.php:3361, classes/includes/wcv-all-vendors-page-i18n.php:9
 msgid "Pending"
 msgstr ""
 
@@ -593,7 +593,7 @@ msgstr ""
 msgid "Order"
 msgstr ""
 
-#: classes/admin/class-admin-reports.php:217, classes/admin/class-admin-reports.php:681, classes/admin/class-wcv-commissions-csv-exporter.php:49, classes/admin/class-wcv-commissions-page.php:218, classes/front/class-wcv-product-controller.php:2790, classes/includes/wcv-dashboard-functions.php:25, templates/dashboard/reports.php:39, templates/emails/notify-vendor-shipped.php:30, templates/emails/vendor-order-details.php:38, classes/admin/emails/class-wcv-vendor-notify-cancelled-order.php:264, classes/admin/emails/class-wcv-vendor-notify-order.php:284, classes/admin/settings/class-wcv-settings-form.php:30, templates/dashboard/order/shipping-label.php:148, classes/front/partials/order/wcvendors-order-table-actions.php:139
+#: classes/admin/class-admin-reports.php:217, classes/admin/class-admin-reports.php:681, classes/admin/class-wcv-commissions-csv-exporter.php:49, classes/admin/class-wcv-commissions-page.php:218, classes/front/class-wcv-product-controller.php:2814, classes/includes/wcv-dashboard-functions.php:25, templates/dashboard/reports.php:39, templates/emails/notify-vendor-shipped.php:30, templates/emails/vendor-order-details.php:38, classes/admin/emails/class-wcv-vendor-notify-cancelled-order.php:264, classes/admin/emails/class-wcv-vendor-notify-order.php:284, classes/admin/settings/class-wcv-settings-form.php:30, templates/dashboard/order/shipping-label.php:148, classes/front/partials/order/wcvendors-order-table-actions.php:139
 msgid "Product"
 msgstr ""
 
@@ -777,31 +777,39 @@ msgstr ""
 msgid "Vendor setup"
 msgstr ""
 
-#: classes/admin/class-setup-wizard.php:112
-msgid "Finish!"
+#: classes/admin/class-setup-wizard.php:112, classes/admin/views/setup/recommended-plugins.php:15
+msgid "Recommended Plugins"
 msgstr ""
 
 #: classes/admin/class-setup-wizard.php:115
+msgid "Enhance your marketplace"
+msgstr ""
+
+#: classes/admin/class-setup-wizard.php:118
+msgid "Finish!"
+msgstr ""
+
+#: classes/admin/class-setup-wizard.php:121
 msgid "Wrap up &amp; next steps"
 msgstr ""
 
-#: classes/admin/class-setup-wizard.php:165
+#: classes/admin/class-setup-wizard.php:171
 msgid "Are you sure you want to install the defaults? This will configure your marketplace with recommended settings."
 msgstr ""
 
-#: classes/admin/class-setup-wizard.php:169, classes/admin/class-setup-wizard.php:204
+#: classes/admin/class-setup-wizard.php:175, classes/admin/class-setup-wizard.php:210
 msgid "Congratulations! Your marketplace is now ready to use. You will be redirected to the settings page."
 msgstr ""
 
-#: classes/admin/class-setup-wizard.php:170
+#: classes/admin/class-setup-wizard.php:176
 msgid "An error occurred during setup. Please try again or contact support."
 msgstr ""
 
-#: classes/admin/class-setup-wizard.php:172
+#: classes/admin/class-setup-wizard.php:178
 msgid "Are you sure you want to skip the setup wizard? This will redirect you to the marketplace dashboard and use the default settings."
 msgstr ""
 
-#: classes/admin/class-setup-wizard.php:194
+#: classes/admin/class-setup-wizard.php:200
 msgid "You do not have permission to perform this action."
 msgstr ""
 
@@ -810,7 +818,7 @@ msgid "Shop Settings"
 msgstr ""
 
 #. translators: %1$s: order id, %2$s: order date.
-#: classes/admin/class-vendor-admin-dashboard.php:58, classes/admin/class-vendor-admin-dashboard.php:59, classes/admin/class-vendor-admin-dashboard.php:303, classes/includes/wcv-marketplace-dashboard-i18n.php:38, templates/dashboard/dashboard-tab-content-orders.php:5, templates/dashboard/order-popup-details.php:35, templates/dashboard/orders.php:43, classes/admin/settings/class-wcv-settings-capabilities.php:47, classes/admin/settings/class-wcv-settings-capabilities.php:387, classes/admin/settings/class-wcv-settings-display.php:302, classes/front/dashboard/class-vendor-dashboard.php:443, classes/admin/views/setup/capabilities.php:75
+#: classes/admin/class-vendor-admin-dashboard.php:58, classes/admin/class-vendor-admin-dashboard.php:59, classes/admin/class-vendor-admin-dashboard.php:303, classes/includes/wcv-marketplace-dashboard-i18n.php:38, templates/dashboard/dashboard-tab-content-orders.php:5, templates/dashboard/order-popup-details.php:35, templates/dashboard/orders.php:43, classes/admin/settings/class-wcv-settings-capabilities.php:47, classes/admin/settings/class-wcv-settings-capabilities.php:411, classes/admin/settings/class-wcv-settings-display.php:302, classes/front/dashboard/class-vendor-dashboard.php:443, classes/admin/views/setup/capabilities.php:75
 msgid "Orders"
 msgstr ""
 
@@ -953,7 +961,7 @@ msgstr ""
 msgid "WC Vendors Github"
 msgstr ""
 
-#: classes/admin/class-wcv-admin-import-export.php:71
+#: classes/admin/class-wcv-admin-import-export.php:67
 msgid "Vendor ID"
 msgstr ""
 
@@ -1197,7 +1205,7 @@ msgstr ""
 msgid "QTY"
 msgstr ""
 
-#: classes/admin/class-wcv-commissions-csv-exporter.php:52, classes/admin/class-wcv-commissions-page.php:221, classes/front/class-wcv-order-controller.php:583, classes/includes/wcv-all-vendors-page-setting-fields.php:952, templates/dashboard/order-popup-details.php:150, templates/dashboard/order-popup-details.php:275, templates/dashboard/orders.php:57, templates/orders/orders.php:176, classes/admin/settings/class-wcv-settings-capabilities.php:129, classes/admin/settings/class-wcv-settings-form.php:421, classes/front/forms/class-wcv-product-form.php:1916, templates/dashboard/order/order_details.php:268, templates/dashboard/order/order_details.php:395, templates/dashboard/reports/overview.php:44, templates/dashboard/reports/overview.php:75, classes/front/forms/partials/wcvendors-product-variations.php:67
+#: classes/admin/class-wcv-commissions-csv-exporter.php:52, classes/admin/class-wcv-commissions-page.php:221, classes/front/class-wcv-order-controller.php:583, classes/includes/wcv-all-vendors-page-setting-fields.php:951, templates/dashboard/order-popup-details.php:150, templates/dashboard/order-popup-details.php:275, templates/dashboard/orders.php:57, templates/orders/orders.php:176, classes/admin/settings/class-wcv-settings-capabilities.php:129, classes/admin/settings/class-wcv-settings-form.php:421, classes/front/forms/class-wcv-product-form.php:1916, templates/dashboard/order/order_details.php:268, templates/dashboard/order/order_details.php:395, templates/dashboard/reports/overview.php:44, templates/dashboard/reports/overview.php:75, classes/front/forms/partials/wcvendors-product-variations.php:67
 msgid "Shipping"
 msgstr ""
 
@@ -1233,7 +1241,7 @@ msgstr ""
 msgid "Mark reversed"
 msgstr ""
 
-#: classes/admin/class-wcv-commissions-page.php:277, classes/front/class-wcv-product-controller.php:1976, classes/front/class-wcv-table-helper.php:220, classes/includes/wcv-all-vendors-page-i18n.php:24
+#: classes/admin/class-wcv-commissions-page.php:277, classes/front/class-wcv-product-controller.php:2000, classes/front/class-wcv-table-helper.php:221, classes/includes/wcv-all-vendors-page-i18n.php:24
 msgid "Delete"
 msgstr ""
 
@@ -1281,7 +1289,7 @@ msgstr ""
 msgid "Commission(s) deleted."
 msgstr ""
 
-#: classes/admin/class-wcv-commissions-page.php:746, classes/front/class-wcv-order-controller.php:2087, classes/front/class-wcv-product-controller.php:3333, classes/front/partials/order/wcvendors-order-table-actions.php:133, classes/front/partials/order/wcvendors-order-table-actions.php:137
+#: classes/admin/class-wcv-commissions-page.php:746, classes/front/class-wcv-order-controller.php:2087, classes/front/class-wcv-product-controller.php:3357, classes/front/partials/order/wcvendors-order-table-actions.php:133, classes/front/partials/order/wcvendors-order-table-actions.php:137
 msgid "All"
 msgstr ""
 
@@ -1309,19 +1317,19 @@ msgstr ""
 msgid "Commission payout for %s"
 msgstr ""
 
-#: classes/admin/class-wcv-commissions-sum-csv-exporter.php:45, classes/includes/wcv-all-vendors-page-setting-fields.php:366, classes/includes/wcv-all-vendors-page-setting-fields.php:377, classes/gateways/PayPal_AdvPayments/paypal_ap.php:183, classes/gateways/PayPal_AdvPayments/paypal_ap.php:217
+#: classes/admin/class-wcv-commissions-sum-csv-exporter.php:45, classes/includes/wcv-all-vendors-page-setting-fields.php:365, classes/includes/wcv-all-vendors-page-setting-fields.php:376, classes/gateways/PayPal_AdvPayments/paypal_ap.php:183, classes/gateways/PayPal_AdvPayments/paypal_ap.php:217
 msgid "PayPal Email"
 msgstr ""
 
-#: classes/admin/class-wcv-commissions-sum-csv-exporter.php:46, classes/includes/wcv-all-vendors-page-setting-fields.php:403, classes/admin/settings/class-wcv-settings-form.php:154, classes/admin/views/html-vendor-meta.php:87, classes/admin/views/html-vendor-settings-page.php:76
+#: classes/admin/class-wcv-commissions-sum-csv-exporter.php:46, classes/includes/wcv-all-vendors-page-setting-fields.php:402, classes/admin/settings/class-wcv-settings-form.php:154, classes/admin/views/html-vendor-meta.php:87, classes/admin/views/html-vendor-settings-page.php:76
 msgid "Bank Account Name"
 msgstr ""
 
-#: classes/admin/class-wcv-commissions-sum-csv-exporter.php:47, classes/includes/wcv-all-vendors-page-setting-fields.php:416, classes/admin/settings/class-wcv-settings-form.php:159, classes/admin/views/html-vendor-meta.php:95, classes/admin/views/html-vendor-settings-page.php:90
+#: classes/admin/class-wcv-commissions-sum-csv-exporter.php:47, classes/includes/wcv-all-vendors-page-setting-fields.php:415, classes/admin/settings/class-wcv-settings-form.php:159, classes/admin/views/html-vendor-meta.php:95, classes/admin/views/html-vendor-settings-page.php:90
 msgid "Bank Account Number"
 msgstr ""
 
-#: classes/admin/class-wcv-commissions-sum-csv-exporter.php:48, classes/includes/wcv-all-vendors-page-setting-fields.php:429, classes/admin/settings/class-wcv-settings-form.php:164, classes/admin/views/html-vendor-meta.php:103, classes/admin/views/html-vendor-settings-page.php:104, templates/dashboard/settings/bank-details.php:44
+#: classes/admin/class-wcv-commissions-sum-csv-exporter.php:48, classes/includes/wcv-all-vendors-page-setting-fields.php:428, classes/admin/settings/class-wcv-settings-form.php:164, classes/admin/views/html-vendor-meta.php:103, classes/admin/views/html-vendor-settings-page.php:104, templates/dashboard/settings/bank-details.php:44
 msgid "Bank Name"
 msgstr ""
 
@@ -1495,6 +1503,14 @@ msgstr ""
 
 #: classes/admin/class-wcv-plugin-installer.php:277
 msgid "Accept orders via a special invoice payment gateway method which lets your customer enter their order without upfront payment. Then just issue an invoice from your accounting system and paste in the number."
+msgstr ""
+
+#: classes/admin/class-wcv-plugin-installer.php:281
+msgid "StoreAgent AI for WooCommerce"
+msgstr ""
+
+#: classes/admin/class-wcv-plugin-installer.php:283
+msgid "StoreAgent is your WooCommerce AI tool kit, powered by the StoreAgent AI platform. It’s all your AI content tools, AI insights and AI chat rolled into one."
 msgstr ""
 
 #: classes/admin/class-wcv-usage.php:422
@@ -1686,11 +1702,11 @@ msgstr ""
 msgid "You need type something in the note field"
 msgstr ""
 
-#: classes/front/class-wcv-order-controller.php:561, classes/front/class-wcv-product-controller.php:1870, classes/front/class-wcv-table-helper.php:202
+#: classes/front/class-wcv-order-controller.php:561, classes/front/class-wcv-product-controller.php:1894, classes/front/class-wcv-table-helper.php:203
 msgid "ID"
 msgstr ""
 
-#: classes/front/class-wcv-order-controller.php:589, classes/front/class-wcv-product-controller.php:1890, classes/includes/wcv-all-vendors-page-i18n.php:18, templates/dashboard/dashboard-tab-content-orders.php:43, classes/front/forms/partials/wcvendors-downloadable-files.php:27
+#: classes/front/class-wcv-order-controller.php:589, classes/front/class-wcv-product-controller.php:1914, classes/includes/wcv-all-vendors-page-i18n.php:18, templates/dashboard/dashboard-tab-content-orders.php:43, classes/front/forms/partials/wcvendors-downloadable-files.php:27
 msgid "Actions"
 msgstr ""
 
@@ -1771,7 +1787,7 @@ msgstr ""
 msgid "The customer has been notified."
 msgstr ""
 
-#: classes/front/class-wcv-order-controller.php:1251, classes/front/class-wcv-product-controller.php:2289, classes/front/class-wcv-product-controller.php:2485, classes/front/class-wcv-product-controller.php:2662, classes/front/forms/class-wcv-product-form.php:1281
+#: classes/front/class-wcv-order-controller.php:1251, classes/front/class-wcv-product-controller.php:2313, classes/front/class-wcv-product-controller.php:2509, classes/front/class-wcv-product-controller.php:2686, classes/front/forms/class-wcv-product-form.php:1281
 msgid "Standard"
 msgstr ""
 
@@ -1804,215 +1820,215 @@ msgstr ""
 msgid "Completed"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:215
+#: classes/front/class-wcv-product-controller.php:239
 msgid "There was a problem adding the product."
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:209
+#: classes/front/class-wcv-product-controller.php:233
 msgid "Product submitted for review. <a href=\"%s\">Preview product.</a>"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:200
+#: classes/front/class-wcv-product-controller.php:224
 msgid "Product Added. <a href=\"%s\">View product.</a>"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:193, classes/front/class-wcv-product-controller.php:143
+#: classes/front/class-wcv-product-controller.php:217, classes/front/class-wcv-product-controller.php:167
 msgid "Product draft saved, pending review."
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:191, classes/front/class-wcv-product-controller.php:141
+#: classes/front/class-wcv-product-controller.php:215, classes/front/class-wcv-product-controller.php:165
 msgid "Product draft saved."
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:180
+#: classes/front/class-wcv-product-controller.php:204
 msgid "There was a problem editing the product."
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:172
+#: classes/front/class-wcv-product-controller.php:196
 msgid "Product submitted for review. <a href=\"%1$s\" target=\"%2$s\">Preview product.</a>"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:162, classes/front/class-wcv-product-controller.php:152
+#: classes/front/class-wcv-product-controller.php:186, classes/front/class-wcv-product-controller.php:176
 msgid "Product Updated. <a href=\"%1$s\" target=\"%2$s\">View product.</a>"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:395
+#: classes/front/class-wcv-product-controller.php:419
 msgid "There was a problem deleting the product."
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:393
+#: classes/front/class-wcv-product-controller.php:417
 msgid "Product Deleted."
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:431
+#: classes/front/class-wcv-product-controller.php:455
 msgid "Product Duplicated."
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:897
+#: classes/front/class-wcv-product-controller.php:921
 msgid "Product SKU must be unique."
 msgstr ""
 
 #. translators: %1$s: variation id %2$s: product title
-#: classes/front/class-wcv-product-controller.php:1371
+#: classes/front/class-wcv-product-controller.php:1395
 msgid "Variation #%1$s of %2$s"
 msgstr ""
 
 #. translators: %s: variation id
-#: classes/front/class-wcv-product-controller.php:1434
+#: classes/front/class-wcv-product-controller.php:1458
 msgid "#%s &ndash; Variation SKU must be unique."
 msgstr ""
 
 #. translators: %1$s: variation id %2$s: file name %3$s: allowed file types
-#: classes/front/class-wcv-product-controller.php:1578
+#: classes/front/class-wcv-product-controller.php:1602
 msgid "#%1$s &ndash; The downloadable file %2$s cannot be used as it does not have an allowed file type. Allowed types include: %3$s"
 msgstr ""
 
 #. translators: %1$s: variation id %2$s: file url
-#: classes/front/class-wcv-product-controller.php:1593
+#: classes/front/class-wcv-product-controller.php:1617
 msgid "#%1$s &ndash; The downloadable file %2$s cannot be used as it does not exist on the server."
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:1843
+#: classes/front/class-wcv-product-controller.php:1867
 msgid "Online"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:1844
+#: classes/front/class-wcv-product-controller.php:1868
 msgid "Scheduled"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:1845, classes/front/class-wcv-product-controller.php:3335
+#: classes/front/class-wcv-product-controller.php:1869, classes/front/class-wcv-product-controller.php:3359
 msgid "Draft"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:1846, classes/includes/wcv-all-vendors-page-i18n.php:8
+#: classes/front/class-wcv-product-controller.php:1870, classes/includes/wcv-all-vendors-page-i18n.php:8
 msgid "Pending Approval"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:1847
+#: classes/front/class-wcv-product-controller.php:1871
 msgid "Admin Only"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:1848
+#: classes/front/class-wcv-product-controller.php:1872
 msgid "Trash"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:1873
+#: classes/front/class-wcv-product-controller.php:1897
 msgid "Thumbnail"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:1879, templates/dashboard/order-popup-details.php:37
+#: classes/front/class-wcv-product-controller.php:1903, templates/dashboard/order-popup-details.php:37
 msgid "Details"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:1885, templates/emails/notify-vendor-shipped.php:32, templates/emails/vendor-order-details.php:47, classes/admin/settings/class-wcv-settings-form.php:520
+#: classes/front/class-wcv-product-controller.php:1909, templates/emails/notify-vendor-shipped.php:32, templates/emails/vendor-order-details.php:47, classes/admin/settings/class-wcv-settings-form.php:520
 msgid "Price"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:1948, classes/front/class-wcv-table-helper.php:216, classes/includes/wcv-all-vendors-page-i18n.php:19
+#: classes/front/class-wcv-product-controller.php:1972, classes/front/class-wcv-table-helper.php:217, classes/includes/wcv-all-vendors-page-i18n.php:19
 msgid "Edit"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:1957, classes/front/class-wcv-table-helper.php:224, templates/dashboard/dashboard-tab-content-orders.php:62
+#: classes/front/class-wcv-product-controller.php:1981, classes/front/class-wcv-table-helper.php:225, templates/dashboard/dashboard-tab-content-orders.php:62
 msgid "View"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:1967
+#: classes/front/class-wcv-product-controller.php:1991
 msgid "Duplicate"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:1979
+#: classes/front/class-wcv-product-controller.php:2003
 msgid "Delete product?"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:2035
+#: classes/front/class-wcv-product-controller.php:2059
 msgid "Date Published:"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:2150
+#: classes/front/class-wcv-product-controller.php:2174
 msgid "No products found."
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:2240
+#: classes/front/class-wcv-product-controller.php:2264
 msgid "No permission to add attributes. "
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:2299, classes/front/class-wcv-product-controller.php:2495, classes/front/class-wcv-product-controller.php:2672, classes/front/forms/class-wcv-product-form.php:1441, classes/admin/views/notices/html-notice-usage-tracking.php:34
+#: classes/front/class-wcv-product-controller.php:2323, classes/front/class-wcv-product-controller.php:2519, classes/front/class-wcv-product-controller.php:2696, classes/front/forms/class-wcv-product-form.php:1441, classes/admin/views/notices/html-notice-usage-tracking.php:34
 msgid "Do not allow"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:2300, classes/front/class-wcv-product-controller.php:2496, classes/front/class-wcv-product-controller.php:2673, classes/front/forms/class-wcv-product-form.php:1442
+#: classes/front/class-wcv-product-controller.php:2324, classes/front/class-wcv-product-controller.php:2520, classes/front/class-wcv-product-controller.php:2697, classes/front/forms/class-wcv-product-form.php:1442
 msgid "Allow, but notify customer"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:2301, classes/front/class-wcv-product-controller.php:2497, classes/front/class-wcv-product-controller.php:2674, classes/front/forms/class-wcv-product-form.php:1443
+#: classes/front/class-wcv-product-controller.php:2325, classes/front/class-wcv-product-controller.php:2521, classes/front/class-wcv-product-controller.php:2698, classes/front/forms/class-wcv-product-form.php:1443
 msgid "Allow"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:2306, classes/front/class-wcv-product-controller.php:2502, classes/front/class-wcv-product-controller.php:2679, classes/front/class-wcv-product-controller.php:3153, classes/front/class-wcv-product-controller.php:3339, classes/front/forms/class-wcv-product-form.php:1482
+#: classes/front/class-wcv-product-controller.php:2330, classes/front/class-wcv-product-controller.php:2526, classes/front/class-wcv-product-controller.php:2703, classes/front/class-wcv-product-controller.php:3177, classes/front/class-wcv-product-controller.php:3363, classes/front/forms/class-wcv-product-form.php:1482
 msgid "In stock"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:2307, classes/front/class-wcv-product-controller.php:2503, classes/front/class-wcv-product-controller.php:2680, classes/front/class-wcv-product-controller.php:3161, classes/front/class-wcv-product-controller.php:3340, classes/front/forms/class-wcv-product-form.php:1483
+#: classes/front/class-wcv-product-controller.php:2331, classes/front/class-wcv-product-controller.php:2527, classes/front/class-wcv-product-controller.php:2704, classes/front/class-wcv-product-controller.php:3185, classes/front/class-wcv-product-controller.php:3364, classes/front/forms/class-wcv-product-form.php:1483
 msgid "Out of stock"
 msgstr ""
 
 #. translators: %s: max image width
-#: classes/front/class-wcv-product-controller.php:2933
+#: classes/front/class-wcv-product-controller.php:2957
 msgid "The image file uploaded exceeds the maximum width allowed. Maximium width is %spx"
 msgstr ""
 
 #. translators: %s: max image height
-#: classes/front/class-wcv-product-controller.php:2941
+#: classes/front/class-wcv-product-controller.php:2965
 msgid "The image file uploaded exceeds the maximum height allowed. Maximum height is %spx"
 msgstr ""
 
 #. translators: %s: min image width
-#: classes/front/class-wcv-product-controller.php:2949
+#: classes/front/class-wcv-product-controller.php:2973
 msgid "The image file uploaded does not meet the minimum width required. Minimum image width is %spx"
 msgstr ""
 
 #. translators: %s: min image height
-#: classes/front/class-wcv-product-controller.php:2957
+#: classes/front/class-wcv-product-controller.php:2981
 msgid "The image file uploaded does not meet the minimum height required. Minimum image height is %spx."
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:3156
+#: classes/front/class-wcv-product-controller.php:3180
 msgid "Low stock"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:3165, classes/front/class-wcv-product-controller.php:3341
+#: classes/front/class-wcv-product-controller.php:3189, classes/front/class-wcv-product-controller.php:3365
 msgid "On backorder"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:3334
+#: classes/front/class-wcv-product-controller.php:3358
 msgid "Published"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:3336
+#: classes/front/class-wcv-product-controller.php:3360
 msgid "Auto Draft"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:3338
+#: classes/front/class-wcv-product-controller.php:3362
 msgid "Private"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:3419
+#: classes/front/class-wcv-product-controller.php:3443
 msgid "This product is not available for purchase due to the vendor being inactive."
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:3427
+#: classes/front/class-wcv-product-controller.php:3451
 msgid "You cannot purchase your own products."
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:3466
+#: classes/front/class-wcv-product-controller.php:3490
 msgid "Some products have been removed from your cart as the vendor is inactive."
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:3470
+#: classes/front/class-wcv-product-controller.php:3494
 msgid "You cannot purchase your own products. These items have been removed from your cart."
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:3493
+#: classes/front/class-wcv-product-controller.php:3517
 msgid "You cannot review your own product."
 msgstr ""
 
@@ -2444,20 +2460,20 @@ msgstr ""
 msgid "Minute"
 msgstr ""
 
-#: classes/front/class-wcv-table-helper.php:203, classes/admin/settings/class-wcv-settings-form.php:623, classes/gateways/WCV_Gateway_Test/class-wcv-gateway-test.php:66
+#: classes/front/class-wcv-table-helper.php:204, classes/admin/settings/class-wcv-settings-form.php:623, classes/gateways/WCV_Gateway_Test/class-wcv-gateway-test.php:66
 msgid "Title"
 msgstr ""
 
-#: classes/front/class-wcv-table-helper.php:204, classes/admin/settings/class-wcv-settings-form.php:222, classes/admin/settings/class-wcv-settings-form.php:583, classes/admin/settings/class-wcv-settings-form.php:628, classes/gateways/PayPal_AdvPayments/paypal_ap.php:163, classes/gateways/WCV_Gateway_Test/class-wcv-gateway-test.php:73
+#: classes/front/class-wcv-table-helper.php:205, classes/admin/settings/class-wcv-settings-form.php:222, classes/admin/settings/class-wcv-settings-form.php:583, classes/admin/settings/class-wcv-settings-form.php:628, classes/gateways/PayPal_AdvPayments/paypal_ap.php:163, classes/gateways/WCV_Gateway_Test/class-wcv-gateway-test.php:73
 msgid "Description"
 msgstr ""
 
-#: classes/front/class-wcv-table-helper.php:205
+#: classes/front/class-wcv-table-helper.php:206
 msgid "Date Posted"
 msgstr ""
 
 #. translators: %s is the table id.
-#: classes/front/class-wcv-table-helper.php:364
+#: classes/front/class-wcv-table-helper.php:365
 msgid "No %s's found"
 msgstr ""
 
@@ -2848,7 +2864,7 @@ msgstr ""
 msgid "Shipping Postcode"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-i18n.php:87, classes/includes/wcv-all-vendors-page-setting-fields.php:830
+#: classes/includes/wcv-all-vendors-page-i18n.php:87, classes/includes/wcv-all-vendors-page-setting-fields.php:829
 msgid "Shipping Address"
 msgstr ""
 
@@ -2856,7 +2872,7 @@ msgstr ""
 msgid "Shipping Address 2"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-i18n.php:89, classes/includes/wcv-all-vendors-page-setting-fields.php:353, classes/includes/wcv-helper-functions.php:62, classes/front/forms/class-wcv-store-form.php:194, classes/gateways/PayPal_AdvPayments/paypal_ap.php:158, templates/dashboard/settings/commission-payout-method.php:20
+#: classes/includes/wcv-all-vendors-page-i18n.php:89, classes/includes/wcv-all-vendors-page-setting-fields.php:352, classes/includes/wcv-helper-functions.php:62, classes/front/forms/class-wcv-store-form.php:194, classes/gateways/PayPal_AdvPayments/paypal_ap.php:158, templates/dashboard/settings/commission-payout-method.php:20
 msgid "PayPal"
 msgstr ""
 
@@ -2904,11 +2920,11 @@ msgstr ""
 msgid "Amount"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-i18n.php:103, classes/includes/wcv-all-vendors-page-setting-fields.php:505
+#: classes/includes/wcv-all-vendors-page-i18n.php:103, classes/includes/wcv-all-vendors-page-setting-fields.php:504
 msgid "Fixed"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-i18n.php:104, classes/includes/wcv-all-vendors-page-setting-fields.php:507
+#: classes/includes/wcv-all-vendors-page-i18n.php:104, classes/includes/wcv-all-vendors-page-setting-fields.php:506
 msgid "Fixed Fee"
 msgstr ""
 
@@ -2988,468 +3004,456 @@ msgstr ""
 msgid "Verifed Vendor"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:53
-msgid "Show a Verified Vendor badge on the Vendor's store to indicate they have been verified by the marketplace admin."
-msgstr ""
-
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:56
-msgid "Show a Verified Vendor badge on the Vendor's store to indicate they have been verified by the marketplace admin. This can set this based on a Vendor's membership level and it's a great way to boost trust in the Vendor's store."
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:53, classes/includes/wcv-all-vendors-page-setting-fields.php:56
+msgid "Check to publish that this vendor is verified by the store admin."
 msgstr ""
 
 #: classes/includes/wcv-all-vendors-page-setting-fields.php:60, classes/admin/views/html-admin-page-go-pro.php:184
 msgid "Trusted Vendor"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:62
-msgid "Show a Trusted Vendor badge on the Vendor's store to indicate they are trusted by the marketplace admin."
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:62, classes/includes/wcv-all-vendors-page-setting-fields.php:65
+msgid "Check to allow this vendor to publish products immediately regardless of global publishing rules."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:65
-msgid "Show a Trusted Vendor badge on the Vendor's store to indicate they are trusted by the marketplace admin. This is a great way to boost trust in the Vendor's store."
-msgstr ""
-
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:70
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:69
 msgid "Untrusted Vendor"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:72
-msgid "Show an Untrusted Vendor badge on the Vendor's store to indicate they have not been verified by the marketplace admin."
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:71, classes/includes/wcv-all-vendors-page-setting-fields.php:74
+msgid "Check to require all products submitted to be reviewed, regardless of global publishing rules. This overrides the trusted vendor option."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:75
-msgid "Show an Untrusted Vendor badge on the Vendor's store to indicate they have not been verified by the marketplace admin. When used in conjunction with Vendor memberships, this encourages Vendors to upgrade and get the trusted badge."
-msgstr ""
-
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:79
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:78
 msgid "Lock New Products"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:81
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:80
 msgid "Prevent this Vendor from creating new products."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:84
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:83
 msgid " From time to time you may wish to stop a Vendor from creating any further new products. This allows you to implement some admin control without completely disabling the Vendor."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:88
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:87
 msgid "Lock New Products Message"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:90
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:89
 msgid "Enter the message to display to vendors when they try to create a new product."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:93
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:92
 msgid "Prevent vendors from creating new products"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:102
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:101
 msgid "Lock Edit Products"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:104
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:103
 msgid "Prevent this Vendor from editing existing products."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:107
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:106
 msgid "From time to time you may wish to stop a Vendor from editing any of their existing products. This allows you to implement some admin control without completely disabling the Vendor."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:111
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:110
 msgid "Lock Edit Products Message"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:113
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:112
 msgid "Enter the message to display to vendors when they try to edit an existing product."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:116
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:115
 msgid "Prevent vendors from editing existing products"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:125
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:124
 msgid "Product Total Sales"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:127
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:126
 msgid " Show the total number of product sales by this vendor on their store."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:130
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:129
 msgid "Show the total number of product sales by this vendor on their store. This is a great way to boost trust in Vendors and show end customers how many sales this Vendor has had historically."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:134
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:133
 msgid "Store Website/Blog URL"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:136
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:135
 msgid "Enter the URL of vendor store."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:138
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:137
 msgid "Enter vendor store URL"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:140
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:139
 msgid "Allow your Vendors to add an external link to their website or blog."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:144
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:143
 msgid "Store Phone"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:146
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:145
 msgid "Enter the phone number of vendor store."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:148
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:147
 msgid "Enter vendor store phone"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:150
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:149
 msgid "Allow your Vendors to specify a phone number to be shown on their store pages."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:154
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:153
 msgid "Store Map"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:158
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:157
 msgid "Let your Vendors show a Google Map of their store location on their store pages. This is great for Vendors with both digital and physical presences."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:163
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:162
 msgid "Store Coordinates"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:167
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:166
 msgid "Store Latitude"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:172
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:171
 msgid "Store Longitude"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:180, classes/includes/wcv-all-vendors-page-setting-fields.php:820
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:179, classes/includes/wcv-all-vendors-page-setting-fields.php:819
 msgid "Store Address"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:182
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:181
 msgid "Enter the address of vendor store."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:184
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:183
 msgid "Enter vendor store address"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:186
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:185
 msgid "Let your Vendors set their store address to show on their store pages. This is great for Vendors with both digital and physical presences."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:190
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:189
 msgid "Store Address 2"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:192
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:191
 msgid "Enter the address 2 of vendor store."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:194
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:193
 msgid "Enter vendor store address 2"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:196
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:195
 msgid "Let your Vendors set their second store address to show on their store pages. This is great for Vendors with both digital and physical presences."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:200
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:199
 msgid "Store Country"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:202
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:201
 msgid "Select the country of vendor store."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:204
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:203
 msgid "Select vendor store country"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:206
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:205
 msgid "The vendor's country"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:210
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:209
 msgid "Store State"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:212
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:211
 msgid "Enter the state of vendor store."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:214
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:213
 msgid "Enter vendor store state"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:216
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:215
 msgid "The vendor's state"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:220
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:219
 msgid "Store City"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:222
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:221
 msgid "Enter the city of vendor store."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:224
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:223
 msgid "Enter vendor store city"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:226
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:225
 msgid "The vendor's city"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:230
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:229
 msgid "Store PostCode/Zip"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:232
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:231
 msgid "Enter the zip of vendor store."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:234
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:233
 msgid "Enter vendor store zip"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:236
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:235
 msgid "The vendor's zip code"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:240
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:239
 msgid "Store Notice"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:242
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:241
 msgid "Let the Vendor show a message to customers with a notice at the top of their store."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:245
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:244
 msgid "From time to time, your Vendors may want to show a custom message to customers. This lets your Vendors write a short notice to display at the top of their store pages."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:249
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:248
 msgid "Store Notice Message"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:251, classes/includes/wcv-all-vendors-page-setting-fields.php:254, classes/includes/wcv-all-vendors-page-setting-fields.php:274, classes/includes/wcv-all-vendors-page-setting-fields.php:277
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:250, classes/includes/wcv-all-vendors-page-setting-fields.php:253, classes/includes/wcv-all-vendors-page-setting-fields.php:273, classes/includes/wcv-all-vendors-page-setting-fields.php:276
 msgid "Enter the message to display on vendor store"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:263, classes/admin/views/html-admin-page-go-pro.php:169
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:262, classes/admin/views/html-admin-page-go-pro.php:169
 msgid "Store Vacation"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:265
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:264
 msgid "Enable Store Vacation."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:268
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:267
 msgid "Let your Vendors enable Vacation Mode which prevents their products being purchased during a specific time period."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:272
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:271
 msgid "Store Vacation Message"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:286
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:285
 msgid "Store Google Analytics"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:288, classes/includes/wcv-all-vendors-page-setting-fields.php:291
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:287, classes/includes/wcv-all-vendors-page-setting-fields.php:290
 msgid "Let the Vendor add Google Analytics code to their store pages."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:295
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:294
 msgid "Store Google Analytics ID"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:297, classes/includes/wcv-all-vendors-page-setting-fields.php:300
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:296, classes/includes/wcv-all-vendors-page-setting-fields.php:299
 msgid "Enter the Google Analytics ID for the vendor's store"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:308
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:307
 msgid "Store Opening Hours"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:310
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:309
 msgid "Allow the Vendor to set specific opening hours on their store."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:313
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:312
 msgid "Allow the Vendor to set specific opening hours to be shown on their store pages."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:317
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:316
 msgid "Store Opening Hours Table"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:320, classes/includes/wcv-all-vendors-page-setting-fields.php:323
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:319, classes/includes/wcv-all-vendors-page-setting-fields.php:322
 msgid "Set the opening hours for the vendor's store"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:332
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:331
 msgid "Disable Add to Cart"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:334, classes/includes/wcv-all-vendors-page-setting-fields.php:337
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:333, classes/includes/wcv-all-vendors-page-setting-fields.php:336
 msgid "Disable cart when vendor is on vacation."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:348, templates/dashboard/settings/commission-payout-method.php:17
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:347, templates/dashboard/settings/commission-payout-method.php:17
 msgid "Commission Payout Method"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:350, classes/includes/wcv-all-vendors-page-setting-fields.php:357
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:349, classes/includes/wcv-all-vendors-page-setting-fields.php:356
 msgid "Select the commission payout method for the vendor"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:354
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:353
 msgid "Bank"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:362, templates/dashboard/settings/paypal-email-form.php:20
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:361, templates/dashboard/settings/paypal-email-form.php:20
 msgid "PayPal Payout Method"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:363
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:362
 msgid "Select the payout method for the vendor"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:367, classes/includes/wcv-all-vendors-page-setting-fields.php:390, classes/admin/settings/class-wcv-settings-form.php:149, classes/admin/views/html-vendor-meta.php:70, classes/admin/views/html-vendor-settings-page.php:56, classes/front/forms/class-wcv-store-form.php:310, templates/dashboard/settings/paypal-email-form.php:34
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:366, classes/includes/wcv-all-vendors-page-setting-fields.php:389, classes/admin/settings/class-wcv-settings-form.php:149, classes/admin/views/html-vendor-meta.php:70, classes/admin/views/html-vendor-settings-page.php:56, classes/front/forms/class-wcv-store-form.php:310, templates/dashboard/settings/paypal-email-form.php:34
 msgid "Venmo ID"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:379
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:378
 msgid "Enter the PayPal email address for the vendor"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:381
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:380
 msgid "Enter PayPal email address"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:392
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:391
 msgid "Enter the Venmo ID for the vendor"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:394
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:393
 msgid "Enter Venmo ID"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:405
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:404
 msgid "Enter the bank account name for the vendor"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:407
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:406
 msgid "Enter bank account name"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:418
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:417
 msgid "Enter the bank account number for the vendor"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:420
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:419
 msgid "Enter bank account number"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:431
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:430
 msgid "Enter the bank name for the vendor"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:433
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:432
 msgid "Enter bank name"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:442
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:441
 msgid "Bank Routing Number"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:444
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:443
 msgid "Enter the bank routing number for the vendor"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:446
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:445
 msgid "Enter bank routing number"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:455, classes/front/forms/class-wcv-store-form.php:487
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:454, classes/front/forms/class-wcv-store-form.php:487
 msgid "Bank BIC/SWIFT"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:457
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:456
 msgid "Enter the bank BIC/SWIFT for the vendor"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:459
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:458
 msgid "Enter bank BIC/SWIFT"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:468, classes/front/forms/class-wcv-store-form.php:458
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:467, classes/front/forms/class-wcv-store-form.php:458
 msgid "Bank IBAN"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:470
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:469
 msgid "Enter the bank IBAN for the vendor"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:472
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:471
 msgid "Enter bank IBAN"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:481
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:480
 msgid "Give Tax Override"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:483
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:482
 msgid "Allow the vendor to override the default tax settings for their products."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:486
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:485
 msgid "Allow the vendor to override the default tax settings for their products. This is useful if the vendor is selling products in a different country or state with different tax rates."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:490
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:489
 msgid "Give Shipping Override"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:492
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:491
 msgid "Allow the vendor to override the default shipping settings for their products."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:495
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:494
 msgid "Allow the vendor to override the default shipping settings for their products. This is useful if the vendor is selling products in a different country or state with different shipping rates."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:499
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:498
 msgid "Commission Type"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:501
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:500
 msgid "Select the commission type for the vendor"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:504
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:503
 msgid "Percent"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:506
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:505
 msgid "Percent Fee"
 msgstr ""
 
 #. translators: %s break line
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:515
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:514
 msgid ""
 "The type of commission that will be paid to the vendor for products sold. This could be a percentage of the sale price or a fixed amount.%1$s\n"
 "        Available options:%2$s\n"
@@ -3462,499 +3466,499 @@ msgid ""
 "        - Product Price (Pro)"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:539
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:538
 msgid "Commission Amount"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:541
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:540
 msgid "Enter the commission amount for the vendor"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:548
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:547
 msgid "The amount of commission that will be paid to the vendor for products sold. This could be a percentage of the sale price or a fixed amount."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:552
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:551
 msgid "Commission Percent"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:554
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:553
 msgid "Enter the commission percent for the vendor"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:556
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:555
 msgid "The percentage of the sale price that will be paid to the vendor for products sold."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:565
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:564
 msgid "Commission Fee"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:567
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:566
 msgid "Enter the commission fee for the vendor"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:569
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:568
 msgid "The fixed amount that will be paid to the vendor for products sold."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:579
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:578
 msgid "Commission Tiers"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:583
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:582
 msgid "Set commission tiers for your vendors. This allows you to set different commission rates for different sales volumes."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:594
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:593
 msgid "Store Banner"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:596
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:595
 msgid "Upload the banner for vendor store."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:598
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:597
 msgid "Upload vendor store banner"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:600
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:599
 msgid "The store banner is a large image that will be displayed at the top of the vendor's store page."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:604
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:603
 msgid "Store Icon"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:606
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:605
 msgid "Upload the icon for vendor store."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:608
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:607
 msgid "Upload vendor store icon"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:610
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:609
 msgid "The store icon is a small image that will be displayed next to the vendor's name on the store page."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:618
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:617
 msgid "SEO Title"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:620
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:619
 msgid "Enter the SEO title for the vendor"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:622
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:621
 msgid "Enter SEO title"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:624
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:623
 msgid "Allow Vendors to customize the SEO title of their Vendor store page. This helps them fine-tune their search visibility, allowing them to target specific keywords."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:628
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:627
 msgid "SEO Meta Description"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:630
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:629
 msgid "Enter the SEO meta description for the vendor"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:632
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:631
 msgid "Enter SEO meta description"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:634
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:633
 msgid "Allow Vendors to customize the SEO Meta Description of their Vendor store page. This helps them control the display of their listing in search engines."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:638
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:637
 msgid "SEO Meta Keywords"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:640
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:639
 msgid "Enter the SEO meta keywords for the vendor"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:642
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:641
 msgid "Enter SEO meta keywords"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:644
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:643
 msgid "Allow Vendors to customize the SEO Meta Keywords of their Vendor store page. This can help them control the target keywords of their store page in search engines."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:648
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:647
 msgid "Facebook Title"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:650
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:649
 msgid "Enter the Facebook title for the vendor"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:652
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:651
 msgid "Enter Facebook title"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:654
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:653
 msgid "Let Vendors control how Facebook shows the title of their Vendor store page when shared on Facebook and related Meta social networks."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:658
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:657
 msgid "Facebook Description"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:660
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:659
 msgid "Enter the Facebook description for the vendor"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:662
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:661
 msgid "Enter Facebook description"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:664
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:663
 msgid "Let Vendors control how Facebook shows the description text of their Vendor store page when shared on Facebook and related Meta social networks."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:668
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:667
 msgid "Facebook Image"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:670
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:669
 msgid "Upload the Facebook image for the vendor"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:672
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:671
 msgid "Upload Facebook image"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:674
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:673
 msgid "Let Vendors control the image that Facebook shows for the Vendor store page when shared on Facebook and related Meta social networks."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:678
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:677
 msgid "X (formerly Twitter) Title"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:680
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:679
 msgid "Enter the X (formerly Twitter) title for the vendor"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:682
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:681
 msgid "Enter X (formerly Twitter) title"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:684
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:683
 msgid "Let Vendors control how X (formerly Twitter) shows the title of their Vendor store page when shared."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:688
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:687
 msgid "X (formerly Twitter) Description"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:690
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:689
 msgid "Enter the X (formerly Twitter) description for the vendor"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:692
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:691
 msgid "Enter X (formerly Twitter) description"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:694
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:693
 msgid "Let Vendors control how X (formerly Twitter) shows the description text of their Vendor store page when shared."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:698
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:697
 msgid "X (formerly Twitter) Image"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:700
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:699
 msgid "Upload the X (formerly Twitter) image for the vendor"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:702
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:701
 msgid "Upload X (formerly Twitter) image"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:704
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:703
 msgid "Let Vendors control the image that X (formerly Twitter) shows for their Vendor store page when shared."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:708
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:707
 msgid "Facebook URL"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:710
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:709
 msgid "Enter the Facebook URL for the vendor"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:712
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:711
 msgid "Enter Facebook URL"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:714
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:713
 msgid "The Facebook URL for the vendor's store. This is the URL of the vendor's Facebook page."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:718
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:717
 msgid "Instagram Username"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:720
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:719
 msgid "Enter the Instagram username for the vendor"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:722
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:721
 msgid "Enter Instagram username"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:724
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:723
 msgid "The Instagram username for the vendor's store. This is the username of the vendor's Instagram account."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:728
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:727
 msgid "Pinterest URL"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:730
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:729
 msgid "Enter the Pinterest URL for the vendor"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:732
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:731
 msgid "Enter Pinterest URL"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:734
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:733
 msgid "The Pinterest URL for the vendor's store. This is the URL of the vendor's Pinterest page."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:738
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:737
 msgid "YouTube URL"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:740
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:739
 msgid "Enter the YouTube URL for the vendor"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:742
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:741
 msgid "Enter YouTube URL"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:744
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:743
 msgid "The YouTube URL for the vendor's store. This is the URL of the vendor's YouTube page."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:748
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:747
 msgid "LinkedIn URL"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:750
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:749
 msgid "Enter the LinkedIn URL for the vendor"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:752
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:751
 msgid "Enter LinkedIn URL"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:754
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:753
 msgid "The LinkedIn URL for the vendor's store. This is the URL of the vendor's LinkedIn page."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:758
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:757
 msgid "Telegram Username"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:760
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:759
 msgid "Enter the Telegram username for the vendor"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:762
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:761
 msgid "Enter Telegram username"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:764
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:763
 msgid "The Telegram username for the vendor's store. This is the username of the vendor's Telegram account."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:768
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:767
 msgid "Snapchat Username"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:770
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:769
 msgid "Enter the Snapchat username for the vendor"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:772
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:771
 msgid "Enter Snapchat username"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:774
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:773
 msgid "The Snapchat username for the vendor's store. This is the username of the vendor's Snapchat account."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:778
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:777
 msgid "X (formerly Twitter) Username"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:780
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:779
 msgid "Enter the X (formerly Twitter) username for the vendor"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:782
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:781
 msgid "Enter X (formerly Twitter) username"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:784
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:783
 msgid "The X (formerly Twitter) username for the vendor's store. This is the username of the vendor's X (formerly Twitter) account."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:791
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:790
 msgid "Shipping Type"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:793
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:792
 msgid "Select the shipping type for the vendor"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:796, classes/includes/wcv-all-vendors-page-setting-fields.php:842
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:795, classes/includes/wcv-all-vendors-page-setting-fields.php:841
 msgid "Flat Rate"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:797
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:796
 msgid "Country Table Rates"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:800
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:799
 msgid "The type of shipping that will be used for products sold. This could be flat rate shipping, or country table rates"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:804
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:803
 msgid "Product Handling Fee"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:806
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:805
 msgid "Enter the handling fee for the vendor"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:811
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:810
 msgid "The handling fee that will be charged for each product sold. This is a fee that is added to the product price to cover the cost of shipping and handling."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:815
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:814
 msgid "Shipping From"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:817
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:816
 msgid "Select the shipping from for the vendor"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:821
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:820
 msgid "Other Address"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:826
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:825
 msgid "The location from which products will be shipped. This could be the vendor's physical store, a warehouse, or a fulfillment center."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:845
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:844
 msgid "Enter the flat rate for the vendor"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:857
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:856
 msgid "Flat rates are shipping rates that are applied to all orders, regardless of the destination. This is a simple way to set shipping rates for your marketplace."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:861
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:860
 msgid "Table Rates"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:874
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:873
 msgid "Country table rates are shipping rates that are applied to orders based on the destination country. This is a more complex way to set shipping rates, but it can be more accurate."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:881
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:880
 msgid "Privacy Policy"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:883
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:882
 msgid "Enter the privacy policy for the vendor"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:885
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:884
 msgid "Enter privacy policy"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:887
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:886
 msgid "The privacy policy that will be used for the vendor's store. This policy should explain how the vendor collects, uses, and shares customer data."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:892, classes/admin/settings/class-wcv-settings-display.php:333
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:891, classes/admin/settings/class-wcv-settings-display.php:333
 msgid "Terms and Conditions"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:894
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:893
 msgid "Enter the terms and conditions for the vendor"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:896
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:895
 msgid "Enter terms and conditions"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:898
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:897
 msgid "The terms and conditions that will be used for the vendor's store. This policy should explain the terms of use for the vendor's store, such as the refund policy and the return policy."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:903
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:902
 msgid "Shipping Policy"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:905
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:904
 msgid "Enter the shipping policy for the vendor"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:907
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:906
 msgid "Enter shipping policy"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:911
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:910
 msgid "The shipping policy that will be used for the vendor's store. This policy should explain the shipping rates and shipping methods that are available for the vendor's products."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:916
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:915
 msgid "Return Policy"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:918
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:917
 msgid "Enter the return policy for the vendor"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:920
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:919
 msgid "Enter return policy"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:924
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:923
 msgid "The return policy that will be used for the vendor's store. This policy should explain the conditions under which customers can return products for a refund or exchange."
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:932, classes/admin/settings/class-wcv-settings-capabilities.php:45, classes/admin/settings/class-wcv-settings-capabilities.php:127, classes/admin/settings/class-wcv-settings-commission.php:41, classes/admin/settings/class-wcv-settings-display.php:45, classes/admin/settings/class-wcv-settings-form.php:280, classes/admin/settings/class-wcv-settings-general.php:30, classes/admin/settings/class-wcv-settings-general.php:42, classes/admin/settings/class-wcv-settings-payments.php:50, classes/front/forms/class-wcv-product-form.php:1906
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:931, classes/admin/settings/class-wcv-settings-capabilities.php:45, classes/admin/settings/class-wcv-settings-capabilities.php:127, classes/admin/settings/class-wcv-settings-commission.php:41, classes/admin/settings/class-wcv-settings-display.php:45, classes/admin/settings/class-wcv-settings-form.php:280, classes/admin/settings/class-wcv-settings-general.php:30, classes/admin/settings/class-wcv-settings-general.php:42, classes/admin/settings/class-wcv-settings-payments.php:50, classes/front/forms/class-wcv-product-form.php:1906
 msgid "General"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:937
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:936
 msgid "Commissions & Payouts"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:942
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:941
 msgid "Branding"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:947
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:946
 msgid "SEO & Social"
 msgstr ""
 
-#: classes/includes/wcv-all-vendors-page-setting-fields.php:957
+#: classes/includes/wcv-all-vendors-page-setting-fields.php:956
 msgid "Policies"
 msgstr ""
 
@@ -4078,27 +4082,27 @@ msgstr ""
 msgid "Venmo"
 msgstr ""
 
-#: classes/includes/wcv-helper-functions.php:244
+#: classes/includes/wcv-helper-functions.php:245
 msgctxt "Order status"
 msgid "Processing"
 msgstr ""
 
-#: classes/includes/wcv-helper-functions.php:245
+#: classes/includes/wcv-helper-functions.php:246
 msgctxt "Order status"
 msgid "On hold"
 msgstr ""
 
-#: classes/includes/wcv-helper-functions.php:246
+#: classes/includes/wcv-helper-functions.php:247
 msgctxt "Order status"
 msgid "Completed"
 msgstr ""
 
-#: classes/includes/wcv-helper-functions.php:247
+#: classes/includes/wcv-helper-functions.php:248
 msgctxt "Order status"
 msgid "Cancelled"
 msgstr ""
 
-#: classes/includes/wcv-helper-functions.php:248
+#: classes/includes/wcv-helper-functions.php:249
 msgctxt "Order status"
 msgid "Refunded"
 msgstr ""
@@ -5282,14 +5286,32 @@ msgstr ""
 msgid "Allow %s to publish products directly to the marketplace without requiring approval."
 msgstr ""
 
-#: classes/admin/settings/class-wcv-settings-capabilities.php:392, classes/front/dashboard/class-vendor-dashboard.php:452
+#: classes/admin/settings/class-wcv-settings-capabilities.php:381
+msgid "Purchase Own Products"
+msgstr ""
+
+#. translators: %s vendor name
+#: classes/admin/settings/class-wcv-settings-capabilities.php:384
+msgid "Allow %s to purchase their own products"
+msgstr ""
+
+#: classes/admin/settings/class-wcv-settings-capabilities.php:393
+msgid "Review Own Products"
+msgstr ""
+
+#. translators: %s vendor name
+#: classes/admin/settings/class-wcv-settings-capabilities.php:396
+msgid "Allow %s to review their own products"
+msgstr ""
+
+#: classes/admin/settings/class-wcv-settings-capabilities.php:416, classes/front/dashboard/class-vendor-dashboard.php:452
 msgid "Export Orders"
 msgstr ""
 
 #. translators: %s vendor name
 #. translators: %s is the vendor name.
 #. translators: %s is replaced with the vendor name.
-#: classes/admin/settings/class-wcv-settings-capabilities.php:395, classes/admin/views/setup/advanced.php:126, classes/admin/views/setup/capabilities.php:84
+#: classes/admin/settings/class-wcv-settings-capabilities.php:419, classes/admin/views/setup/advanced.php:126, classes/admin/views/setup/capabilities.php:84
 msgid "Allow %s to export their orders to a CSV file"
 msgstr ""
 
@@ -8056,7 +8078,7 @@ msgstr ""
 msgid "Enable to allow %s to export their orders"
 msgstr ""
 
-#: classes/admin/views/setup/advanced.php:141, classes/admin/views/setup/advanced.php:145, classes/admin/views/setup/configuration.php:101, classes/admin/views/setup/configuration.php:105, classes/front/partials/order/wcvendors-order-table-pagination.php:35
+#: classes/admin/views/setup/advanced.php:141, classes/admin/views/setup/advanced.php:145, classes/admin/views/setup/configuration.php:101, classes/admin/views/setup/configuration.php:105, classes/admin/views/setup/recommended-plugins.php:36, classes/admin/views/setup/recommended-plugins.php:40, classes/front/partials/order/wcvendors-order-table-pagination.php:35
 msgid "Previous"
 msgstr ""
 
@@ -8148,6 +8170,18 @@ msgstr ""
 
 #: classes/admin/views/setup/ready.php:62
 msgid "- @yvesbenini via wordpress.org"
+msgstr ""
+
+#: classes/admin/views/setup/recommended-plugins.php:16
+msgid "Enhance Your Marketplace"
+msgstr ""
+
+#: classes/admin/views/setup/recommended-plugins.php:19
+msgid "We recommend these plugins to enhance your marketplace functionality. You can install them now or skip this step and install them later."
+msgstr ""
+
+#: classes/admin/views/setup/recommended-plugins.php:42, classes/admin/views/setup/recommended-plugins.php:43
+msgid "Continue"
 msgstr ""
 
 #: classes/admin/views/setup/welcome.php:15

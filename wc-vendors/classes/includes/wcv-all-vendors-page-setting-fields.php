@@ -50,29 +50,28 @@ $general_fields    = array(
         'id'      => 'verified_vendor',
         'title'   => __( 'Verifed Vendor', 'wc-vendors' ),
         'type'    => 'checkbox',
-        'desc'    => __( 'Show a Verified Vendor badge on the Vendor\'s store to indicate they have been verified by the marketplace admin.', 'wc-vendors' ),
+        'desc'    => __( 'Check to publish that this vendor is verified by the store admin.', 'wc-vendors' ),
         'default' => 'no',
         'is_pro'  => true,
-        'intro'   => __( 'Show a Verified Vendor badge on the Vendor\'s store to indicate they have been verified by the marketplace admin. This can set this based on a Vendor\'s membership level and it\'s a great way to boost trust in the Vendor\'s store.', 'wc-vendors' ),
+        'intro'   => __( 'Check to publish that this vendor is verified by the store admin.', 'wc-vendors' ),
     ),
     array(
         'id'      => 'trusted_vendor',
         'title'   => __( 'Trusted Vendor', 'wc-vendors' ),
         'type'    => 'checkbox',
-        'desc'    => __( 'Show a Trusted Vendor badge on the Vendor\'s store to indicate they are trusted by the marketplace admin.', 'wc-vendors' ),
+        'desc'    => __( 'Check to allow this vendor to publish products immediately regardless of global publishing rules.', 'wc-vendors' ),
         'default' => 'no',
         'is_pro'  => true,
-        'intro'   => __( 'Show a Trusted Vendor badge on the Vendor\'s store to indicate they are trusted by the marketplace admin. This is a great way to boost trust in the Vendor\'s store.', 'wc-vendors' ),
+        'intro'   => __( 'Check to allow this vendor to publish products immediately regardless of global publishing rules.', 'wc-vendors' ),
     ),
-
     array(
         'id'      => 'untrusted_vendor',
         'title'   => __( 'Untrusted Vendor', 'wc-vendors' ),
         'type'    => 'checkbox',
-        'desc'    => __( 'Show an Untrusted Vendor badge on the Vendor\'s store to indicate they have not been verified by the marketplace admin.', 'wc-vendors' ),
+        'desc'    => __( 'Check to require all products submitted to be reviewed, regardless of global publishing rules. This overrides the trusted vendor option.', 'wc-vendors' ),
         'default' => 'no',
         'is_pro'  => true,
-        'intro'   => __( 'Show an Untrusted Vendor badge on the Vendor\'s store to indicate they have not been verified by the marketplace admin. When used in conjunction with Vendor memberships, this encourages Vendors to upgrade and get the trusted badge.', 'wc-vendors' ),
+        'intro'   => __( 'Check to require all products submitted to be reviewed, regardless of global publishing rules. This overrides the trusted vendor option.', 'wc-vendors' ),
     ),
     array(
         'id'      => 'lock_new_products',
@@ -136,7 +135,7 @@ $general_fields    = array(
         'desc'        => __( 'Enter the URL of vendor store.', 'wc-vendors' ),
         'default'     => '',
         'placeholder' => __( 'Enter vendor store URL', 'wc-vendors' ),
-        'is_pro'      => true,
+        'is_pro'      => false,
         'intro'       => __( 'Allow your Vendors to add an external link to their website or blog.', 'wc-vendors' ),
     ),
     array(
@@ -146,7 +145,7 @@ $general_fields    = array(
         'desc'        => __( 'Enter the phone number of vendor store.', 'wc-vendors' ),
         'default'     => '112',
         'placeholder' => __( 'Enter vendor store phone', 'wc-vendors' ),
-        'is_pro'      => true,
+        'is_pro'      => false,
         'intro'       => __( 'Allow your Vendors to specify a phone number to be shown on their store pages.', 'wc-vendors' ),
     ),
     array(
@@ -182,7 +181,7 @@ $general_fields    = array(
         'desc'        => __( 'Enter the address of vendor store.', 'wc-vendors' ),
         'default'     => '',
         'placeholder' => __( 'Enter vendor store address', 'wc-vendors' ),
-        'is_pro'      => true,
+        'is_pro'      => false,
         'intro'       => __( 'Let your Vendors set their store address to show on their store pages. This is great for Vendors with both digital and physical presences.', 'wc-vendors' ),
     ),
     array(
@@ -192,7 +191,7 @@ $general_fields    = array(
         'desc'        => __( 'Enter the address 2 of vendor store.', 'wc-vendors' ),
         'default'     => '',
         'placeholder' => __( 'Enter vendor store address 2', 'wc-vendors' ),
-        'is_pro'      => true,
+        'is_pro'      => false,
         'intro'       => __( 'Let your Vendors set their second store address to show on their store pages. This is great for Vendors with both digital and physical presences.', 'wc-vendors' ),
     ),
     array(
@@ -202,7 +201,7 @@ $general_fields    = array(
         'desc'        => __( 'Select the country of vendor store.', 'wc-vendors' ),
         'default'     => $site_country['country'],
         'placeholder' => __( 'Select vendor store country', 'wc-vendors' ),
-        'is_pro'      => true,
+        'is_pro'      => false,
         'intro'       => __( 'The vendor\'s country', 'wc-vendors' ),
     ),
     array(
@@ -212,7 +211,7 @@ $general_fields    = array(
         'desc'        => __( 'Enter the state of vendor store.', 'wc-vendors' ),
         'default'     => $site_country['state'],
         'placeholder' => __( 'Enter vendor store state', 'wc-vendors' ),
-        'is_pro'      => true,
+        'is_pro'      => false,
         'intro'       => __( 'The vendor\'s state', 'wc-vendors' ),
     ),
     array(
@@ -222,7 +221,7 @@ $general_fields    = array(
         'desc'        => __( 'Enter the city of vendor store.', 'wc-vendors' ),
         'default'     => '',
         'placeholder' => __( 'Enter vendor store city', 'wc-vendors' ),
-        'is_pro'      => true,
+        'is_pro'      => false,
         'intro'       => __( 'The vendor\'s city', 'wc-vendors' ),
     ),
     array(
@@ -232,7 +231,7 @@ $general_fields    = array(
         'desc'        => __( 'Enter the zip of vendor store.', 'wc-vendors' ),
         'default'     => '',
         'placeholder' => __( 'Enter vendor store zip', 'wc-vendors' ),
-        'is_pro'      => true,
+        'is_pro'      => false,
         'intro'       => __( 'The vendor\'s zip code', 'wc-vendors' ),
     ),
     array(
@@ -282,7 +281,7 @@ $general_fields    = array(
         'use_editor'       => $allow_markup,
     ),
     array(
-        'id'      => 'store_google_analytics',
+        'id'      => 'enable_google_analytics',
         'title'   => __( 'Store Google Analytics', 'wc-vendors' ),
         'type'    => 'checkbox',
         'desc'    => __( 'Let the Vendor add Google Analytics code to their store pages.', 'wc-vendors' ),
@@ -291,7 +290,7 @@ $general_fields    = array(
         'intro'   => __( 'Let the Vendor add Google Analytics code to their store pages.', 'wc-vendors' ),
     ),
     array(
-        'id'               => 'store_google_analytics_id',
+        'id'               => 'google_analytics_id',
         'title'            => __( 'Store Google Analytics ID', 'wc-vendors' ),
         'type'             => 'text',
         'desc'             => __( 'Enter the Google Analytics ID for the vendor\'s store', 'wc-vendors' ),
@@ -299,7 +298,7 @@ $general_fields    = array(
         'is_pro'           => true,
         'intro'            => __( 'Enter the Google Analytics ID for the vendor\'s store', 'wc-vendors' ),
         'render_condition' => array(
-            'key'   => 'store_google_analytics',
+            'key'   => 'enable_google_analytics',
             'value' => array( 'yes' ),
         ),
     ),

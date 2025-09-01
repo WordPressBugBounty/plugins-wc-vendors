@@ -90,25 +90,31 @@ class WCVendors_Admin_Setup_Wizard {
 
         $default_steps = array(
 
-            'welcome'  => array(
+            'welcome'             => array(
                 'name'    => __( 'Get Started', 'wc-vendors' ),
                 'view'    => array( $this, 'wcv_setup_welcome' ),
                 'handler' => array( $this, 'show_config_page' ),
                 'desc'    => __( 'Setup the plugin', 'wc-vendors' ),
             ),
-            'config'   => array(
+            'config'              => array(
                 'name'    => __( 'Marketplace', 'wc-vendors' ),
                 'view'    => array( $this, 'basic_configuration' ),
                 'handler' => array( $this, 'basic_configuration_save' ),
                 'desc'    => __( 'Marketplace setup', 'wc-vendors' ),
             ),
-            'advanced' => array(
+            'advanced'            => array(
                 'name'    => __( 'Vendor', 'wc-vendors' ),
                 'view'    => array( $this, 'advanced_settings' ),
                 'handler' => array( $this, 'advanced_settings_save' ),
                 'desc'    => __( 'Vendor setup', 'wc-vendors' ),
             ),
-            'finish'   => array(
+            'recommended_plugins' => array(
+                'name'    => __( 'Recommended Plugins', 'wc-vendors' ),
+                'view'    => array( $this, 'recommended_plugins' ),
+                'handler' => array( $this, 'recommended_plugins_save' ),
+                'desc'    => __( 'Enhance your marketplace', 'wc-vendors' ),
+            ),
+            'finish'              => array(
                 'name'    => __( 'Finish!', 'wc-vendors' ),
                 'view'    => array( $this, 'wcv_setup_ready' ),
                 'handler' => '',
@@ -659,6 +665,26 @@ class WCVendors_Admin_Setup_Wizard {
      */
     public function wcv_setup_welcome() {
         include WCV_ABSPATH_ADMIN . 'views/setup/welcome.php';
+    }
+
+    /**
+     * Recommended plugins step.
+     */
+    public function recommended_plugins() {
+        do_action( 'wcvendors_setup_wizard_before_recommended_plugins' );
+
+        include WCV_ABSPATH_ADMIN . 'views/setup/recommended-plugins.php';
+        do_action( 'wcvendors_setup_wizard_after_recommended_plugins' );
+    }
+
+    /**
+     * Save recommended plugins step.
+     */
+    public function recommended_plugins_save() {
+        do_action( 'wcvendors_setup_wizard_before_recommended_plugins_save' );
+        check_admin_referer( 'wcv-setup', 'wcv-setup' );
+        wp_safe_redirect( esc_url_raw( $this->get_next_step_link() ) );
+        exit;
     }
 
     /**

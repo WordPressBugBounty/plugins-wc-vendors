@@ -147,6 +147,7 @@ function wcv_check_allow_screen() {
         'edit-shop_coupon',
         'plugins',
         'woocommerce_page_wc-addons',
+        'wc-vendors_page_wcv-setup',
     );
 
     $allow_screen_post_types = array(

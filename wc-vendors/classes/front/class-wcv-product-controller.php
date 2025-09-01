@@ -68,23 +68,47 @@ class WCV_Product_Controller {
     public $product_statuses;
 
     /**
+     * Allow vendor to purchase their own products
+     *
+     * @since 2.6.1
+     *
+     * @var boolean $allow_vendor_purchase_own_products
+     */
+    public $allow_vendor_purchase_own_products;
+
+    /**
+     * Allow vendor to review their own products
+     *
+     * @since 2.6.1
+     *
+     * @var boolean $allow_vendor_review_own_products
+     */
+    public $allow_vendor_review_own_products;
+
+    /**
      * Initialize the class and set its properties.
      *
      * @since    2.5.2
      */
     public function __construct() {
         global $wpdb;
-        $this->table_name       = $wpdb->prefix . 'wcv_feedback';
-        $this->is_pro_active    = is_wcv_pro_active();
-        $this->date_format      = $this->is_pro_active ? get_option( 'wcvendors_dashboard_date_format', 'Y-m-d' ) : 'Y-m-d';
-        $this->product_statuses = apply_filters( 'wcvendors_vendor_dashboard_product_statuses', array( 'publish', 'pending', 'private', 'draft' ) );
+        $this->table_name                         = $wpdb->prefix . 'wcv_feedback';
+        $this->is_pro_active                      = is_wcv_pro_active();
+        $this->date_format                        = $this->is_pro_active ? get_option( 'wcvendors_dashboard_date_format', 'Y-m-d' ) : 'Y-m-d';
+        $this->product_statuses                   = apply_filters( 'wcvendors_vendor_dashboard_product_statuses', array( 'publish', 'pending', 'private', 'draft' ) );
+        $this->allow_vendor_purchase_own_products = apply_filters( 'wcvendors_allow_vendor_purchase_own_products', wc_string_to_bool( get_option( 'wcvendors_capability_products_purchase_own', 'no' ) ) );
+        $this->allow_vendor_review_own_products   = apply_filters( 'wcvendors_allow_vendor_review_own_products', wc_string_to_bool( get_option( 'wcvendors_capability_products_review_own', 'no' ) ) );
+
         add_filter( 'wcvendors_import_export_buttons', array( $this, 'add_import_export_buttons' ) );
         add_action( 'woocommerce_product_query', array( $this, 'hide_all_inactive_vendor_products' ), 10 );
         add_filter( 'woocommerce_add_to_cart_validation', array( $this, 'add_to_cart_validation' ), 10, 2 );
         add_action( 'woocommerce_check_cart_items', array( $this, 'remove_inactive_vendor_products_from_cart' ) );
 
         add_filter( 'wcvendors_table_row_args_product', array( $this, 'process_search_and_filter' ) );
-        add_filter( 'pre_comment_on_post', array( $this, 'prevent_vendor_self_review' ) );
+
+        if ( ! $this->allow_vendor_review_own_products ) {
+            add_filter( 'pre_comment_on_post', array( $this, 'prevent_vendor_self_review' ) );
+        }
     }
 
     /**
@@ -3421,7 +3445,7 @@ class WCV_Product_Controller {
         }
 
         // Prevent vendors from purchasing their own products.
-        if ( is_user_logged_in() && \WCV_Vendors::is_vendor( get_current_user_id() ) ) {
+        if ( is_user_logged_in() && \WCV_Vendors::is_vendor( get_current_user_id() ) && ! $this->allow_vendor_purchase_own_products ) {
             $current_user_id = get_current_user_id();
             if ( $current_user_id === (int) $author_id ) {
                 wc_add_notice( __( 'You cannot purchase your own products.', 'wc-vendors' ), 'error' );
@@ -3453,7 +3477,7 @@ class WCV_Product_Controller {
             }
 
             // Remove vendor's own products from cart.
-            if ( is_user_logged_in() && \WCV_Vendors::is_vendor( get_current_user_id() ) ) {
+            if ( is_user_logged_in() && \WCV_Vendors::is_vendor( get_current_user_id() ) && ! $this->allow_vendor_purchase_own_products ) {
                 $current_user_id = get_current_user_id();
                 if ( $current_user_id === (int) $author_id ) {
                     WC()->cart->remove_cart_item( $cart_key );
@@ -3466,7 +3490,7 @@ class WCV_Product_Controller {
             wc_add_notice( __( 'Some products have been removed from your cart as the vendor is inactive.', 'wc-vendors' ), 'error' );
         }
 
-        if ( $own_products_removed ) {
+        if ( $own_products_removed && ! $this->allow_vendor_purchase_own_products ) {
             wc_add_notice( __( 'You cannot purchase your own products. These items have been removed from your cart.', 'wc-vendors' ), 'error' );
         }
     }

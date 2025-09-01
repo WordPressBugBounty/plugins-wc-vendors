@@ -3,7 +3,7 @@ Contributors: jkohlbach, RymeraWebCo, Rymera01, smub
 Tags: multivendor, marketplace, multi vendor, product vendors, woocommerce commissions
 Requires at least: 5.5.0
 Tested up to: 6.8
-Stable tag: 2.6.0
+Stable tag: 2.6.1
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -298,6 +298,15 @@ You can report security bugs through the Patchstack Vulnerability Disclosure Pro
 12. Email notifications for admins, customers and vendors
 
 == Changelog ==
+
+= Version 2.6.1 - 26th August 2025 =
+ * Improvement: Options to allow vendor to review or purchase their own products 
+ * Improvement: Ensure vendor assignment is preserved during partial imports via woocommerce tool
+ * Improvement: Add recommended plugins page to setup wizard
+ * Improvement: Update all vendor page trusted, verified, and untrusted wording
+ * Bug Fix: Google analytics features not applied to all vendor pages when enabled from vendor dashboard
+ * Bug Fix: Extension items not showing on vendor dashboard
+ * Bug Fix: Incorrect Pro label and field restriction for store website, phone, and address in vendor management
 
 = Version 2.6.0 - 29th July 2025 =
  * Bug Fix: Vendors should not be able to review their own products

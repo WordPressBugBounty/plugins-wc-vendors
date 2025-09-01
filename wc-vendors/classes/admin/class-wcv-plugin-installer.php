@@ -276,6 +276,12 @@ class WCV_Plugin_Installer {
                 'logo'      => WCV_ASSETS_URL . 'images/extensions/wwp-logo.png',
                 'desc'      => __( 'Accept orders via a special invoice payment gateway method which lets your customer enter their order without upfront payment. Then just issue an invoice from your accounting system and paste in the number.', 'wc-vendors' ),
             ),
+            'storeagent-ai-for-woocommerce'         => array(
+                'base_name' => 'storeagent-ai-for-woocommerce/storeagent-ai-for-woocommerce.php',
+                'name'      => __( 'StoreAgent AI for WooCommerce', 'wc-vendors' ),
+                'logo'      => WCV_ASSETS_URL . 'images/extensions/storeagent-ai-logo.png',
+                'desc'      => __( 'StoreAgent is your WooCommerce AI tool kit, powered by the StoreAgent AI platform. It’s all your AI content tools, AI insights and AI chat rolled into one.', 'wc-vendors' ),
+            ),
         );
 
         // Allow other plugins to be installed but not let them overwrite the ones listed above.

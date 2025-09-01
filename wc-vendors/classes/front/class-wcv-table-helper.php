@@ -150,6 +150,7 @@ class WCV_Table_Helper {
      *  This sets up the default values for the different aspects of the table.
      *
      * @since    2.5.2
+     * @since    2.6.1 - Fix extensions items not showing when product_status is set to all
      */
     public function set_defaults() {
 
@@ -157,7 +158,7 @@ class WCV_Table_Helper {
 
         $product_status = isset( $_GET['product_status'] ) ? sanitize_text_field( $_GET['product_status'] ) : ''; // phpcs:ignore
         $instock_status = array( 'instock', 'outofstock', 'onbackorder' );
-        $post_status    = array( 'publish', 'pending', 'private', 'draft' );
+        $post_status    = array( 'any' );
 
         // Default table rows.
         $args = array(
@@ -183,7 +184,7 @@ class WCV_Table_Helper {
             $args['meta_query'][] = $meta_query;
         }
 
-        if ( in_array( $product_status, $post_status, true ) ) {
+        if ( 'all' !== $product_status && ! empty( $product_status ) ) {
             $args['post_status'] = $product_status;
         }
 

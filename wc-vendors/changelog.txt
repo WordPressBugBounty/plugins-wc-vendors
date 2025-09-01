@@ -1,5 +1,16 @@
 Changelog for WC Vendors Marketplace
 
+Version 2.6.1 - 26th August 2025
+
+ * Improvement: Options to allow vendor to review or purchase their own products 
+ * Improvement: Ensure vendor assignment is preserved during partial imports via woocommerce tool
+ * Improvement: Add recommended plugins page to setup wizard
+ * Improvement: Update all vendor page trusted, verified, and untrusted wording
+ * Bug Fix: Google analytics features not applied to all vendor pages when enabled from vendor dashboard
+ * Bug Fix: Extension items not showing on vendor dashboard
+ * Bug Fix: Incorrect Pro label and field restriction for store website, phone, and address in vendor management
+
+
 Version 2.6.0 - 29th July 2025
 
  * Bug Fix: Vendors should not be able to review their own products

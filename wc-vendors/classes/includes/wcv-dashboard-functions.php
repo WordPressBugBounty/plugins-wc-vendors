@@ -2,6 +2,7 @@
 namespace WC_Vendors\Classes\Includes;
 
 use WC_Vendors\Classes\Includes\WCV_Product_Dropdown_Walker;
+use WC_Vendors\Classes\Includes\WCV_Product_Category_Multilevel_Walker;
 
 /**
  * Get the global default product template for the store.
@@ -74,6 +75,36 @@ function wcv_walk_category_dropdown_tree() {
     }
 
     return call_user_func_array( array( &$walker, 'walk' ), $args );
+}
+
+
+/**
+ * Walk the Product Categories Multilevel Dropdown Tree.
+ *
+ * Enhanced version with better visual hierarchy and additional options.
+ *
+ * @since 2.5.2
+ * @param array $elements     Array of category objects.
+ * @param int   $max_depth    Maximum depth to walk.
+ * @param array $args         Additional arguments for the walker.
+ * @return string HTML output for the dropdown options.
+ */
+function wcv_walk_category_multilevel_dropdown_tree( $elements, $max_depth = 0, $args = array() ) {
+
+    // Set default arguments.
+    $defaults = array(
+        'hierarchical' => true,
+        'show_count'   => false,
+        'value'        => 'id',
+        'selected'     => array(),
+    );
+
+    $args = wp_parse_args( $args, $defaults );
+
+    // Use the multilevel walker.
+    $walker = new WCV_Product_Category_Multilevel_Walker();
+
+    return $walker->walk( $elements, $max_depth, $args );
 }
 
 

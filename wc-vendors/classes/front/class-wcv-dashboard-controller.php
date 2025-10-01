@@ -90,6 +90,14 @@ class WCV_Dashboard_Controller {
     public $thousand_separator = '.';
 
     /**
+     * Is pro active
+     *
+     * @var bool $is_pro_active Is pro active.
+     */
+    public static $is_pro_active = false;
+
+
+    /**
      * Constructor
      *
      * @param int $vendor_id Vendor ID.
@@ -104,6 +112,8 @@ class WCV_Dashboard_Controller {
         $this->decimal_separator  = apply_filters( 'wcvendors_dashboard_snapshot_decimal_separator', wc_get_price_decimal_separator() );
         $this->thousand_separator = apply_filters( 'wcvendors_dashboard_snapshot_thousand_separator', wc_get_price_thousand_separator() );
 
+        self::init_pro_status();
+
         $timezone                    = wp_timezone();
         $now                         = new \DateTime( 'now', $timezone );
         $this->start_date            = ( clone $now )->modify( 'first day of this month' )->format( 'Y-m-d' );
@@ -117,6 +127,17 @@ class WCV_Dashboard_Controller {
 
         $this->orders                  = $this->get_orders();
         $this->pending_shipping_orders = $this->get_pending_shipping_orders();
+    }
+
+    /**
+     * Initialize pro status static property
+     *
+     * @since 2.5.3
+     */
+    private static function init_pro_status() {
+        if ( ! self::$is_pro_active && function_exists( 'is_wcv_pro_active' ) ) {
+            self::$is_pro_active = is_wcv_pro_active();
+        }
     }
 
     /**
@@ -331,15 +352,18 @@ class WCV_Dashboard_Controller {
                 'is_complete' => $completed_steps['payout'],
                 'id'          => 'payout',
             ),
-            'social'   => array(
+        );
+
+        if ( self::$is_pro_active ) {
+            $steps['social'] = array(
                 'title'       => __( 'Add your Socials', 'wcvendors' ),
                 'description' => __( 'Link your social media to engage customers. Keep them updated across all platforms.', 'wcvendors' ),
                 'link'        => \WCV_Vendor_Dashboard::get_dashboard_page_url( 'settings#social' ),
                 'icon'        => 'wcv-icon-setup-social',
                 'is_complete' => $completed_steps['social'],
                 'id'          => 'social',
-            ),
-        );
+            );
+        }
 
         usort(
             $steps,
@@ -355,13 +379,12 @@ class WCV_Dashboard_Controller {
      * Display Dashboard
      */
     public function display_dashboard() {
-        $is_pro_active            = is_wcv_pro_active();
         $vendor_shipping_disabled = wcv_is_vendor_shipping_disabled();
         $welcome_message          = $this->get_welcome_message();
         $store_setup_steps        = $this->get_store_setup_steps();
         $sales_snapshot           = $this->calculate_order_sales_snapshot();
         $latest_orders            = $this->get_latest_orders( $vendor_shipping_disabled );
-        $latest_reviews           = $is_pro_active ? $this->get_ratings() : array();
+        $latest_reviews           = self::$is_pro_active ? $this->get_ratings() : array();
         $chart_data               = $this->get_total_orders_chart_data();
         $vendor_id                = get_current_user_id();
         $should_show_ratings      = apply_filters( 'wcvendors_dashboard_should_show_ratings', false );
@@ -377,7 +400,7 @@ class WCV_Dashboard_Controller {
                 'pending_shipping_orders'  => $this->pending_shipping_orders,
                 'latest_reviews'           => $latest_reviews,
                 'chart_data'               => $chart_data,
-                'is_pro_active'            => $is_pro_active,
+                'is_pro_active'            => self::$is_pro_active,
                 'is_dismissed'             => wc_string_to_bool( get_user_meta( $vendor_id, 'wcv_store_setup_dismissed_step', true ) ),
                 'should_show_ratings'      => $should_show_ratings,
                 'vendor_shipping_disabled' => $vendor_shipping_disabled,
@@ -789,10 +812,9 @@ class WCV_Dashboard_Controller {
      */
     public static function check_completed_steps() {
         $vendor_id               = get_current_user_id();
-        $is_pro_active           = is_wcv_pro_active();
         $is_allow_submit_product = wc_string_to_bool( get_option( 'wcvendors_capability_products_enabled', 'no' ) );
-        $is_disable_product_cap  = wc_string_to_bool( get_option( 'wcvendors_product_management_cap', 'no' ) ) && $is_pro_active;
-        $is_disbale_settings_cap = wc_string_to_bool( get_option( 'wcvendors_settings_management_cap', 'no' ) ) && $is_pro_active;
+        $is_disable_product_cap  = wc_string_to_bool( get_option( 'wcvendors_product_management_cap', 'no' ) ) && self::$is_pro_active;
+        $is_disbale_settings_cap = wc_string_to_bool( get_option( 'wcvendors_settings_management_cap', 'no' ) ) && self::$is_pro_active;
         $vendor_products         = get_posts(
             array(
                 'post_type'      => 'product',
@@ -818,10 +840,10 @@ class WCV_Dashboard_Controller {
 
         $is_product_completed = ! empty( $vendor_products );
         $is_payout_completed  = $is_set_payout_method || $is_connect_to_stripe;
-        $is_social_completed  = ! empty( array_filter( $socials_settings ) ) || ! $is_pro_active;
+        $is_social_completed  = ! empty( array_filter( $socials_settings ) ) || ! self::$is_pro_active;
         $is_store_completed   = ! empty( $shop_desc );
 
-        if ( $is_pro_active ) {
+        if ( self::$is_pro_active ) {
             $is_store_completed = ( ! empty( $store_banner_id ) || ! empty( $store_icon ) ) || $is_store_completed;
         }
 

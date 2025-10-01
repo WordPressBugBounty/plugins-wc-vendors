@@ -358,6 +358,7 @@ class WC_Vendors_Bootstrap {
         include_once WCV_PLUGIN_DIR . 'classes/includes/class-wcv-order-cli.php';
         include_once WCV_PLUGIN_DIR . 'classes/includes/class-wcv-seo-compatibility.php';
         include_once WCV_PLUGIN_DIR . 'classes/includes/class-wcv-product-dropdown-walker.php';
+        include_once WCV_PLUGIN_DIR . 'classes/includes/class-wcv-product-category-multilevel-walker.php';
         include_once WCV_PLUGIN_DIR . 'classes/includes/class-wcv-utils.php';
         include_once WCV_PLUGIN_DIR . 'classes/front/class-wcv-form-helper.php';
         include_once WCV_PLUGIN_DIR . 'classes/front/class-wcv-product-controller.php';
@@ -418,7 +419,6 @@ class WC_Vendors_Bootstrap {
             include_once WCV_PLUGIN_DIR . 'classes/front/class-wcv-public-assets.php';
 
             new WCV_Orders();
-            new WCV_Vendor_Dashboard();
             new WCV_Vendor_Signup();
             new WCV_Vendor_Shop();
             new WCV_Vendor_Cart();
@@ -431,6 +431,7 @@ class WC_Vendors_Bootstrap {
             include_once WC()->plugin_path() . '/includes/admin/wc-meta-box-functions.php';
         }
 
+        new WCV_Vendor_Dashboard();
         new WCV_Shipping();
         new WCV_Cron();
         new WCV_Commission();
@@ -561,7 +562,7 @@ class WC_Vendors_Bootstrap {
      */
     public function add_rewrite_endpoint() {
         add_rewrite_endpoint( 'become-a-vendor', EP_PAGES );
-        $this->flush_rewrite_rules();
+        $this->maybe_flush_permalinks();
     }
 
     /**

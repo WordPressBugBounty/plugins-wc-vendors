@@ -8,11 +8,11 @@
  * Author URI:           https://www.wcvendors.com
  * GitHub Plugin URI:    https://github.com/wcvendors/wcvendors
  *
- * Version:              2.6.1
+ * Version:              2.6.2
  * Requires at least:    5.3.0
  * Tested up to:         6.8
  * WC requires at least: 5.0
- * WC tested up to:      10.1
+ * WC tested up to:      10.2
  *
  * Text Domain:          wc-vendors
  * Domain Path:          /languages/
@@ -139,7 +139,7 @@ class WC_Vendors {
         }
 
         if ( ! defined( 'WCV_VERSION' ) ) {
-            define( 'WCV_VERSION', '2.6.1' );
+            define( 'WCV_VERSION', '2.6.2' );
         }
 
         if ( ! defined( 'WCV_TEMPLATE_BASE' ) ) {
@@ -248,5 +248,6 @@ function check_wcv_version() {
     if ( version_compare( $plugin_version, $db_version, '>' ) ) {
         WCV_Activate::maybe_create_marketplace_report_cache_table();
         WCV_Activate::maybe_create_marketplace_report_cache();
+        flush_rewrite_rules();
     }
 }

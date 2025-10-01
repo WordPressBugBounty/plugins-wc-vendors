@@ -3,7 +3,7 @@ Contributors: jkohlbach, RymeraWebCo, Rymera01, smub
 Tags: multivendor, marketplace, multi vendor, product vendors, woocommerce commissions
 Requires at least: 5.5.0
 Tested up to: 6.8
-Stable tag: 2.6.1
+Stable tag: 2.6.2
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -299,6 +299,19 @@ You can report security bugs through the Patchstack Vulnerability Disclosure Pro
 
 == Changelog ==
 
+= Version 2.6.2 - 26th September 2025 =
+ * Feature: Group subcategories under parent categories in category filter dropdown
+ * Improvement: Enhanced admin setting field custom attributes rendering
+ * Bug Fix: WC Vendors overriding RankMath metadata on non-vendor pages (Newsfeed, Forums, Courses)
+ * Bug Fix: Inventory tab disabled in WCVP stays hidden even after deactivating WCVP
+ * Bug Fix: Vendors allowed to create custom tags in Marketplace and Pro
+ * Bug Fix: Zero commissions are not automatically marked as Paid
+ * Bug Fix: Missing Inventory tab for external product type and fixed SKU and tax fields not being hidden properly
+ * Bug Fix: Cancelled status filter missing in vendor dashboard Orders page
+ * Bug Fix: Create Missing Vendor Sub-orders Tool not working properly
+ * Bug Fix: The Add your socials step appears in the onboarding setup progress
+ * Bug Fix: Vendor Product Edit Button links to WP Admin instead of Vendor Dashboard
+
 = Version 2.6.1 - 26th August 2025 =
  * Improvement: Options to allow vendor to review or purchase their own products 
  * Improvement: Ensure vendor assignment is preserved during partial imports via woocommerce tool
@@ -341,50 +354,5 @@ You can report security bugs through the Patchstack Vulnerability Disclosure Pro
  * Bug Fix: General box should hide when Variable product type selected
  * Bug Fix: Difficulties in Adding Variation Images
  * Bug Fix: Setup Wizard: Can not click on the Next button on small screen
-
-= Version 2.5.7 - 23rd May 2025 =
- * Improvement: Update language files
- * Improvement: Vendor dashboard UI
- * Improvement: Revamp WC Vendors Setup Wizard
- * Improvement: Add badge count and smooth date range transition on Marketplace Dashboard
- * Bug Fix: Fatal error on All Vendors Page due to invalid Vendor ID
- * Bug Fix: Remove user from vendor list if store is inactive
- * Bug Fix: Missing Product qty field in simple product edit template
- * Bug Fix: Incorrect Link for Orders and Ratings Buttons on Vendor Dashboard
- * Bug Fix: Function WC_Order_Data_Store_CPT query was called incorrectly
- * Bug Fix: Fatal error on Vendor Dashboard – division type mismatch
- * Bug Fix: Admin reports SQL Injection Vulnerability
- * Bug Fix: Update Shipping Tracking redirecting to the wrong page
- * Bug Fix: Product Search not working in Vendor Dashboard
- * Bug Fix: All Vendors page breaking due to 3rd party plugin database capabilities
-
-= Version 2.5.6 - 28th April 2025 =
- * Feature: Marketplace Admin Dashboard
- * Improvement: Review Request
- * Improvement: Marketplace Backend Dashboard optimise
- * Bug Fix: Undefined Array Key importing
- * Bug Fix: An uncaught error occurs when all product types are hidden
- * Bug Fix: Hidden Categories field causes product categories to be removed on save
- * Bug Fix: Restricted Product Types Still Visible in Dropdown on Vendor Dashboard Product Tab
- * Bug Fix: Product images translation
- * Bug Fix: When Gallery display is Disabled it breaks the product editor form
-
-= Version 2.5.5.1 - 9th April 2025 =
- * Improvement: Update WooCommerce version
-
-= Version 2.5.5 - 31th March 2025 =
- * Improvement: Add support for multiple selects for Vendor Dashboard Products
- * Improvement: Add view buttons to the order section in the vendor dashboard
- * Bug Fix: When Gallery display is Disabled, it breaks the product editor form
- * Bug Fix: Store Phone Field Flag Displays [object Object] Text
- * Bug Fix: Awaiting shipping counter not updating and mismatch with orders report
- * Bug Fix: Partially refunded orders only shows the View Order option
- * Bug Fix: Vendor Search Failing When Store Name Has Single Quote or Apostrophe
- * Bug Fix: Duplicate Notes Or Shipping Tracking Info After Form Submission and Page Refresh
- * Bug Fix: Store Settings template override not working as intended
- * Bug Fix: Email ID Conflict
-
-= Version 2.5.4.1 - 14th March 2025 =
- * Bug Fix: Fix the critical error on product edit
 
 

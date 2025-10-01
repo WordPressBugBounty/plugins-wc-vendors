@@ -338,61 +338,45 @@ const buildCustomSelect = select => {
   placeHolderText.className = 'wcv-select-placeholder';
   selectContainer.className = 'wcv-select-container';
   selectList.className = 'wcv-select-list';
+
+  // Check if this is a hierarchical select (has data-depth attributes)
+  const isHierarchical = Array.from(select.options).some(option =>
+    option.hasAttribute('data-depth')
+  );
+
+  if (isHierarchical) {
+    selectContainer.classList.add('wcv-hierarchical-select');
+    selectList.classList.add('wcv-hierarchical-list');
+  }
+
   selectContainer.appendChild(placeHolderText);
   selectContainer.appendChild(selectList);
 
   const options = select.options;
-  for (let i = 0; i < options.length; i++) {
-    const option = options[i];
-    const optionItem = document.createElement('li');
-    optionItem.className = 'wcv-select-item';
-    const optionText = document.createElement('span');
-    optionText.innerHTML = option.innerText;
-    optionItem.appendChild(optionText);
-    optionItem.style.textAlign = textAlignment;
-    optionItem.setAttribute('data-value', option.value);
-    optionItem.setAttribute('data-index', i);
-    if (option.selected && option.value !== '') {
-      optionItem.classList.add('selected');
-    }
-    optionItem.addEventListener('click', function() {
-      const selectedIndex = this.getAttribute('data-index');
-      const selectedOption = options[selectedIndex];
-      if (!isMultiple) {
-        for (let i = 0; i < options.length; i++) {
-          if (i != selectedIndex) {
-            options[i].selected = false;
-            selectList.children[i].classList.remove('selected');
-          }
-        }
-        selectedOption.selected = true;
-        optionItem.classList.add('selected');
-      } else {
-        selectedOption.selected = selectedOption.selected ? false : true;
-        optionItem.classList.toggle('selected');
-      }
 
-      if ('' === selectedOption.value) {
-        for (let i = 0; i < options.length; i++) {
-          if (i != selectedIndex) {
-            options[i].selected = false;
-            selectList.children[i].classList.remove('selected');
-          }
-        }
-      }
-      placeHolderText.innerHTML = getPlaceHolderText(select);
-      select.dispatchEvent(new Event('change'));
-      if (autoSubmit) {
-        const form = select.closest('form');
-        form.submit();
-      }
-    });
-    selectList.appendChild(optionItem);
+  if (isHierarchical) {
+    buildHierarchicalOptions(
+      selectList,
+      options,
+      isMultiple,
+      autoSubmit,
+      placeHolderText,
+      select,
+      textAlignment
+    );
+  } else {
+    buildFlatOptions(
+      selectList,
+      options,
+      isMultiple,
+      autoSubmit,
+      placeHolderText,
+      select,
+      textAlignment
+    );
   }
 
   select.parentNode.insertBefore(selectContainer, select);
-
-  //selectContainer.style.width = width + 'px';
 
   selectContainer.addEventListener('click', function() {
     selectContainer.classList.toggle('show');
@@ -410,6 +394,296 @@ const buildCustomSelect = select => {
       selectList.classList.remove('show');
     }
   });
+};
+
+// Build hierarchical options with parent-child relationships
+const buildHierarchicalOptions = (
+  selectList,
+  options,
+  isMultiple,
+  autoSubmit,
+  placeHolderText,
+  select,
+  textAlignment
+) => {
+  const hierarchyMap = new Map();
+  const parentItems = new Map();
+
+  // First pass: create all option items and map hierarchy
+  for (let i = 0; i < options.length; i++) {
+    const option = options[i];
+    const depth = parseInt(option.getAttribute('data-depth') || '0');
+    const parentId = option.getAttribute('data-parent') || '0';
+    const termId = option.getAttribute('data-term-id') || option.value;
+
+    const optionItem = createOptionItem(
+      option,
+      i,
+      isMultiple,
+      autoSubmit,
+      placeHolderText,
+      select,
+      textAlignment
+    );
+
+    // Add hierarchy classes
+    optionItem.classList.add(`wcv-depth-${depth}`);
+    optionItem.setAttribute('data-depth', depth);
+    optionItem.setAttribute('data-parent-id', parentId);
+    optionItem.setAttribute('data-term-id', termId);
+
+    // Store in hierarchy map
+    if (!hierarchyMap.has(parentId)) {
+      hierarchyMap.set(parentId, []);
+    }
+    hierarchyMap.set(termId, []);
+
+    if (depth === 0) {
+      // Root level item
+      selectList.appendChild(optionItem);
+      parentItems.set(termId, optionItem);
+    } else {
+      // Child item - will be added to parent later
+      hierarchyMap.get(parentId).push(optionItem);
+    }
+  }
+
+  // Second pass: create child lists and add collapse functionality recursively
+  const addCollapseFunctionalityRecursive = (parentItem, parentId) => {
+    const children = hierarchyMap.get(parentId);
+    if (children && children.length > 0) {
+      parentItem.classList.add('wcv-has-children');
+
+      // Create submenu container for collapse
+      const childList = document.createElement('ul');
+      childList.className = 'wcv-select-submenu wcv-collapse';
+
+      // Insert submenu after the parent item (not as child)
+      parentItem.parentNode.insertBefore(childList, parentItem.nextSibling);
+
+      // Add children to submenu and recursively handle their children
+      children.forEach(child => {
+        childList.appendChild(child);
+
+        // Recursively handle deeper levels
+        const childTermId = child.getAttribute('data-term-id');
+        addCollapseFunctionalityRecursive(child, childTermId);
+      });
+
+      // Add expand/collapse indicator
+      const parentTextSpan = parentItem.querySelector('span');
+      if (parentTextSpan) {
+        const indicator = document.createElement('span');
+        indicator.className = 'wcv-collapse-indicator';
+        indicator.innerHTML = '+';
+        parentTextSpan.appendChild(indicator);
+
+        // Add hover events for expand/collapse functionality
+        parentItem.addEventListener('mouseenter', function(e) {
+          // Expand on hover
+          childList.classList.add('expanded');
+          indicator.classList.add('expanded');
+          parentItem.classList.add('expanded');
+          indicator.innerHTML = '-';
+        });
+
+        parentItem.addEventListener('mouseleave', function(e) {
+          // Check if we're moving to a child element
+          const relatedTarget = e.relatedTarget;
+          if (
+            !relatedTarget ||
+            (!parentItem.contains(relatedTarget) &&
+              !childList.contains(relatedTarget))
+          ) {
+            // Collapse when leaving the parent item and not entering a child
+            childList.classList.remove('expanded');
+            indicator.classList.remove('expanded');
+            parentItem.classList.remove('expanded');
+            indicator.innerHTML = '+';
+
+            // Collapse any open children as well
+            const openChildren = childList.querySelectorAll(
+              '.wcv-select-submenu.expanded'
+            );
+            openChildren.forEach(openChild => {
+              openChild.classList.remove('expanded');
+              const childParent = openChild.previousElementSibling;
+              if (childParent) {
+                childParent.classList.remove('expanded');
+                const childIndicator = childParent.querySelector(
+                  '.wcv-collapse-indicator'
+                );
+                if (childIndicator) {
+                  childIndicator.classList.remove('expanded');
+                  childIndicator.innerHTML = '+';
+                }
+              }
+            });
+          }
+        });
+
+        // Also add hover events to the child list to maintain expansion
+        childList.addEventListener('mouseleave', function(e) {
+          const relatedTarget = e.relatedTarget;
+          if (
+            !relatedTarget ||
+            (!parentItem.contains(relatedTarget) &&
+              !childList.contains(relatedTarget))
+          ) {
+            // Collapse when leaving the child list and not entering the parent
+            childList.classList.remove('expanded');
+            indicator.classList.remove('expanded');
+            parentItem.classList.remove('expanded');
+
+            // Collapse any open children as well
+            const openChildren = childList.querySelectorAll(
+              '.wcv-select-submenu.expanded'
+            );
+            openChildren.forEach(openChild => {
+              openChild.classList.remove('expanded');
+              const childParent = openChild.previousElementSibling;
+              if (childParent) {
+                childParent.classList.remove('expanded');
+                const childIndicator = childParent.querySelector(
+                  '.wcv-collapse-indicator'
+                );
+                if (childIndicator) {
+                  childIndicator.classList.remove('expanded');
+                  childIndicator.innerHTML = '+';
+                }
+              }
+            });
+          }
+        });
+      }
+    }
+  };
+
+  // Apply collapse functionality to all root level items
+  parentItems.forEach((parentItem, parentId) => {
+    addCollapseFunctionalityRecursive(parentItem, parentId);
+  });
+};
+
+// Build flat options (original functionality)
+const buildFlatOptions = (
+  selectList,
+  options,
+  isMultiple,
+  autoSubmit,
+  placeHolderText,
+  select,
+  textAlignment
+) => {
+  for (let i = 0; i < options.length; i++) {
+    const option = options[i];
+    const optionItem = createOptionItem(
+      option,
+      i,
+      isMultiple,
+      autoSubmit,
+      placeHolderText,
+      select,
+      textAlignment
+    );
+    selectList.appendChild(optionItem);
+  }
+};
+
+// Create individual option item
+const createOptionItem = (
+  option,
+  index,
+  isMultiple,
+  autoSubmit,
+  placeHolderText,
+  select,
+  textAlignment
+) => {
+  const optionItem = document.createElement('li');
+  optionItem.className = 'wcv-select-item';
+
+  // Copy classes from original option
+  if (option.className) {
+    optionItem.classList.add(...option.className.split(' '));
+  }
+
+  const optionText = document.createElement('span');
+
+  let displayText = option.innerText;
+
+  displayText = displayText.replace(/^\d+\s+levels?\s+deep\s+/g, '');
+
+  optionText.innerHTML = displayText;
+  optionItem.appendChild(optionText);
+  optionItem.style.textAlign = textAlignment;
+  optionItem.setAttribute('data-value', option.value);
+  optionItem.setAttribute('data-index', index);
+
+  if (option.selected && option.value !== '') {
+    optionItem.classList.add('selected');
+  }
+
+  optionItem.addEventListener('click', function(e) {
+    e.stopPropagation();
+
+    const selectedIndex = this.getAttribute('data-index');
+    const selectedOption = select.options[selectedIndex];
+
+    if (!isMultiple) {
+      // Clear all selections
+      for (let i = 0; i < select.options.length; i++) {
+        if (i != selectedIndex) {
+          select.options[i].selected = false;
+          const otherItems = select.parentNode.querySelectorAll(
+            `[data-index="${i}"]`
+          );
+          otherItems.forEach(item => item.classList.remove('selected'));
+        }
+      }
+      selectedOption.selected = true;
+      optionItem.classList.add('selected');
+    } else {
+      selectedOption.selected = !selectedOption.selected;
+      optionItem.classList.toggle('selected');
+    }
+
+    if ('' === selectedOption.value) {
+      for (let i = 0; i < select.options.length; i++) {
+        if (i != selectedIndex) {
+          select.options[i].selected = false;
+          const otherItems = select.parentNode.querySelectorAll(
+            `[data-index="${i}"]`
+          );
+          otherItems.forEach(item => item.classList.remove('selected'));
+        }
+      }
+    }
+
+    placeHolderText.innerHTML = getPlaceHolderText(select);
+    select.dispatchEvent(new Event('change'));
+
+    // Close the dropdown after selection (for single select, always close; for multiple select, keep open)
+    if (!isMultiple) {
+      const selectContainer = select.parentNode.querySelector(
+        '.wcv-select-container'
+      );
+      const selectList = selectContainer.querySelector('.wcv-select-list');
+      if (selectContainer && selectList) {
+        selectContainer.classList.remove('show');
+        selectList.classList.remove('show');
+      }
+    }
+
+    if (autoSubmit) {
+      const form = select.closest('form');
+      if (form) {
+        form.submit();
+      }
+    }
+  });
+
+  return optionItem;
 };
 
 function showTooltip(event) {

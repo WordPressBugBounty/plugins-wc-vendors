@@ -447,11 +447,13 @@ class WCV_Commission {
 
         $table = $wpdb->prefix . 'pv_commission';
 
-        // Insert the time and default status 'due'.
+        // Insert the time before applying filter.
         foreach ( $orders as $key => $order ) {
             $orders[ $key ]['time']   = $order['time'];
-            $orders[ $key ]['status'] = ( 0 === $order['total_due'] ) ? 'paid' : 'due';
+            $orders[ $key ]['status'] = ( 0.0 === (float) $order['total_due'] ) ? 'paid' : 'due';
         }
+
+        $orders = apply_filters( 'wcvendors_insert_new_commission', $orders );
 
         foreach ( $orders as $key => $order ) {
 

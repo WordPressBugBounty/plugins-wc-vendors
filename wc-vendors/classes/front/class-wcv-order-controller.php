@@ -2106,6 +2106,10 @@ class WCV_Order_Controller {
                 'count' => 0,
                 'label' => __( 'Refunded', 'wc-vendors' ),
             ),
+            'cancelled'        => array(
+                'count' => 0,
+                'label' => __( 'Cancelled', 'wc-vendors' ),
+            ),
         );
 
         if ( empty( $this->_all_orders['all_order_ids'] ) ) {
@@ -2139,6 +2143,9 @@ class WCV_Order_Controller {
                 case 'refunded':
                     ++$orders_count['refunded']['count'];
                     break;
+                case 'cancelled':
+                    ++$orders_count['cancelled']['count'];
+                    break;
             }
         }
 
@@ -2153,7 +2160,7 @@ class WCV_Order_Controller {
 
             $shippers = (array) $parent_order->get_meta( 'wc_pv_shipped', true );
 
-            if ( in_array( $vendor_id, $shippers, true ) ) {
+            if ( in_array( $vendor_id, $shippers, true ) || $parent_order->get_status() === 'cancelled' ) {
                 --$orders_count['awating_shipping']['count'];
             }
         }
@@ -2215,10 +2222,11 @@ class WCV_Order_Controller {
 
             $vendor_id = get_current_user_id();
             foreach ( $orders as $order ) {
-                $vendor_order = $order->order;
-                $parent_order = $vendor_order->get_parent_order();
-                $shippers     = (array) $parent_order->get_meta( 'wc_pv_shipped', true );
-                if ( ! in_array( $vendor_id, $shippers, true ) ) {
+                $vendor_order  = $order->order;
+                $parent_order  = $vendor_order->get_parent_order();
+                $parent_status = $parent_order->get_status();
+                $shippers      = (array) $parent_order->get_meta( 'wc_pv_shipped', true );
+                if ( ! in_array( $vendor_id, $shippers, true ) && 'cancelled' !== $parent_status ) {
                     $filtered_orders[] = $order;
                 }
             }
@@ -2239,20 +2247,22 @@ class WCV_Order_Controller {
         switch ( $shipping_status ) {
             case 'awating_shipping':
                 foreach ( $orders as $order ) {
-                    $vendor_order = $order->order;
-                    $parent_order = $vendor_order->get_parent_order();
-                    $shippers     = (array) $parent_order->get_meta( 'wc_pv_shipped', true );
-                    if ( ! in_array( $vendor_id, $shippers, true ) ) {
+                    $vendor_order  = $order->order;
+                    $parent_order  = $vendor_order->get_parent_order();
+                    $parent_status = $parent_order->get_status();
+                    $shippers      = (array) $parent_order->get_meta( 'wc_pv_shipped', true );
+                    if ( ! in_array( $vendor_id, $shippers, true ) && 'cancelled' !== $parent_status ) {
                         $filtered_orders[] = $order;
                     }
                 }
                 break;
             case 'shipped':
                 foreach ( $orders as $order ) {
-                    $vendor_order = $order->order;
-                    $parent_order = $vendor_order->get_parent_order();
-                    $shippers     = (array) $parent_order->get_meta( 'wc_pv_shipped', true );
-                    if ( in_array( $vendor_id, $shippers, true ) ) {
+                    $vendor_order  = $order->order;
+                    $parent_order  = $vendor_order->get_parent_order();
+                    $parent_status = $parent_order->get_status();
+                    $shippers      = (array) $parent_order->get_meta( 'wc_pv_shipped', true );
+                    if ( in_array( $vendor_id, $shippers, true ) && 'cancelled' !== $parent_status ) {
                         $filtered_orders[] = $order;
                     }
                 }

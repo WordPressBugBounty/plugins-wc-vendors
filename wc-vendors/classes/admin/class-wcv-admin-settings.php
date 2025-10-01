@@ -920,9 +920,9 @@ class WCVendors_Admin_Settings extends WC_Admin_Settings {
         $htmlAttributes = '';
 
         foreach ( $custom_attributes as $key => $value ) {
-            $htmlAttributes .= sprintf( '%s=%s ', htmlspecialchars( $key, ENT_QUOTES ), htmlspecialchars( $value, ENT_QUOTES ) );
+            $htmlAttributes .= sprintf( '%s="%s" ', htmlspecialchars( $key, ENT_QUOTES ), htmlspecialchars( $value, ENT_QUOTES ) );
         }
 
-        echo esc_attr( trim( $htmlAttributes ) );
+        echo trim( $htmlAttributes ); //phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
     }
 }

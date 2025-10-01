@@ -118,18 +118,19 @@ class WCV_Product_Form {
      *  Output product description
      *
      * @since    2.5.2
+     * @since    2.6.2 - Updated to use wcv_get_pro_option for pro feature checks
      *
      * @param     int    $post_id post_id for this meta if any.
      * @param     string $product_description product description.
      */
     public static function description( $post_id, $product_description ) {
 
-        if ( 'yes' !== get_option( 'wcvendors_hide_product_basic_description', 'no' ) ) {
+        if ( ! wc_string_to_bool( wcv_get_pro_option( 'wcvendors_hide_product_basic_description', 'no' ) ) ) {
 
-            $required     = wc_string_to_bool( get_option( 'wcvendors_required_product_basic_description', 'no' ) );
-            $enable_media = wc_string_to_bool( get_option( 'wcvendors_allow_product_description_media', 'no' ) );
+            $required     = wc_string_to_bool( wcv_get_pro_option( 'wcvendors_required_product_basic_description', 'no' ) );
+            $enable_media = wc_string_to_bool( wcv_get_pro_option( 'wcvendors_allow_product_description_media', 'no' ) );
 
-            if ( wc_string_to_bool( get_option( 'wcvendors_allow_product_html', 'no' ) ) ) {
+            if ( wc_string_to_bool( wcv_get_pro_option( 'wcvendors_allow_product_html', 'no' ) ) ) {
 
                 if ( $required ) {
                     add_filter( 'the_editor', array( WCV_Store_Form::class, 'wp_editor_required' ) );
@@ -193,18 +194,19 @@ class WCV_Product_Form {
      *  Output product short_description
      *
      * @since    2.5.2
+     * @since    2.6.2 - Updated to use wcv_get_pro_option for pro feature checks
      *
      * @param     int    $post_id post_id for this meta if any.
      * @param     string $product_short_description product short_description.
      */
     public static function short_description( $post_id, $product_short_description ) {
 
-        if ( 'yes' !== get_option( 'wcvendors_hide_product_basic_short_description', 'no' ) ) {
+        if ( ! wc_string_to_bool( wcv_get_pro_option( 'wcvendors_hide_product_basic_short_description', 'no' ) ) ) {
 
-            $required     = wc_string_to_bool( get_option( 'wcvendors_required_product_basic_short_description', 'no' ) );
-            $enable_media = wc_string_to_bool( get_option( 'wcvendors_allow_product_description_media', 'no' ) );
+            $required     = wc_string_to_bool( wcv_get_pro_option( 'wcvendors_required_product_basic_short_description', 'no' ) );
+            $enable_media = wc_string_to_bool( wcv_get_pro_option( 'wcvendors_allow_product_description_media', 'no' ) );
 
-            if ( wc_string_to_bool( get_option( 'wcvendors_allow_product_html', 'no' ) ) ) {
+            if ( wc_string_to_bool( wcv_get_pro_option( 'wcvendors_allow_product_html', 'no' ) ) ) {
 
                 if ( $required ) {
                     add_filter( 'the_editor', array( WCV_Store_Form::class, 'wp_editor_required' ) );
@@ -274,8 +276,8 @@ class WCV_Product_Form {
      */
     public static function save_button( $button_text ) {
 
-        $can_edit        = 'yes' === get_option( 'wcvendors_capability_products_edit', 'no' ) ? true : false;
-        $can_submit_live = 'yes' === get_option( 'wcvendors_capability_products_live', 'no' ) ? true : false;
+        $can_edit        = wc_string_to_bool( get_option( 'wcvendors_capability_products_edit', 'no' ) );
+        $can_submit_live = wc_string_to_bool( get_option( 'wcvendors_capability_products_live', 'no' ) );
 
         if ( ! $can_submit_live && ! $can_edit ) {
             $button_text = __( 'Save Pending', 'wc-vendors' );
@@ -318,17 +320,18 @@ class WCV_Product_Form {
      *  Output product categories
      *
      * @since    2.5.2
+     * @since    2.6.2 - Updated to use wcv_get_pro_option for pro feature checks
      *
      * @param     int  $post_id  post_id for this meta if any.
      * @param     bool $multiple allow mupltiple selection.
      */
     public static function categories( $post_id, $multiple = false ) { //phpcs:ignore
 
-        if ( 'yes' !== get_option( 'wcvendors_hide_product_basic_categories', 'no' ) ) {
+        if ( ! wc_string_to_bool( wcv_get_pro_option( 'wcvendors_hide_product_basic_categories', 'no' ) ) ) {
 
-            if ( get_option( 'wcvendors_category_display', 'select' ) === 'select' ) {
+            if ( wcv_get_pro_option( 'wcvendors_category_display', 'select' ) === 'select' ) {
                 self::categories_dropdown( $post_id, true );
-            } elseif ( get_option( 'wcvendors_category_display', 'select' ) === 'single_select' ) {
+            } elseif ( wcv_get_pro_option( 'wcvendors_category_display', 'select' ) === 'single_select' ) {
                 self::categories_dropdown( $post_id, false );
             } elseif ( is_wcv_pro_active() ) {
                 self::categories_checklist( $post_id );
@@ -342,6 +345,7 @@ class WCV_Product_Form {
      *  Output product categories drop down
      *
      * @since    2.5.2
+     * @since    2.6.2 - Updated to use wcv_get_pro_option for pro feature checks
      * @version  2.5.2
      *
      * @param     int  $post_id   post_id for this meta if any.
@@ -349,14 +353,14 @@ class WCV_Product_Form {
      */
     public static function categories_dropdown( $post_id, $multiple = false ) {
 
-        if ( 'yes' !== get_option( 'wcvendors_hide_product_basic_categories', 'no' ) ) {
+        if ( ! wc_string_to_bool( wcv_get_pro_option( 'wcvendors_hide_product_basic_categories', 'no' ) ) ) {
 
-            $custom_attributes = 'yes' === get_option( 'wcvendors_required_product_basic_categories', 'no' ) ? array(
+            $custom_attributes = wc_string_to_bool( wcv_get_pro_option( 'wcvendors_required_product_basic_categories', 'no' ) ) ? array(
                 'required'                   => '',
                 'data-parsley-error-message' => __( 'Please select a category.', 'wc-vendors' ),
             ) : array();
 
-            if ( $multiple && $category_limit = get_option( 'wcvendors_category_limit', '' ) ) { //phpcs:ignore
+            if ( $multiple && $category_limit = wcv_get_pro_option( 'wcvendors_category_limit', '' ) ) { //phpcs:ignore
                 $custom_attributes['data-parsley-maxcheck'] = $category_limit;
             }
 
@@ -411,15 +415,16 @@ class WCV_Product_Form {
      *  Output product categories check list
      *
      * @since    2.5.2
+     * @since    2.6.2 - Updated to use wcv_get_pro_option for pro feature checks
      *
      * @param     int $post_id post_id for this meta if any.
      */
     public static function categories_checklist( $post_id ) {
 
-        if ( 'yes' !== get_option( 'wcvendors_hide_product_basic_categories', 'no' ) ) {
+        if ( ! wc_string_to_bool( wcv_get_pro_option( 'wcvendors_hide_product_basic_categories', 'no' ) ) ) {
 
             $exclude              = array();
-            $hide_categories_list = get_option( 'wcvendors_hide_categories_list', '' );
+            $hide_categories_list = wcv_get_pro_option( 'wcvendors_hide_categories_list', '' );
 
             if ( ! empty( $hide_categories_list ) ) {
                 $exclude = explode( ',', str_replace( ' ', '', $hide_categories_list ) );
@@ -444,6 +449,7 @@ class WCV_Product_Form {
      * DEPRECATED This function has been replaced - Output a woocommerce attribute selects
      *
      * @since      2.5.2
+     * @since      2.6.2 - Updated to use wcv_get_pro_option for pro feature checks
      *
      * @param     int  $post_id  post_id for this meta if any.
      * @param     bool $multiple allow mupltiple selection.
@@ -452,7 +458,7 @@ class WCV_Product_Form {
      */
     public static function attributes( $post_id, $multiple = false ) { //phpcs:ignore
 
-        if ( 'yes' !== get_option( 'wcvendors_hide_product_basic_attributes', 'no' ) ) {
+        if ( ! wc_string_to_bool( wcv_get_pro_option( 'wcvendors_hide_product_basic_attributes', 'no' ) ) ) {
 
             // Array of defined attribute taxonomies.
             $attribute_taxonomies = wc_get_attribute_taxonomies();
@@ -466,7 +472,7 @@ class WCV_Product_Form {
 
                 foreach ( $attribute_taxonomies as $product_attribute ) {
 
-                    if ( in_array( $product_attribute->attribute_id, explode( ',', get_option( 'wcvendors_hide_attributes_list', '' ) ) ) ) { //phpcs:ignore
+                    if ( in_array( $product_attribute->attribute_id, explode( ',', wcv_get_pro_option( 'wcvendors_hide_attributes_list', '' ) ) ) ) { //phpcs:ignore
                         continue;
                     }
 
@@ -524,15 +530,18 @@ class WCV_Product_Form {
      *  Output product tags multi select
      *
      * @since    2.5.2
+     * @since    2.6.2 - Updated to use wcv_get_pro_option for pro feature checks
      *
      * @param     int  $post_id  post_id for this meta if any.
      * @param     bool $multiple allow mupltiple selection.
      */
     public static function tags( $post_id, $multiple = false ) { //phpcs:ignore
 
-        if ( wc_string_to_bool( get_option( 'wcvendors_hide_product_basic_tags', 'no' ) ) ) {
+        if ( wc_string_to_bool( wcv_get_pro_option( 'wcvendors_hide_product_basic_tags', 'no' ) ) ) {
             return;
         }
+
+        $allow_create_tags = wc_string_to_bool( get_option( 'wcvendors_capability_create_product_tags', 'yes' ) );
 
         $tags    = wp_get_post_terms( $post_id, 'product_tag' );
         $tag_ids = array();
@@ -541,7 +550,7 @@ class WCV_Product_Form {
             $tag_ids[ $tag->term_id ] = wp_kses_post( html_entity_decode( $tag->name ) );
         }
 
-        $required_field = 'yes' === get_option( 'wcvendors_required_product_basic_tags', 'no' ) ? array(
+        $required_field = wc_string_to_bool( wcv_get_pro_option( 'wcvendors_required_product_basic_tags', 'no' ) ) ? array(
             'required'                   => '',
             'data-parsley-error-message' => __( 'Please select a tag.', 'wc-vendors' ),
         ) : array();
@@ -549,15 +558,15 @@ class WCV_Product_Form {
         $custom_attributes = array(
             'data-placeholder' => __( 'Search or add a tag&hellip;', 'wc-vendors' ),
             'data-action'      => 'wcv_json_search_tags',
-            'data-tags'        => 'true',
+            'data-tags'        => $allow_create_tags ? 'true' : 'false',
         );
 
-        $tag_limit = get_option( 'wcvendors_tag_limit', '' );
+        $tag_limit = wcv_get_pro_option( 'wcvendors_tag_limit', '' );
         if ( '' !== $tag_limit ) {
             $custom_attributes['data-parsley-maxcheck'] = intval( $tag_limit );
         }
 
-        if ( get_option( 'wcvendors_tag_display', '' ) === 'select_limited' ) {
+        if ( wcv_get_pro_option( 'wcvendors_tag_display', '' ) === 'select_limited' ) {
             $custom_attributes['data-placeholder'] = __( 'Search for a tag&hellip;', 'wc-vendors' );
             $custom_attributes['data-tags']        = 'false';
         }
@@ -775,21 +784,22 @@ class WCV_Product_Form {
      *  Output product price
      *
      * @since    2.5.2
+     * @since    2.6.2 - Updated to use wcv_get_pro_option for pro feature checks
      *
      * @param     int $post_id post_id for this meta if any.
      */
     public static function price( $post_id ) {
 
-        if ( 'yes' !== get_option( 'wcvendors_hide_product_general_price', 'no' ) ) {
+        if ( ! wc_string_to_bool( wcv_get_pro_option( 'wcvendors_hide_product_general_price', 'no' ) ) ) {
 
-            $required_field    = 'yes' === get_option( 'wcvendors_required_product_general_price', 'no' ) ? array(
+            $required_field    = wc_string_to_bool( wcv_get_pro_option( 'wcvendors_required_product_general_price', 'no' ) ) ? array(
                 'required'                   => '',
                 'data-parsley-error-message' => __( 'Price is required', 'wc-vendors' ),
             ) : array();
             $custom_attributes = array();
             $custom_attributes = array_merge( $custom_attributes, $required_field );
 
-            $wrapper_start = 'yes' !== get_option( 'wcvendors_hide_product_general_sale_price', 'no' ) ? '<div class="wcv-cols-group wcv-horizontal-gutters"><div class="all-50 small-50">' : '<div class="all-100">';
+            $wrapper_start = ! wc_string_to_bool( wcv_get_pro_option( 'wcvendors_hide_product_general_sale_price', 'no' ) ) ? '<div class="wcv-cols-group wcv-horizontal-gutters"><div class="all-50 small-50">' : '<div class="all-100">';
 
             WCV_Form_Helper::input(
                 apply_filters(
@@ -813,14 +823,15 @@ class WCV_Product_Form {
      *  Output product sale price
      *
      * @since    2.5.2
+     * @since    2.6.2 - Updated to use wcv_get_pro_option for pro feature checks
      *
      * @param     int $post_id post_id for this meta if any.
      */
     public static function sale_price( $post_id ) {
 
-        if ( 'yes' !== get_option( 'wcvendors_hide_product_general_price', 'no' ) && 'yes' !== get_option( 'wcvendors_hide_product_general_sale_price', 'no' ) ) {
+        if ( ! wc_string_to_bool( wcv_get_pro_option( 'wcvendors_hide_product_general_price', 'no' ) ) && ! wc_string_to_bool( wcv_get_pro_option( 'wcvendors_hide_product_general_sale_price', 'no' ) ) ) {
 
-            $required_field    = 'yes' === get_option( 'wcvendors_required_product_general_sale_price', 'no' ) ? array(
+            $required_field    = wc_string_to_bool( wcv_get_pro_option( 'wcvendors_required_product_general_sale_price', 'no' ) ) ? array(
                 'required'                   => '',
                 'data-parsley-error-message' => __( 'Sale price is required', 'wc-vendors' ),
             ) : array();
@@ -923,15 +934,16 @@ class WCV_Product_Form {
      *  Output downloadable files fields
      *
      * @since    2.5.2
+     * @since    2.6.2 - Updated to use wcv_get_pro_option for pro feature checks
      *
      * @param     int $post_id post_id for this meta if any.
      */
     public static function download_files( $post_id ) { //phpcs:ignore
 
-        if ( 'yes' !== get_option( 'wcvendors_hide_product_general_download_files', 'no' ) ) {
+        if ( ! wc_string_to_bool( wcv_get_pro_option( 'wcvendors_hide_product_general_download_files', 'no' ) ) ) {
 
-            $readonly          = get_option( 'wcvendors_hide_product_general_download_file_url', 'no' ) ? 'readonly' : '';
-            $file_display_type = get_option( 'wcvendors_file_display', '' );
+            $readonly          = wc_string_to_bool( wcv_get_pro_option( 'wcvendors_hide_product_general_download_file_url', 'no' ) ) ? 'readonly' : '';
+            $file_display_type = wcv_get_pro_option( 'wcvendors_file_display', '' );
 
             include_once wcv_deprecated_filter( 'wcvendors_pro_product_form_download_files_path', '2.5.2', 'wcvendors_product_form_download_files_path', 'partials/wcvendors-downloadable-files.php' );
         }
@@ -941,39 +953,43 @@ class WCV_Product_Form {
      *  Output downloadable files fields
      *
      * @since    2.5.2
+     * @since    2.6.2 - Updated to use wcv_get_pro_option for pro feature checks
      *
      * @param     int $post_id post_id for this meta if any.
      */
     public static function product_attributes( $post_id ) { //phpcs:ignore
 
-        if ( 'yes' !== get_option( 'wcvendors_hide_product_basic_attributes', 'no' ) ) {
+        if ( wc_string_to_bool( wcv_get_pro_option( 'wcvendors_hide_product_basic_attributes', 'no' ) ) ) {
 
-            $attribute_terms_allowed = wc_string_to_bool( get_option( 'wcvendors_allow_vendor_attribute_terms', 'no' ) ) && is_wcv_pro_active();
-
-            include_once wcv_deprecated_filter( 'wcvendors_pro_product_form_product_attributes_path', '2.5.2', 'wcvendors_product_form_product_attributes_path', 'partials/wcvendors-attributes.php' );
+            return;
         }
+
+        $attribute_terms_allowed = wc_string_to_bool( wcv_get_pro_option( 'wcvendors_allow_vendor_attribute_terms', 'no' ) );
+
+        include_once wcv_deprecated_filter( 'wcvendors_pro_product_form_product_attributes_path', '2.5.2', 'wcvendors_product_form_product_attributes_path', 'partials/wcvendors-attributes.php' );
     }
 
     /**
      *  Output product download limit
      *
      * @since    2.5.2
+     * @since    2.6.2 - Updated to use wcv_get_pro_option for pro feature checks
      *
      * @param     int $post_id post_id for this meta if any.
      */
     public static function download_limit( $post_id ) {
 
-        if ( 'yes' !== get_option( 'wcvendors_hide_product_general_download_files', 'no' ) && 'yes' !== get_option( 'wcvendors_hide_product_general_download_limit', 'no' ) ) {
+        if ( ! wc_string_to_bool( wcv_get_pro_option( 'wcvendors_hide_product_general_download_files', 'no' ) ) && ! wc_string_to_bool( wcv_get_pro_option( 'wcvendors_hide_product_general_download_limit', 'no' ) ) ) {
 
             $product           = ( is_numeric( $post_id ) ) ? wc_get_product( $post_id ) : null;
-            $required_field    = 'yes' === get_option( 'wcvendors_required_product_general_download_limit', 'no' ) ? array(
+            $required_field    = wc_string_to_bool( wcv_get_pro_option( 'wcvendors_required_product_general_download_limit', 'no' ) ) ? array(
                 'required'                   => '',
                 'data-parsley-error-message' => __( 'Download limit is required', 'wc-vendors' ),
             ) : array();
             $custom_attributes = array( 'data-parsley-decimal' => wc_get_price_decimal_separator() );
             $custom_attributes = array_merge( $custom_attributes, $required_field );
             $value             = ( is_a( $product, 'WC_Product' ) ) ? ( -1 === $product->get_download_limit( 'edit' ) ? '' : $product->get_download_limit( 'edit' ) ) : '';
-            $wrapper_start     = 'yes' === get_option( 'wcvendors_hide_product_general_download_expiry', 'no' ) ? '<div class="all-100">' : '<div class="wcv-cols-group wcv-horizontal-gutters"><div class="all-50 small-100">';
+            $wrapper_start     = wc_string_to_bool( wcv_get_pro_option( 'wcvendors_hide_product_general_download_expiry', 'no' ) ) ? '<div class="all-100">' : '<div class="wcv-cols-group wcv-horizontal-gutters"><div class="all-50 small-100">';
 
             // Download Limit.
             WCV_Form_Helper::input(
@@ -1001,23 +1017,24 @@ class WCV_Product_Form {
      *  Output product download expiry
      *
      * @since    2.5.2
+     * @since    2.6.2 - Updated to use wcv_get_pro_option for pro feature checks
      *
      * @param     int $post_id post_id for this meta if any.
      */
     public static function download_expiry( $post_id ) {
 
-        if ( 'yes' !== get_option( 'wcvendors_hide_product_general_download_files', 'no' ) && 'yes' !== get_option( 'wcvendors_hide_product_general_download_expiry', 'no' ) ) {
+        if ( ! wc_string_to_bool( wcv_get_pro_option( 'wcvendors_hide_product_general_download_files', 'no' ) ) && ! wc_string_to_bool( wcv_get_pro_option( 'wcvendors_hide_product_general_download_expiry', 'no' ) ) ) {
 
             $product           = ( is_numeric( $post_id ) ) ? wc_get_product( $post_id ) : null;
-            $required_field    = 'yes' === get_option( 'wcvendors_required_product_general_download_expiry', 'no' ) ? array(
+            $required_field    = wc_string_to_bool( wcv_get_pro_option( 'wcvendors_required_product_general_download_expiry', 'no' ) ) ? array(
                 'required'                   => '',
                 'data-parsley-error-message' => __( 'Download expiry is required.', 'wc-vendors' ),
             ) : array();
             $custom_attributes = array( 'data-parsley-decimal' => wc_get_price_decimal_separator() );
             $custom_attributes = array_merge( $custom_attributes, $required_field );
             $value             = ( is_a( $product, 'WC_Product' ) ) ? ( -1 === $product->get_download_expiry( 'edit' ) ? '' : $product->get_download_expiry( 'edit' ) ) : '';
-            $wrapper_start     = ( 'yes' !== get_option( 'wcvendors_hide_product_general_download_limit', 'no' ) ) ? '<div class="all-50 small-100">' : '<div class="all-100">';
-            $wrapper_end       = ( 'yes' !== get_option( 'wcvendors_hide_product_general_download_limit', 'no' ) ) ? '</div></div>' : '</div>';
+            $wrapper_start     = ! wc_string_to_bool( wcv_get_pro_option( 'wcvendors_hide_product_general_download_limit', 'no' ) ) ? '<div class="all-50 small-100">' : '<div class="all-100">';
+            $wrapper_end       = ! wc_string_to_bool( wcv_get_pro_option( 'wcvendors_hide_product_general_download_limit', 'no' ) ) ? '</div></div>' : '</div>';
 
             WCV_Form_Helper::input(
                 apply_filters(
@@ -1044,14 +1061,15 @@ class WCV_Product_Form {
      *  Output product download type
      *
      * @since    2.5.2
+     * @since    2.6.2 - Updated to use wcv_get_pro_option for pro feature checks
      *
      * @param     int $post_id post_id for this meta if any.
      */
     public static function download_type( $post_id ) {
 
-        if ( 'yes' !== get_option( 'wcvendors_hide_product_general_download_files', 'no' ) && 'yes' !== get_option( 'wcvendors_hide_product_general_download_type', 'no' ) ) {
+        if ( ! wc_string_to_bool( wcv_get_pro_option( 'wcvendors_hide_product_general_download_files', 'no' ) ) && ! wc_string_to_bool( wcv_get_pro_option( 'wcvendors_hide_product_general_download_type', 'no' ) ) ) {
 
-            $custom_attributes = 'yes' === get_option( 'wcvendors_required_product_general_download_type', 'no' ) ? array(
+            $custom_attributes = wc_string_to_bool( wcv_get_pro_option( 'wcvendors_required_product_general_download_type', 'no' ) ) ? array(
                 'required'                   => '',
                 'data-parsley-error-message' => __( 'Download type is required.', 'wc-vendors' ),
             ) : array();
@@ -1086,6 +1104,7 @@ class WCV_Product_Form {
      *  Output product sku
      *
      * @since    2.5.2
+     * @since    2.6.2 - Updated to use wcv_get_pro_option for pro feature checks
      *
      * @param     int $post_id post_id for this meta if any.
      */
@@ -1093,11 +1112,11 @@ class WCV_Product_Form {
 
         $hide_sku = wc_string_to_bool( get_option( 'wcvendors_capability_product_sku', 'no' ) );
 
-        if ( ! $hide_sku && ! wc_string_to_bool( get_option( 'wcvendors_hide_product_general_sku', 'no' ) ) ) {
+        if ( ! $hide_sku && ! wc_string_to_bool( wcv_get_pro_option( 'wcvendors_hide_product_general_sku', 'no' ) ) ) {
 
             if ( wc_product_sku_enabled() ) {
 
-                $custom_attributes = 'yes' === get_option( 'wcvendors_required_product_general_sku', 'no' ) ? array(
+                $custom_attributes = wc_string_to_bool( wcv_get_pro_option( 'wcvendors_required_product_general_sku', 'no' ) ) ? array(
                     'required'                   => '',
                     'data-parsley-error-message' => __( 'SKU is required.', 'wc-vendors' ),
                 ) : array();
@@ -1138,14 +1157,15 @@ class WCV_Product_Form {
      *  Output private listing checkbox
      *
      * @since    2.5.2
+     * @since    2.6.2 - Updated to use wcv_get_pro_option for pro feature checks
      *
      * @param     int $post_id post_id for this meta if any.
      */
     public static function private_listing( $post_id ) {
 
-        if ( 'yes' !== get_option( 'wcvendors_hide_product_general_private_listing', 'no' ) ) {
+        if ( ! wc_string_to_bool( wcv_get_pro_option( 'wcvendors_hide_product_general_private_listing', 'no' ) ) ) {
 
-            $custom_attributes = 'yes' === get_option( 'wcvendors_required_product_general_private_listing', 'no' ) ? array(
+            $custom_attributes = wc_string_to_bool( wcv_get_pro_option( 'wcvendors_required_product_general_private_listing', 'no' ) ) ? array(
                 'required'                   => '',
                 'data-parsley-error-message' => __( 'Private listing is required.', 'wc-vendors' ),
             ) : array();
@@ -1171,14 +1191,15 @@ class WCV_Product_Form {
      *  Output external url for external products
      *
      * @since    2.5.2
+     * @since    2.6.2 - Updated to use wcv_get_pro_option for pro feature checks
      *
      * @param     int $post_id post_id for this meta if any.
      */
     public static function external_url( $post_id ) {
 
-        if ( 'yes' !== get_option( 'wcvendors_hide_product_general_external_url', 'no' ) ) {
+        if ( ! wc_string_to_bool( wcv_get_pro_option( 'wcvendors_hide_product_general_external_url', 'no' ) ) ) {
 
-            $custom_attributes = get_option( 'wcvendors_required_product_general_external_url', '' ) ? array(
+            $custom_attributes = wc_string_to_bool( wcv_get_pro_option( 'wcvendors_required_product_general_external_url', 'no' ) ) ? array(
                 'required'                   => '',
                 'data-parsley-error-message' => __( 'External URL is required.', 'wc-vendors' ),
             ) : array();
@@ -1205,14 +1226,15 @@ class WCV_Product_Form {
      *  Output button text for external products
      *
      * @since    2.5.2
+     * @since    2.6.2 - Updated to use wcv_get_pro_option for pro feature checks
      *
      * @param     int $post_id post_id for this meta if any.
      */
     public static function button_text( $post_id ) {
 
-        if ( 'yes' !== get_option( 'wcvendors_hide_product_general_button_text', 'no' ) ) {
+        if ( ! wc_string_to_bool( wcv_get_pro_option( 'wcvendors_hide_product_general_button_text', 'no' ) ) ) {
 
-            $custom_attributes = 'yes' === get_option( 'wcvendors_required_product_general_button_text', 'no' ) ? array(
+            $custom_attributes = wc_string_to_bool( wcv_get_pro_option( 'wcvendors_required_product_general_button_text', 'no' ) ) ? array(
                 'required'                   => '',
                 'data-parsley-error-message' => __( 'Button text is required.', 'wc-vendors' ),
             ) : array();
@@ -1239,17 +1261,18 @@ class WCV_Product_Form {
      *  Output tax information
      *
      * @since    2.5.2
+     * @since    2.6.2 - Updated to use wcv_get_pro_option for pro feature checks
      *
      * @param     int $post_id post_id for this meta if any.
      */
     public static function tax( $post_id ) {
-        $hide_tax_field = wc_string_to_bool( get_option( 'wcvendors_capability_product_taxes', 'no' ) ) || wc_string_to_bool( get_option( 'wcvendors_hide_product_general_tax', 'no' ) );
+        $hide_tax_field = wc_string_to_bool( get_option( 'wcvendors_capability_product_taxes', 'no' ) ) || wc_string_to_bool( wcv_get_pro_option( 'wcvendors_hide_product_general_tax', 'no' ) );
 
         if ( ! $hide_tax_field ) {
 
             if ( wc_tax_enabled() ) {
 
-                $custom_attributes = 'yes' === get_option( 'wcvendors_required_product_general_tax', 'no' ) ? array(
+                $custom_attributes = wc_string_to_bool( wcv_get_pro_option( 'wcvendors_required_product_general_tax', 'no' ) ) ? array(
                     'required'                   => '',
                     'data-parsley-error-message' => __( 'Tax is required.', 'wc-vendors' ),
                 ) : array();
@@ -1340,14 +1363,15 @@ class WCV_Product_Form {
      *  Output manage stock
      *
      * @since    2.5.2
+     * @since    2.6.2 - Updated to use wcv_get_pro_option for pro feature checks
      *
      * @param     int $post_id post_id for this meta if any.
      */
     public static function manage_stock( $post_id ) {
 
-        if ( 'yes' !== get_option( 'wcvendors_hide_product_inventory_manage_inventory', 'no' ) ) {
+        if ( ! wc_string_to_bool( wcv_get_pro_option( 'wcvendors_hide_product_inventory_manage_inventory', 'no' ) ) ) {
 
-            $custom_attributes = wc_string_to_bool( get_option( 'wcvendors_required_product_inventory_manage_inventory', 'no' ) ) ? array(
+            $custom_attributes = wc_string_to_bool( wcv_get_pro_option( 'wcvendors_required_product_inventory_manage_inventory', 'no' ) ) ? array(
                 'required'                   => '',
                 'data-parsley-error-message' => __( 'Manage stock is required.', 'wc-vendors' ),
             ) : array();
@@ -1374,14 +1398,15 @@ class WCV_Product_Form {
      *  Output stock qty
      *
      * @since    2.5.2
+     * @since    2.6.2 - Updated to use wcv_get_pro_option for pro feature checks
      *
      * @param     int $post_id post_id for this meta if any.
      */
     public static function stock_qty( $post_id ) {
 
-        if ( 'yes' !== get_option( 'wcvendors_hide_product_inventory_manage_inventory', 'no' ) && 'yes' !== get_option( 'wcvendors_hide_product_inventory_stock_qty', 'no' ) ) {
+        if ( ! wc_string_to_bool( wcv_get_pro_option( 'wcvendors_hide_product_inventory_manage_inventory', 'no' ) ) && ! wc_string_to_bool( wcv_get_pro_option( 'wcvendors_hide_product_inventory_stock_qty', 'no' ) ) ) {
 
-            $custom_attributes = wc_string_to_bool( get_option( 'wcvendors_required_product_inventory_stock_qty', 'no' ) ) ? array(
+            $custom_attributes = wc_string_to_bool( wcv_get_pro_option( 'wcvendors_required_product_inventory_stock_qty', 'no' ) ) ? array(
                 'required'                   => '',
                 'data-parsley-error-message' => __( 'Stock QTY is required.', 'wc-vendors' ),
             ) : array();
@@ -1411,14 +1436,15 @@ class WCV_Product_Form {
      *  Output backorder select
      *
      * @since    2.5.2
+     * @since    2.6.2 - Updated to use wcv_get_pro_option for pro feature checks
      *
      * @param     int $post_id post_id for this meta if any.
      */
     public static function backorders( $post_id ) {
 
-        if ( 'yes' !== get_option( 'wcvendors_hide_product_inventory_manage_inventory', 'no' ) && 'yes' !== get_option( 'wcvendors_hide_product_inventory_backorders', 'no' ) ) {
+        if ( ! wc_string_to_bool( wcv_get_pro_option( 'wcvendors_hide_product_inventory_manage_inventory', 'no' ) ) && ! wc_string_to_bool( wcv_get_pro_option( 'wcvendors_hide_product_inventory_backorders', 'no' ) ) ) {
 
-            $custom_attributes = wc_string_to_bool( get_option( 'wcvendors_required_product_inventory_backorders', 'no' ) ) ? array(
+            $custom_attributes = wc_string_to_bool( wcv_get_pro_option( 'wcvendors_required_product_inventory_backorders', 'no' ) ) ? array(
                 'required'                   => '',
                 'data-parsley-error-message' => __( 'Allow backorders is required.', 'wc-vendors' ),
             ) : array();
@@ -1452,14 +1478,15 @@ class WCV_Product_Form {
      *  Output stock status
      *
      * @since    2.5.2
+     * @since    2.6.2 - Updated to use wcv_get_pro_option for pro feature checks
      *
      * @param     int $post_id post_id for this meta if any.
      */
     public static function stock_status( $post_id ) {
 
-        if ( 'yes' !== get_option( 'wcvendors_hide_product_inventory_manage_inventory', 'no' ) && 'yes' !== get_option( 'wcvendors_hide_product_inventory_stock_status', 'no' ) ) {
+        if ( ! wc_string_to_bool( wcv_get_pro_option( 'wcvendors_hide_product_inventory_manage_inventory', 'no' ) ) && ! wc_string_to_bool( wcv_get_pro_option( 'wcvendors_hide_product_inventory_stock_status', 'no' ) ) ) {
 
-            $custom_attributes = 'yes' !== get_option( 'wcvendors_required_product_inventory_stock_status', 'no' ) ? array(
+            $custom_attributes = ! wc_string_to_bool( wcv_get_pro_option( 'wcvendors_required_product_inventory_stock_status', 'no' ) ) ? array(
                 'required'                   => '',
                 'data-parsley-error-message' => __( 'Stock status is required.', 'wc-vendors' ),
             ) : array();
@@ -1492,14 +1519,15 @@ class WCV_Product_Form {
      *  Output sold individually checkbox
      *
      * @since    2.5.2
+     * @since    2.6.2 - Updated to use wcv_get_pro_option for pro feature checks
      *
      * @param     int $post_id post_id for this meta if any.
      */
     public static function sold_individually( $post_id ) {
 
-        if ( 'yes' !== get_option( 'wcvendors_hide_product_inventory_manage_inventory', 'no' ) && 'yes' !== get_option( 'wcvendors_hide_product_inventory_sold_individually', 'no' ) ) {
+            if ( ! wc_string_to_bool( wcv_get_pro_option( 'wcvendors_hide_product_inventory_manage_inventory', 'no' ) ) && ! wc_string_to_bool( wcv_get_pro_option( 'wcvendors_hide_product_inventory_sold_individually', 'no' ) ) ) {
 
-            $require_sold_individually = wc_string_to_bool( get_option( 'wcvendors_required_product_inventory_sold_individually', 'no' ) );
+            $require_sold_individually = wc_string_to_bool( wcv_get_pro_option( 'wcvendors_required_product_inventory_sold_individually', 'no' ) );
             $custom_attributes         = $require_sold_individually ? array(
                 'required'                   => '',
                 'data-parsley-error-message' => __( 'Sold individually is required.', 'wc-vendors' ),
@@ -1535,12 +1563,13 @@ class WCV_Product_Form {
      * @param int $post_id post_id for this meta if any.
      *
      * @since 2.5.2
+     * @since 2.6.2 - Updated to use wcv_get_pro_option for pro feature checks
      */
     public static function low_stock_threshold( $post_id ) {
 
-        if ( 'yes' !== get_option( 'wcvendors_hide_product_inventory_manage_inventory', 'no' ) && 'yes' !== get_option( 'wcvendors_hide_product_inventory_low_stock_threshold', 'no' ) ) {
+        if ( ! wc_string_to_bool( wcv_get_pro_option( 'wcvendors_hide_product_inventory_manage_inventory', 'no' ) ) && ! wc_string_to_bool( wcv_get_pro_option( 'wcvendors_hide_product_inventory_low_stock_threshold', 'no' ) ) ) {
 
-            $custom_attributes = 'yes' === get_option( 'wcvendors_required_product_inventory_low_stock_threshold', 'no' ) ? array(
+            $custom_attributes = wc_string_to_bool( wcv_get_pro_option( 'wcvendors_required_product_inventory_low_stock_threshold', 'no' ) ) ? array(
                 'required'                   => '',
                 'data-parsley-error-message' => __( 'Low stock threshold is required.', 'wc-vendors' ),
             ) : array();
@@ -1571,16 +1600,17 @@ class WCV_Product_Form {
      *  Output weight input
      *
      * @since    2.5.2
+     * @since    2.6.2 - Updated to use wcv_get_pro_option for pro feature checks
      *
      * @param     int $post_id post_id for this meta if any.
      */
     public static function weight( $post_id ) {
 
-        if ( 'yes' !== get_option( 'wcvendors_hide_product_shipping_weight', 'no' ) ) {
+        if ( ! wc_string_to_bool( wcv_get_pro_option( 'wcvendors_hide_product_shipping_weight', 'no' ) ) ) {
 
         if ( wc_product_weight_enabled() ) {
 
-                $custom_attributes = 'yes' === get_option( 'wcvendors_required_product_shipping_weight', 'no' ) ? array(
+                $custom_attributes = wc_string_to_bool( wcv_get_pro_option( 'wcvendors_required_product_shipping_weight', 'no' ) ) ? array(
                     'required'                   => '',
                     'data-parsley-error-message' => __( 'Weight is required.', 'wc-vendors' ),
                 ) : array();
@@ -1609,16 +1639,17 @@ class WCV_Product_Form {
      *  Output dimensions inputs
      *
      * @since    2.5.2
+     * @since    2.6.2 - Updated to use wcv_get_pro_option for pro feature checks
      *
      * @param     int $post_id post_id for this meta if any.
      */
     public static function dimensions( $post_id ) {
 
-        if ( 'yes' !== get_option( 'wcvendors_hide_product_shipping_dimensions' ) ) {
+        if ( ! wc_string_to_bool( wcv_get_pro_option( 'wcvendors_hide_product_shipping_dimensions' ) ) ) {
 
             if ( wc_product_dimensions_enabled() ) {
 
-                $length_custom_attributes = 'yes' === get_option( 'wcvendors_required_product_shipping_dimensions', 'no' ) ? array(
+                $length_custom_attributes = wc_string_to_bool( wcv_get_pro_option( 'wcvendors_required_product_shipping_dimensions', 'no' ) ) ? array(
                     'required'                   => '',
                     'data-parsley-error-message' => __( 'Length is required.', 'wc-vendors' ),
                 ) : array();
@@ -1642,7 +1673,7 @@ class WCV_Product_Form {
                     )
                 );
 
-                $width_custom_attributes = 'yes' === get_option( 'wcvendors_required_product_shipping_dimensions', 'no' ) ? array(
+                $width_custom_attributes = wc_string_to_bool( wcv_get_pro_option( 'wcvendors_required_product_shipping_dimensions', 'no' ) ) ? array(
                     'required'                   => '',
                     'data-parsley-error-message' => __( 'Width is required.', 'wc-vendors' ),
                 ) : array();
@@ -1663,7 +1694,7 @@ class WCV_Product_Form {
                     )
                 );
 
-                $height_custom_attributes = 'yes' === get_option( 'wcvendors_required_product_shipping_dimensions', 'no' ) ? array(
+                $height_custom_attributes = wc_string_to_bool( wcv_get_pro_option( 'wcvendors_required_product_shipping_dimensions', 'no' ) ) ? array(
                     'required'                   => '',
                     'data-parsley-error-message' => __( 'Height is required.', 'wc-vendors' ),
                 ) : array();
@@ -1691,15 +1722,16 @@ class WCV_Product_Form {
      *  Output shipping class details
      *
      * @since    2.5.2
+     * @since    2.6.2 - Updated to use wcv_get_pro_option for pro feature checks
      * @version  2.5.2
      *
      * @param     int $post_id post_id for this meta if any.
      */
     public static function shipping_class( $post_id ) {
 
-        if ( 'yes' !== get_option( 'wcvendors_hide_product_shipping_shipping_class', 'no' ) ) {
+        if ( ! wc_string_to_bool( wcv_get_pro_option( 'wcvendors_hide_product_shipping_shipping_class', 'no' ) ) ) {
 
-            $custom_attributes = 'yes' !== get_option( 'wcvendors_required_product_shipping_shipping_class' ) ? array(
+            $custom_attributes = ! wc_string_to_bool( wcv_get_pro_option( 'wcvendors_required_product_shipping_shipping_class' ) ) ? array(
                 'required'                   => '',
                 'data-parsley-error-message' => __( 'Shipping class is required.', 'wc-vendors' ),
             ) : array();
@@ -1740,12 +1772,13 @@ class WCV_Product_Form {
      *  Output upsell select2
      *
      * @since    2.5.2
+     * @since    2.6.2 - Updated to use wcv_get_pro_option for pro feature checks
      *
      * @param     int $post_id post_id for this meta if any.
      */
     public static function up_sells( $post_id ) {
 
-        if ( 'yes' !== get_option( 'wcvendors_hide_product_upsells_up_sells', 'no' ) ) {
+        if ( ! wc_string_to_bool( wcv_get_pro_option( 'wcvendors_hide_product_upsells_up_sells', 'no' ) ) ) {
 
             $product_ids = array_filter( array_map( 'absint', (array) get_post_meta( $post_id, '_upsell_ids', true ) ) );
             $upsell_ids  = array();
@@ -1756,7 +1789,7 @@ class WCV_Product_Form {
                 }
             }
 
-            $required_field = 'yes' === get_option( 'wcvendors_required_product_upsells_up_sells', 'no' ) ? array(
+            $required_field = wc_string_to_bool( wcv_get_pro_option( 'wcvendors_required_product_upsells_up_sells', 'no' ) ) ? array(
                 'required'                   => '',
                 'data-parsley-error-message' => __( 'Please select a product.', 'wc-vendors' ),
             ) : array();
@@ -1792,12 +1825,13 @@ class WCV_Product_Form {
      *  Output crosssell select2
      *
      * @since    2.5.2
+     * @since    2.6.2 - Updated to use wcv_get_pro_option for pro feature checks
      *
      * @param     int $post_id post_id for this meta if any.
      */
     public static function crosssells( $post_id ) {
 
-        if ( 'yes' !== get_option( 'wcvendors_hide_product_upsells_crosssells', 'no' ) ) {
+        if ( ! wc_string_to_bool( wcv_get_pro_option( 'wcvendors_hide_product_upsells_crosssells', 'no' ) ) ) {
 
             $product_ids   = array_filter( array_map( 'absint', (array) get_post_meta( $post_id, '_crosssell_ids', true ) ) );
             $crosssell_ids = array();
@@ -1809,7 +1843,7 @@ class WCV_Product_Form {
                 }
             }
 
-            $required_field = 'yes' === get_option( 'wcvendors_required_product_upsells_crosssells', 'no' ) ? array(
+            $required_field = wc_string_to_bool( wcv_get_pro_option( 'wcvendors_required_product_upsells_crosssells', 'no' ) ) ? array(
                 'required'                   => '',
                 'data-parsley-error-message' => __( 'Please select a product.', 'wc-vendors' ),
             ) : array();
@@ -1846,13 +1880,14 @@ class WCV_Product_Form {
      *  Output grouped_products select2
      *
      * @since    2.5.2
+     * @since    2.6.2 - Updated to use wcv_get_pro_option for pro feature checks
      *
      * @param     int    $post_id post_id for this meta if any.
      * @param     object $product product object.
      */
     public static function grouped_products( $post_id, $product = false ) {
 
-        if ( 'yes' !== get_option( 'wcvendors_hide_product_upsells_grouped_products', 'no' ) ) {
+        if ( ! wc_string_to_bool( wcv_get_pro_option( 'wcvendors_hide_product_upsells_grouped_products', 'no' ) ) ) {
 
             $product_object = $post_id ? wc_get_product( $post_id ) : new \WC_Product();
             $product_ids    = $product_object->is_type( 'grouped' ) ? $product_object->get_children( 'edit' ) : array();
@@ -1910,7 +1945,7 @@ class WCV_Product_Form {
             'inventory'      => array(
                 'label'  => __( 'Inventory', 'wc-vendors' ),
                 'target' => 'inventory',
-                'class'  => array( 'show_if_simple', 'show_if_variable', 'show_if_grouped' ),
+                'class'  => array( 'show_if_simple', 'show_if_variable', 'show_if_grouped', 'show_if_external' ),
             ),
             'shipping'       => array(
                 'label'  => __( 'Shipping', 'wc-vendors' ),
@@ -1963,22 +1998,22 @@ class WCV_Product_Form {
         }
 
         // Hide Linked Product tab if it's set to hidden.
-        if ( wc_string_to_bool( get_option( 'wcvendors_hide_product_upsells_up_sells', 'no' ) ) && wc_string_to_bool( get_option( 'wcvendors_hide_product_upsells_crosssells', 'no' ) ) && wc_string_to_bool( get_option( 'wcvendors_hide_product_upsells_grouped_products', 'no' ) ) ) {
+        if ( wc_string_to_bool( wcv_get_pro_option( 'wcvendors_hide_product_upsells_up_sells', 'no' ) ) && wc_string_to_bool( wcv_get_pro_option( 'wcvendors_hide_product_upsells_crosssells', 'no' ) ) && wc_string_to_bool( wcv_get_pro_option( 'wcvendors_hide_product_upsells_grouped_products', 'no' ) ) ) {
             unset( $product_meta_tabs['linked_product'] );
         }
 
         // Hide SEO tab if it's set to hidden.
-        if ( wc_string_to_bool( get_option( 'wcvendors_hide_product_seo', 'no' ) ) ) {
+        if ( wc_string_to_bool( wcv_get_pro_option( 'wcvendors_hide_product_seo', 'no' ) ) ) {
             unset( $product_meta_tabs['seo'] );
         }
 
         // Hide Advanced tab if it's set to hidden.
-        if ( wc_string_to_bool( get_option( 'wcvendors_hide_product_advanced_purchase_notes', 'no' ) ) && wc_string_to_bool( get_option( 'wcvendors_hide_product_advanced_product_order', 'no' ) ) ) {
+        if ( wc_string_to_bool( wcv_get_pro_option( 'wcvendors_hide_product_advanced_purchase_notes', 'no' ) ) && wc_string_to_bool( wcv_get_pro_option( 'wcvendors_hide_product_advanced_product_order', 'no' ) ) ) {
             unset( $product_meta_tabs['advanced'] );
         }
 
         // Hide Attributes tab if it's set to hidden.
-        if ( wc_string_to_bool( get_option( 'wcvendors_hide_product_basic_attributes', 'no' ) ) ) {
+        if ( wc_string_to_bool( wcv_get_pro_option( 'wcvendors_hide_product_basic_attributes', 'no' ) ) ) {
             unset( $product_meta_tabs['attribute'] );
             unset( $product_meta_tabs['variations'] );
         }
@@ -2013,6 +2048,7 @@ class WCV_Product_Form {
      *  Output product variations
      *
      * @since    2.5.2
+     * @since    2.6.2 - Updated to use wcv_get_pro_option for pro feature checks
      *
      * @param     int $post_id post_id for this meta if any.
      */
@@ -2023,12 +2059,12 @@ class WCV_Product_Form {
         // Get attributes.
         $attributes = maybe_unserialize( get_post_meta( $post_id, '_product_attributes', true ) );
 
-        $basic_options     = (array) get_option( 'wcvendors_hide_product_basic', array() );
-        $media_options     = (array) get_option( 'wcvendors_hide_product_media', array() );
-        $general_options   = (array) get_option( 'wcvendors_hide_product_general', array() );
-        $inventory_options = (array) get_option( 'wcvendors_hide_product_inventory', array() );
-        $shipping_options  = (array) get_option( 'wcvendors_hide_product_shipping', array() );
-        $upsell_options    = (array) get_option( 'wcvendors_hide_product_upsells', array() );
+        $basic_options     = (array) wcv_get_pro_option( 'wcvendors_hide_product_basic', array() );
+        $media_options     = (array) wcv_get_pro_option( 'wcvendors_hide_product_media', array() );
+        $general_options   = (array) wcv_get_pro_option( 'wcvendors_hide_product_general', array() );
+        $inventory_options = (array) wcv_get_pro_option( 'wcvendors_hide_product_inventory', array() );
+        $shipping_options  = (array) wcv_get_pro_option( 'wcvendors_hide_product_shipping', array() );
+        $upsell_options    = (array) wcv_get_pro_option( 'wcvendors_hide_product_upsells', array() );
 
         // See if any are set.
         $variation_attribute_found = false;

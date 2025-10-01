@@ -185,6 +185,18 @@ if ( ! class_exists( 'WCVendors_Settings_Capabilities', false ) ) :
                         ),
 
                         array(
+                            'title'   => __( 'Create New Tags', 'wc-vendors' ),
+                            'desc'    => sprintf(
+                                /* translators: %s vendor name */
+                                __( 'Allow %s to create new tags', 'wc-vendors' ),
+                                wcv_get_vendor_name( false, false )
+                            ),
+                            'id'      => 'wcvendors_capability_create_product_tags',
+                            'default' => 'yes',
+                            'type'    => 'checkbox',
+                        ),
+
+                        array(
                             'type' => 'sectionend',
                             'id'   => 'product_add_options',
                         ),

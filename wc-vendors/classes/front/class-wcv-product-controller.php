@@ -612,7 +612,8 @@ class WCV_Product_Controller {
         }
 
         do_action( 'wcvendors_before_product_save_tags', $product_id );
-        $hide_tags = wc_string_to_bool( get_option( 'wcvendors_hide_product_basic_tags', 'no' ) ) && $this->is_pro_active;
+        $hide_tags         = wc_string_to_bool( get_option( 'wcvendors_hide_product_basic_tags', 'no' ) ) && $this->is_pro_active;
+        $allow_create_tags = wc_string_to_bool( get_option( 'wcvendors_capability_create_product_tags', 'yes' ) );
         // Tags.
         if ( isset( $_POST['product_tags'] ) ) {
 
@@ -629,7 +630,7 @@ class WCV_Product_Controller {
 
 				if ( $existing_tag != null ) { //phpcs:ignore
                     $tags[] = $existing_tag->slug;
-                } else {
+                } elseif ( $allow_create_tags ) {
                     $tags[] = $post_tag;
                 }
             }

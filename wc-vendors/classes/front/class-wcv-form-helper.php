@@ -4,6 +4,7 @@ namespace WC_Vendors\Classes\Front;
 use WC_Vendors;
 
 use function WC_Vendors\Classes\Includes\wcv_walk_category_dropdown_tree;
+use function WC_Vendors\Classes\Includes\wcv_walk_category_multilevel_dropdown_tree;
 /**
  * Form Helper Class
  *
@@ -225,6 +226,7 @@ class WCV_Form_Helper {
      *
      * @since     2.5.2
      * @version   2.5.2
+     * @since     2.6.2 Added use_multilevel_walker option
      *
      * @param      array $field Array defining all field attributes.
      *
@@ -232,22 +234,23 @@ class WCV_Form_Helper {
      */
     public static function select( $field ) {
 
-        $post_id                   = isset( $field['post_id'] ) ? $field['post_id'] : 0;
-        $field['class']            = isset( $field['class'] ) ? $field['class'] : 'select2';
-        $field['style']            = isset( $field['style'] ) ? $field['style'] : '';
-        $field['wrapper_class']    = isset( $field['wrapper_class'] ) ? $field['wrapper_class'] : '';
-        $field['wrapper_start']    = isset( $field['wrapper_start'] ) ? $field['wrapper_start'] : '';
-        $field['wrapper_end']      = isset( $field['wrapper_end'] ) ? $field['wrapper_end'] : '';
-        $field['value']            = isset( $field['value'] ) ? $field['value'] : get_post_meta( $post_id, $field['id'], true );
-        $field['show_option_none'] = isset( $field['show_option_none'] ) ? $field['show_option_none'] : '';
-        $field['options']          = isset( $field['options'] ) ? $field['options'] : array();
-        $field['taxonomy_field']   = isset( $field['taxonomy_field'] ) ? $field['taxonomy_field'] : 'slug';
-        $field['show_label']       = isset( $field['show_label'] ) ? $field['show_label'] : true;
-        $field['show_tooltip']     = isset( $field['show_tooltip'] ) ? $field['show_tooltip'] : true;
-        $field['multiple']         = isset( $field['multiple'] ) && $field['multiple'] ? true : false;
-        $field['options_attr']     = isset( $field['options_attr'] ) ? $field['options_attr'] : array();
-        $field['label_icon']       = isset( $field['label_icon'] ) ? $field['label_icon'] : '';
-        $field['no_margin']        = isset( $field['no_margin'] ) ? $field['no_margin'] : false;
+        $post_id                        = isset( $field['post_id'] ) ? $field['post_id'] : 0;
+        $field['class']                 = isset( $field['class'] ) ? $field['class'] : 'select2';
+        $field['style']                 = isset( $field['style'] ) ? $field['style'] : '';
+        $field['wrapper_class']         = isset( $field['wrapper_class'] ) ? $field['wrapper_class'] : '';
+        $field['wrapper_start']         = isset( $field['wrapper_start'] ) ? $field['wrapper_start'] : '';
+        $field['wrapper_end']           = isset( $field['wrapper_end'] ) ? $field['wrapper_end'] : '';
+        $field['value']                 = isset( $field['value'] ) ? $field['value'] : get_post_meta( $post_id, $field['id'], true );
+        $field['show_option_none']      = isset( $field['show_option_none'] ) ? $field['show_option_none'] : '';
+        $field['options']               = isset( $field['options'] ) ? $field['options'] : array();
+        $field['taxonomy_field']        = isset( $field['taxonomy_field'] ) ? $field['taxonomy_field'] : 'slug';
+        $field['show_label']            = isset( $field['show_label'] ) ? $field['show_label'] : true;
+        $field['show_tooltip']          = isset( $field['show_tooltip'] ) ? $field['show_tooltip'] : true;
+        $field['multiple']              = isset( $field['multiple'] ) && $field['multiple'] ? true : false;
+        $field['options_attr']          = isset( $field['options_attr'] ) ? $field['options_attr'] : array();
+        $field['label_icon']            = isset( $field['label_icon'] ) ? $field['label_icon'] : '';
+        $field['no_margin']             = isset( $field['no_margin'] ) ? $field['no_margin'] : false;
+        $field['use_multilevel_walker'] = isset( $field['use_multilevel_walker'] ) ? $field['use_multilevel_walker'] : false;
 
         $field_name = $field['id'];
         if ( $field['multiple'] ) {
@@ -337,7 +340,16 @@ class WCV_Form_Helper {
             $terms = get_terms( $args );
 
             if ( 'product_cat' === $field['taxonomy'] ) {
-                $field['options'] = wcv_walk_category_dropdown_tree( $terms, 0, $args );
+                if ( $field['use_multilevel_walker'] ) {
+
+                    // Allow filtering of multilevel walker arguments.
+                    $multilevel_args = apply_filters( 'wcv_multilevel_walker_args', $args, $field );
+
+                    $field['options'] = wcv_walk_category_multilevel_dropdown_tree( $terms, 0, $multilevel_args );
+                } else {
+                    // Use standard walker.
+                    $field['options'] = wcv_walk_category_dropdown_tree( $terms, 0, $args );
+                }
             } else {
                 $options = array();
                 foreach ( $terms as $term ) {

@@ -123,6 +123,8 @@ class WCV_Vendor_Dashboard {
         add_action( 'wcvendors_after_dashboard_nav', array( $this, 'lock_new_products_notice' ) );
 
         add_filter( 'the_title', array( $this, 'filter_dashboard_page_title' ), 10, 2 );
+        add_filter( 'get_edit_post_link', array( $this, 'vendor_edit_post_link' ), 10, 2 );
+        add_filter( 'user_has_cap', array( $this, 'vendor_has_edit_product_cap' ), 10, 4 );
     }
 
     /**
@@ -139,6 +141,68 @@ class WCV_Vendor_Dashboard {
         }
 
         return $title;
+    }
+
+    /**
+     * Filter the edit post link
+     *
+     * @param string $link The edit post link.
+     * @param int    $post_id The post ID.
+     *
+     * @since 2.6.2 - Fix Storefront theme edit product link
+     */
+    public function vendor_edit_post_link( $link, $post_id ) {
+        $curent_user_id = get_current_user_id();
+        $is_vendor      = WCV_Vendors::is_vendor( $curent_user_id );
+        $can_edit       = wc_string_to_bool( get_option( 'wcvendors_capability_products_edit', 'no' ) );
+
+        if ( 'product' === get_post_type( $post_id ) && $is_vendor && $can_edit ) {
+            return self::get_dashboard_page_url( 'product/edit/' . $post_id );
+        }
+
+        return $link;
+    }
+
+    /**
+     * Filter the user capabilities to remove edit_post and edit_product caps when products_edit is disabled
+     *
+     * @param array   $allcaps All capabilities the user has.
+     * @param array   $caps    The capability being checked.
+     * @param array   $args    Additional arguments.
+     * @param WP_User $user    The user object.
+     * @return array The filtered capabilities array.
+     */
+    public function vendor_has_edit_product_cap( $allcaps, $caps, $args, $user ) {
+
+        $current_user_id = $user->ID;
+        $is_vendor       = WCV_Vendors::is_vendor( $current_user_id );
+
+        if ( ! $is_vendor ) {
+            return $allcaps;
+        }
+
+        $can_edit = wc_string_to_bool( get_option( 'wcvendors_capability_products_edit', 'no' ) );
+
+        if ( ! $can_edit ) {
+
+            if ( isset( $allcaps['edit_posts'] ) ) {
+                unset( $allcaps['edit_posts'] );
+            }
+
+            if ( isset( $allcaps['edit_products'] ) ) {
+                unset( $allcaps['edit_products'] );
+            }
+
+            if ( isset( $allcaps['edit_published_posts'] ) ) {
+                unset( $allcaps['edit_published_posts'] );
+            }
+
+            if ( isset( $allcaps['edit_published_products'] ) ) {
+                unset( $allcaps['edit_published_products'] );
+            }
+        }
+
+        return $allcaps;
     }
 
     /**
@@ -923,6 +987,12 @@ class WCV_Vendor_Dashboard {
                         }
                     }
                 }
+
+                // Add dashboard home rule LAST (highest priority).
+                $dashboard_home_rule = array(
+                    $dashboard_page_slug . '/?$' => 'index.php?pagename=' . $dashboard_page_slug . '&object=dashboard',
+                );
+                $rules               = $dashboard_home_rule + $rules;
         }
         return apply_filters( 'wcv_dashboard_rewrite_rules', $rules );
     }

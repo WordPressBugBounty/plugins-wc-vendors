@@ -1,5 +1,19 @@
 Changelog for WC Vendors Marketplace
 
+Version 2.6.2 - 26th September 2025
+
+ * Feature: Group subcategories under parent categories in category filter dropdown
+ * Improvement: Enhanced admin setting field custom attributes rendering
+ * Bug Fix: WC Vendors overriding RankMath metadata on non-vendor pages (Newsfeed, Forums, Courses)
+ * Bug Fix: Inventory tab disabled in WCVP stays hidden even after deactivating WCVP
+ * Bug Fix: Vendors allowed to create custom tags in Marketplace and Pro
+ * Bug Fix: Zero commissions are not automatically marked as Paid
+ * Bug Fix: Missing Inventory tab for external product type and fixed SKU and tax fields not being hidden properly
+ * Bug Fix: Cancelled status filter missing in vendor dashboard Orders page
+ * Bug Fix: Create Missing Vendor Sub-orders Tool not working properly
+ * Bug Fix: The Add your socials step appears in the onboarding setup progress
+ * Bug Fix: Vendor Product Edit Button links to WP Admin instead of Vendor Dashboard
+
 Version 2.6.1 - 26th August 2025
 
  * Improvement: Options to allow vendor to review or purchase their own products 

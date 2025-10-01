@@ -210,6 +210,25 @@ if ( ! function_exists( 'is_wcv_pro_active' ) ) {
     }
 }
 
+if ( ! function_exists( 'wcv_get_pro_option' ) ) {
+    /**
+     * Get pro option
+     *
+     * @since 2.6.2 - Check for pro feature before retrieving option
+     * @param string $option_name The option name to retrieve.
+     * @param mixed  $default_value Default value if option doesn't exist or Pro is not active.
+     * @return mixed The option value or default value.
+     */
+    function wcv_get_pro_option( $option_name, $default_value = '' ) {
+
+        // If Pro is not active, return default.
+        if ( ! is_wcv_pro_active() ) {
+            return $default_value;
+        }
+
+        return get_option( $option_name, $default_value );
+    }
+}
 
 if ( ! function_exists( 'wcv_get_sold_by_link' ) ) {
     /**

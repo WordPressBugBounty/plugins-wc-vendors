@@ -8,6 +8,7 @@
  * @link       http://www.wcvendors.com
  * @since      2.5.2
  * @version    2.5.2 - added can submit handler
+ * @version    2.6.2 - added use_multilevel_walker option
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -33,24 +34,17 @@ use function WC_Vendors\Classes\Includes\wcv_get_product_types;
         </div>
         <div class="wcv-cols-group wcv-horizontal-gutters wcv-gap-top wcv-cols-group-narrow wcv-filter-wrapper">
             <?php
-                $product_categories = get_terms(
-                    array(
-                        'taxonomy'   => 'product_cat',
-                        'hide_empty' => false,
-                    )
-                );
-                $product_categories = wp_list_pluck( $product_categories, 'name', 'term_id' );
-                $product_categories = array( '' => esc_html__( 'None', 'wc-vendors' ) ) + $product_categories;
-                $product_tags       = get_terms(
+
+                $product_tags  = get_terms(
                     array(
                         'taxonomy'   => 'product_tag',
                         'hide_empty' => false,
                     )
                 );
-                $product_tags       = wp_list_pluck( $product_tags, 'name', 'term_id' );
-                $product_tags       = array( '' => esc_html__( 'None', 'wc-vendors' ) ) + $product_tags;
-                $product_types      = wcv_get_product_types();
-                $product_types      = array( '' => esc_html__( 'None', 'wc-vendors' ) ) + $product_types;
+                $product_tags  = wp_list_pluck( $product_tags, 'name', 'term_id' );
+                $product_tags  = array( '' => esc_html__( 'None', 'wc-vendors' ) ) + $product_tags;
+                $product_types = wcv_get_product_types();
+                $product_types = array( '' => esc_html__( 'None', 'wc-vendors' ) ) + $product_types;
 
                 $hide_product_types = get_option( 'wcvendors_capability_product_types', array() );
 
@@ -68,14 +62,24 @@ use function WC_Vendors\Classes\Includes\wcv_get_product_types;
 
                 WCV_Form_Helper::select(
                     array(
-                        'id'            => '_wcv_product_category',
-                        'options'       => $product_categories,
-                        'class'         => 'wcv-dashboard-filter wcv-custom-select',
-                        'wrapper_start' => '<div class="all-20 small-100">',
-                        'wrapper_end'   => '</div>',
-                        'value'         => $product_cat_get,
-                        'label'         => esc_html__( 'Categories', 'wc-vendors' ),
-                        'multiple'      => true,
+                        'id'                    => '_wcv_product_category',
+                        'taxonomy'              => 'product_cat',
+                        'class'                 => 'wcv-dashboard-filter wcv-custom-select',
+                        'wrapper_start'         => '<div class="all-20 small-100">',
+                        'wrapper_end'           => '</div>',
+                        'label'                 => esc_html__( 'Categories', 'wc-vendors' ),
+                        'multiple'              => true,
+                        'taxonomy_args'         => array(
+                            'hide_empty'   => 0,
+                            'orderby'      => 'order',
+                            'hierarchical' => true,
+                            'selected'     => $product_cat_get,
+                        ),
+                        'show_option_none'      => esc_html__( 'None', 'wc-vendors' ),
+                        'custom_attributes'     => array(
+                            'data-text-align' => 'left',
+                        ),
+                        'use_multilevel_walker' => true,
                     )
                 );
 

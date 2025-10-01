@@ -135,7 +135,7 @@ $weight_parsley_pattern = '/^\d{1,3}([' . $decimal_separator . ']\d{1,' . $decim
                 <?php endif; ?>
             </div>
             <div class="all-70 small-100 sku small-top-space tiny-top-space push-center" style="margin-top: 42px;">
-                <?php if ( 'yes' !== get_option( 'wcvendors_hide_product_variations_sku', 'no' ) ) : ?>
+                <?php if ( 'yes' !== get_option( 'wcvendors_hide_product_variations_sku', 'no' ) && 'yes' !== get_option( 'wcvendors_capability_product_sku', 'no' ) ) : ?>
                     <?php if ( wc_product_sku_enabled() ) : ?>
                         <div class="control-group">
                         <label><?php esc_html_e( 'SKU', 'wc-vendors' ); ?> </label>
@@ -466,7 +466,7 @@ $weight_parsley_pattern = '/^\d{1,3}([' . $decimal_separator . ']\d{1,' . $decim
         <?php if ( wc_tax_enabled() ) : ?>
             <div class="wcv-cols-group wcv-horizontal-gutters">
                 <div class="all-100">
-                    <?php if ( 'yes' !== get_option( 'wcvendors_hide_product_variations_tax_class', 'no' ) ) : ?>
+                    <?php if ( 'yes' !== get_option( 'wcvendors_hide_product_variations_tax_class', 'no' ) && 'yes' !== get_option( 'wcvendors_capability_product_taxes', 'no' ) ) : ?>
                         <div class="control-group">
                             <label><?php esc_html_e( 'Tax Class:', 'wc-vendors' ); ?></label>
                             <div class="control">
@@ -491,7 +491,7 @@ $weight_parsley_pattern = '/^\d{1,3}([' . $decimal_separator . ']\d{1,' . $decim
 
         <div class="wcv-cols-group wcv-horizontal-gutters">
             <div class="all-100">
-                <?php if ( 'yes' !== get_option( 'wcvendors_hide_product_variations_tax_class', 'no' ) ) : ?>
+                <?php if ( 'yes' !== get_option( 'wcvendors_hide_product_variations_description', 'no' ) ) : ?>
                     <div class="control-group">
                         <label><?php esc_html_e( 'Variation Description:', 'wc-vendors' ); ?></label>
                         <div class="control">

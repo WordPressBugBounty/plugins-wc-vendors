@@ -237,6 +237,7 @@ function maybe_create_missing_sub_orders() {
               SELECT 1
               FROM {$wpdb->prefix}posts AS p
               WHERE p.post_type = 'shop_order_vendor'
+              AND p.post_parent = posts.ID
             );"
         );
     } else {
@@ -248,6 +249,7 @@ function maybe_create_missing_sub_orders() {
               SELECT 1
               FROM {$wpdb->prefix}wc_orders AS p
               WHERE p.type = 'shop_order_vendor'
+              AND p.parent_order_id = wco.id
             );"
         );
     }

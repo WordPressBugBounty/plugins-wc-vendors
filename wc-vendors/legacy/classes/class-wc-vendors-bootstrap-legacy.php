@@ -472,7 +472,7 @@ class WC_Vendors_Bootstrap_Legacy {
      */
     public function add_rewrite_endpoint() {
         add_rewrite_endpoint( 'become-a-vendor', EP_PAGES );
-        $this->flush_rewrite_rules();
+        $this->maybe_flush_permalinks();
     }
 
     /**

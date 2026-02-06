@@ -1,12 +1,14 @@
 <?php
-
 /**
  * Product meta configurations
  *
+ * @version 2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+ * @phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery
+ * @phpcs:disable WordPress.DB.DirectDatabaseQuery.NoCaching
+ *
  * @package WCVendors
- */
-
-/**
  * WCV_Product_Meta class.
  */
 class WCV_Product_Meta {
@@ -71,7 +73,7 @@ class WCV_Product_Meta {
             return;
         }
 
-        wp_enqueue_script( 'wcv-vendor-select', WCV_ASSETS_URL . 'js/admin/wcv-vendor-select.js', array( 'select2' ), WCV_VERSION, true );
+        wp_enqueue_script( 'wcv-vendor-select', WCV_ASSETS_URL . 'js/admin/wcv-vendor-select.js', array( wcv_get_select2_script_handle() ), WCV_VERSION, true );
         wp_localize_script(
             'wcv-vendor-select',
             'wcv_vendor_select',
@@ -476,8 +478,8 @@ class WCV_Product_Meta {
 
         if ( $product->is_type( 'simple' ) || $product->is_type( 'external' ) ) {
 
-            if ( isset( $_REQUEST['_vendor'] ) && '' !== $_REQUEST['vendor'] ) {
-                $vendor            = wc_clean( $_REQUEST['_vendor'] );
+            if ( isset( $_REQUEST['_vendor'] ) && '' !== sanitize_text_field( wp_unslash( $_REQUEST['_vendor'] ) ) ) {
+                $vendor            = sanitize_text_field( wp_unslash( $_REQUEST['_vendor'] ) );
                 $post              = get_post( $product->get_id() );
                 $post->post_author = $vendor;
             }
@@ -486,6 +488,7 @@ class WCV_Product_Meta {
         if ( isset( $_REQUEST['product_media_author_override'] ) ) {
             $this->save_product_media( $product );
         }
+
         return $product;
     }
 
@@ -544,12 +547,12 @@ class WCV_Product_Meta {
             return;
         }
 
-        if ( ! isset( $_REQUEST['vendor'] ) || ( isset( $_REQUEST['vendor'] ) && '' === $_REQUEST['vendor'] ) ) {
+        if ( ! isset( $_REQUEST['vendor'] ) || ( isset( $_REQUEST['vendor'] ) && '' === sanitize_text_field( wp_unslash( $_REQUEST['vendor'] ) ) ) ) {
             return;
         }
 
-        if ( isset( $_REQUEST['vendor'] ) && '' !== $_REQUEST['vendor'] ) {
-            $vendor        = wc_clean( $_REQUEST['vendor'] );
+        if ( isset( $_REQUEST['vendor'] ) && '' !== sanitize_text_field( wp_unslash( $_REQUEST['vendor'] ) ) ) {
+            $vendor        = sanitize_text_field( wp_unslash( $_REQUEST['vendor'] ) );
             $update_vendor = array(
                 'ID'          => $product->get_id(),
                 'post_author' => $vendor,
@@ -699,7 +702,7 @@ class WCV_Product_Meta {
         $search_string = '%' . $search_string . '%';
 
         $response          = new stdClass();
-        $response->results = $wpdb->get_results(
+        $response->results = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
             $wpdb->prepare(
                 "SELECT DISTINCT ID as `id`, display_name as `text`
                 FROM  $wpdb->users
@@ -738,7 +741,7 @@ class WCV_Product_Meta {
 
         foreach ( $response->results as $key => $vendor ) {
             $text      = $vendor->text;
-            $shop_name = $wpdb->get_var(
+            $shop_name = $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
                 $wpdb->prepare(
                     "SELECT meta_value
                     FROM $wpdb->usermeta

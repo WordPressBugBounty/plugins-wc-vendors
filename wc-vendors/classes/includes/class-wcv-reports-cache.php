@@ -161,7 +161,7 @@ class WCV_Reports_Cache {
             $end_date
         );
 
-        $cache_data            = $wpdb->get_results( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+        $cache_data            = $wpdb->get_results( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
         $serialized_cache_data = array();
 
         foreach ( $cache_data as $cache ) {
@@ -294,7 +294,7 @@ class WCV_Reports_Cache {
      */
     public function set_cache( $date, $cache ) {
         global $wpdb;
-        $wpdb->insert(
+        $wpdb->insert( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
             $wpdb->prefix . 'wcv_reports_cache',
             array(
                 'report_key'  => $this->generate_cache_key( $date ),
@@ -326,7 +326,7 @@ class WCV_Reports_Cache {
         $today             = gmdate( 'Y-m-d' );
 
         // Remove today's cache.
-        $wpdb->query(
+        $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
             $wpdb->prepare(
                 "DELETE FROM {$wpdb->prefix}wcv_reports_cache WHERE report_date = %s",
                 $today
@@ -334,7 +334,7 @@ class WCV_Reports_Cache {
         );
 
         // Remove old cache order than 1 year.
-        $wpdb->query(
+        $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
             $wpdb->prepare(
                 "DELETE FROM {$wpdb->prefix}wcv_reports_cache WHERE report_date < %s",
                 gmdate( 'Y-m-d', strtotime( '-1 year' ) )
@@ -353,7 +353,7 @@ class WCV_Reports_Cache {
                 $end_date
             );
 
-            $cached_dates = $wpdb->get_col( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+            $cached_dates = $wpdb->get_col( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 
             $dates = array_diff( $dates, $cached_dates );
             // Exclude current date from caching.
@@ -425,7 +425,7 @@ class WCV_Reports_Cache {
      */
     public function is_cache_exists( $date ) {
         global $wpdb;
-        $cache = $wpdb->get_var(
+        $cache = $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
             $wpdb->prepare(
                 "SELECT COUNT(*) FROM {$wpdb->prefix}wcv_reports_cache WHERE report_key = %s",
                 $this->generate_cache_key( $date )

@@ -228,9 +228,9 @@ class WCVendors_Admin_Orders {
      * @since 2.4.0
      */
     public static function mark_order_shipped() {
-        if ( current_user_can( 'edit_shop_orders' ) && check_admin_referer( 'wcvendors-mark-order-shipped' ) && $_GET['order_id'] ) {
-            $order_id = absint( wp_unslash( $_GET['order_id'] ) );
-            $order    = wc_get_order( $order_id );
+        $order_id = isset( $_GET['order_id'] ) ? (int) sanitize_text_field( wp_unslash( $_GET['order_id'] ) ) : 0;
+        if ( current_user_can( 'edit_shop_orders' ) && check_admin_referer( 'wcvendors-mark-order-shipped' ) && 0 !== $order_id ) {
+            $order = wc_get_order( $order_id );
 
             wcv_mark_order_shipped( $order );
 
@@ -374,14 +374,14 @@ class WCVendors_Admin_Orders {
         //phpcs:disable WordPress.Security.NonceVerification.Recommended
 
         $is_cpt_order_page = ( 'edit.php' === $pagenow || 'post.php' === $pagenow ) && 'shop_order' === $post_type;
-        $is_cot_order_page = ( 'admin.php' === $pagenow && 'wc-orders' === $_REQUEST['page'] );
+        $is_cot_order_page = ( 'admin.php' === $pagenow && isset( $_REQUEST['page'] ) && 'wc-orders' === sanitize_text_field( wp_unslash( $_REQUEST['page'] ) ) );
 
         // Bail if not on required page.
         if ( ( ! $is_cpt_order_page && ! $is_cot_order_page ) || ! isset( $_REQUEST['wcvendors_order_action'] ) ) {
             return;
         }
 
-        $action    = wc_clean( wp_unslash( $_REQUEST['wcvendors_order_action'] ) );
+        $action    = isset( $_REQUEST['wcvendors_order_action'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['wcvendors_order_action'] ) ) : '';
         $order_id  = isset( $_REQUEST['order_id'] ) ? absint( wp_unslash( $_REQUEST['order_id'] ) ) : '';
         $post_id   = isset( $_REQUEST['post'] ) ? absint( wp_unslash( $_REQUEST['post'] ) ) : '';
         $ids       = isset( $_REQUEST['ids'] ) ? absint( wp_unslash( $_REQUEST['ids'] ) ) : '';
@@ -456,11 +456,11 @@ class WCVendors_Admin_Orders {
      * @version 2.4.8
      * @return void
      */
-	public function add_vendor_orders_filter() {
-		$post_tpye = get_current_screen()->post_type;
-		if ( 'shop_order' === $post_tpye ) {
-			$vendor_id       = isset( $_GET['vendor_id'] ) ? sanitize_text_field( wp_unslash( $_GET['vendor_id'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			$select_box_args = array(
+    public function add_vendor_orders_filter() {
+        $post_tpye = get_current_screen()->post_type;
+        if ( 'shop_order' === $post_tpye ) {
+            $vendor_id       = isset( $_GET['vendor_id'] ) ? sanitize_text_field( wp_unslash( $_GET['vendor_id'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+            $select_box_args = array(
                 'id'          => 'vendor_id',
                 'placeholder' => sprintf(
                     /* translators: %s: vendor name. */
@@ -474,8 +474,8 @@ class WCVendors_Admin_Orders {
 
             echo WCV_Product_Meta::vendor_selectbox( $select_box_args, false ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
             wp_nonce_field( 'wcv_vendor_orders', 'wcv_vendor_orders' );
-		}
-	}
+        }
+    }
 
     /**
      * Filter orders by vendor.
@@ -490,7 +490,7 @@ class WCVendors_Admin_Orders {
      */
     public function filter_orders_by_vendor_query( $pieces, $order_query_class ) {
 
-        $nonce = isset( $_GET['wcv_vendor_orders'] ) ? sanitize_text_field( $_GET['wcv_vendor_orders'] ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        $nonce = isset( $_GET['wcv_vendor_orders'] ) ? sanitize_text_field( wp_unslash( $_GET['wcv_vendor_orders'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
         if ( empty( $nonce ) || ! wp_verify_nonce( $nonce, 'wcv_vendor_orders' ) ) {
             return $pieces;
@@ -500,7 +500,7 @@ class WCVendors_Admin_Orders {
             return $pieces;
         }
 
-        $vendor_id = isset( $_GET['vendor_id'] ) ? sanitize_text_field( $_GET['vendor_id'] ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        $vendor_id = isset( $_GET['vendor_id'] ) ? sanitize_text_field( wp_unslash( $_GET['vendor_id'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
         if ( empty( $vendor_id ) ) {
             return $pieces;
@@ -530,7 +530,7 @@ class WCVendors_Admin_Orders {
      */
     public function filter_orders_by_vendor_none_cot( $query ) {
 
-        $nonce = isset( $_GET['wcv_vendor_orders'] ) ? sanitize_text_field( $_GET['wcv_vendor_orders'] ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        $nonce = isset( $_GET['wcv_vendor_orders'] ) ? sanitize_text_field( wp_unslash( $_GET['wcv_vendor_orders'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
         if ( empty( $nonce ) || ! wp_verify_nonce( $nonce, 'wcv_vendor_orders' ) ) {
             return $query;
@@ -540,7 +540,7 @@ class WCVendors_Admin_Orders {
             return $query;
         }
 
-        $vendor_id = isset( $_GET['vendor_id'] ) ? sanitize_text_field( $_GET['vendor_id'] ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        $vendor_id = isset( $_GET['vendor_id'] ) ? sanitize_text_field( wp_unslash( $_GET['vendor_id'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
         if ( empty( $vendor_id ) ) {
             return $query;

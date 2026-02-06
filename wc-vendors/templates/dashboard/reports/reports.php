@@ -4,15 +4,18 @@
  *
  * Override this template by copying it to yourtheme/wc-vendors/dashboard/report
  *
- * @package    WCVendors_Pro
+ * @package    WC_Vendors
  * @version    1.8.0
+ * @version    2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
  */
 
 ?>
 <?php
     // Single Vendor Total Gross Sales.
     $give_tax      = wc_string_to_bool( get_option( 'wcvendors_vendor_give_taxes', 'no' ) );
-    $give_shipping = wc_string_to_bool( get_option( 'wcvendors_vendor_give_shipping', 'no' ) );
+    $give_shipping = is_wcv_pro_active() && wc_string_to_bool( get_option( 'wcvendors_vendor_give_shipping', 'no' ) );
 
     $gross_sales_totals = $store_report->orders;
     $vendor_order_total = 0;

@@ -4,6 +4,10 @@
  *
  * Functions for templates
  *
+ * @version 2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
+ *
  * @package WCVendors/Functions
  * @version 2.0.0
  */
@@ -80,7 +84,7 @@ if ( ! function_exists( 'wcv_get_vendor_item_totals' ) ) {
      *
      * @since   2.0.0
      * @version 2.2.3
-     * @return string
+     * @return array
      */
     function wcv_get_vendor_item_totals( $order, $items, $vendor_id, $email, $totals_display = 'both' ) {
 

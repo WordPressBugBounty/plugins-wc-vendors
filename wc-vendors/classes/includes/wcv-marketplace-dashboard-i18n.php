@@ -1,8 +1,13 @@
 <?php
+
 /**
  * I18n for the marketplace dashboard
  *
  * @since 2.5.5
+ * @version 2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
  */
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
@@ -15,14 +20,10 @@ $marketplace_dashboard_i18n = array(
         'errorUpdatingVendorApproval' => __( 'There was an error updating the vendor approval.', 'wc-vendors' ),
     ),
     'filter'         => array(
-        'last30Days'  => __( 'Last 30 days', 'wc-vendors' ),
-        'last7Days'   => __( 'Last 7 days', 'wc-vendors' ),
-        'last14Days'  => __( 'Last 14 days', 'wc-vendors' ),
-        'last3Months' => __( 'Last 3 months', 'wc-vendors' ),
-        'last6Months' => __( 'Last 6 months', 'wc-vendors' ),
-        'lastYear'    => __( 'Last year', 'wc-vendors' ),
-        'custom'      => __( 'Custom', 'wc-vendors' ),
-        'apply'       => __( 'Apply', 'wc-vendors' ),
+        'apply'                => __( 'Apply', 'wc-vendors' ),
+        'errorNoRangeSelected' => __( 'Please select a range.', 'wc-vendors' ),
+        'errorInvalidRange'    => __( 'Invalid range selected.', 'wc-vendors' ),
+        'errorFutureDate'      => __( 'Future date selected.', 'wc-vendors' ),
     ),
     'metrics'        => array(
         'marketplaceRevenue'     => __( 'Marketplace Revenue Total', 'wc-vendors' ),
@@ -76,6 +77,22 @@ $marketplace_dashboard_i18n = array(
         'toBeActive'                  => __( 'to be active', 'wc-vendors' ),
     ),
     'period'         => __( 'Period', 'wc-vendors' ),
+    'promo'          => array(
+        'free'                           => __( 'Free Plugin', 'wc-vendors' ),
+        'premium'                        => __( 'Premium Plugin', 'wc-vendors' ),
+        'recommended'                    => __( 'Recommended', 'wc-vendors' ),
+        'installAndActivateButton'       => __( 'Install & Activate', 'wc-vendors' ),
+        'installAndActivateFailed'       => __( 'Failed to install and activate plugin. Please try again.', 'wc-vendors' ),
+        'activateSuccessfully'           => __( 'Activated successfully', 'wc-vendors' ),
+        'installSuccessfully'            => __( 'Installed successfully', 'wc-vendors' ),
+        'installFailed'                  => __( 'Installation failed', 'wc-vendors' ),
+        'installAndActivateSuccessfully' => __( 'Plugin installed and activated successfully', 'wc-vendors' ),
+        'activateFailed'                 => __( 'Activation failed', 'wc-vendors' ),
+        'activateNowButton'              => __( 'Activate Now', 'wc-vendors' ),
+        'activated'                      => __( 'Activated', 'wc-vendors' ),
+        'installing'                     => __( 'Installing...', 'wc-vendors' ),
+        'activating'                     => __( 'Activating...', 'wc-vendors' ),
+    ),
 );
 
 

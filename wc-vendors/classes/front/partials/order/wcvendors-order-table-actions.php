@@ -3,6 +3,9 @@
  * Order Table Main Actions
  *
  * This file is used to add the table actions before and after a table
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
  */
 
 use WC_Vendors\Classes\Front\WCV_Form_Helper;

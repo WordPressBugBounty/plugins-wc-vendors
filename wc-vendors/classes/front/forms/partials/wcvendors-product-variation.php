@@ -8,7 +8,13 @@
  * @link       http://www.wcvendors.com
  * @since      1.3.0
  * @since      1.8.8 - Added decimal validation for weight fields.
- * @version    1.8.8
+ * @version    2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable 	WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedNamespaceFound
+ * @phpcs:disable 	WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+ * @phpcs:disable 	WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+ * @phpcs:disable 	WordPress.DB.DirectDatabaseQuery.DirectQuery
+ * @phpcs:disable 	WordPress.DB.DirectDatabaseQuery.NoCaching
  */
 use function WC_Vendors\Classes\Includes\variation_option_required;
 extract( $variation_data ); //phpcs:ignore
@@ -16,10 +22,15 @@ extract( $variation_data ); //phpcs:ignore
 // Fix false data added to db.
 $_download_expiry       = ( $_download_expiry == -1 ) ? '' : $_download_expiry; //phpcs:ignore
 $_download_limit        = ( $_download_limit == -1 ) ? '' : $_download_limit; //phpcs:ignore
-$variations_options     = (array) get_option( 'wcvendors_hide_product_variations', array() );
-$decimal_separator      = get_option( 'woocommerce_price_decimal_sep' );
-$decimal_number         = get_option( 'woocommerce_price_num_decimals' );
-$weight_parsley_pattern = '/^\d{1,3}([' . $decimal_separator . ']\d{1,' . $decimal_number . '})?$/';
+$variations_options = (array) get_option( 'wcvendors_hide_product_variations', array() );
+$decimal_separator  = get_option( 'woocommerce_price_decimal_sep' );
+$decimal_number     = absint( get_option( 'woocommerce_price_num_decimals' ) );
+// Build pattern: if decimals are allowed, include decimal part; otherwise only integers.
+if ( $decimal_number > 0 ) {
+    $weight_parsley_pattern = '/^\d{1,3}([' . $decimal_separator . ']\d{1,' . $decimal_number . '})?$/';
+} else {
+    $weight_parsley_pattern = '/^\d{1,3}$/';
+}
 
 ?>
 

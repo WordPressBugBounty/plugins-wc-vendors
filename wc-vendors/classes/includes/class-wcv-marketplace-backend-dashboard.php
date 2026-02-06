@@ -2,6 +2,10 @@
 /**
  * Marketplace backend dashboard class
  *
+ * @version 2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+ *
  * @package WC_Vendors
  */
 
@@ -124,7 +128,7 @@ class WCV_Marketplace_Backend_Dashboard {
             wp_send_json_error( __( 'You do not have permission to activate plugins', 'wc-vendors' ) );
         }
 
-        $plugin_slug = isset( $_POST['plugin_slug'] ) ? sanitize_text_field( $_POST['plugin_slug'] ) : '';
+        $plugin_slug = isset( $_POST['plugin_slug'] ) ? sanitize_text_field( wp_unslash( $_POST['plugin_slug'] ) ) : '';
 
         if ( empty( $plugin_slug ) ) {
             wp_send_json_error( __( 'Plugin slug is required', 'wc-vendors' ) );
@@ -161,6 +165,7 @@ class WCV_Marketplace_Backend_Dashboard {
             'pricing_url'           => 'https://www.wcvendors.com/pricing/?utm_source=plugin&utm_medium=dashboard&utm_campaign=pricing',
             'helpful_resources'     => $this->wc_vendors_get_helpful_resources(),
             'activate_plugin_nonce' => wp_create_nonce( 'wcv_activate_plugin' ),
+            'install_nonce'         => wp_create_nonce( 'wcv_install_plugin' ),
             'all_vendors_page_url'  => admin_url( 'admin.php?page=wcv-all-vendors' ),
             'is_rating_active'      => $is_rating_active ? 'true' : 'false',
             'i18n'                  => $this->get_i18n_data(),
@@ -172,6 +177,9 @@ class WCV_Marketplace_Backend_Dashboard {
             'price_format'          => get_woocommerce_price_format(),
             'currency_symbol'       => get_woocommerce_currency_symbol(),
             'currency_position'     => get_option( 'woocommerce_currency_pos' ),
+            'promotion_plugin'      => $this->get_promotion_plugin(),
+            'period_options'        => $this->get_period_options(),
+            'default_period'        => $this->get_default_period(),
         );
 
         // Define script dependencies.
@@ -190,6 +198,122 @@ class WCV_Marketplace_Backend_Dashboard {
      */
     public function get_i18n_data() {
         return include 'wcv-marketplace-dashboard-i18n.php';
+    }
+
+    /**
+     * Get period options
+     *
+     * @since 2.6.5
+     * @return array Array of period options with 'label' and 'value' keys.
+     *
+     * @filter wcv_dashboard_period_options Allows filtering period options.
+     *                                      Filter should return array of arrays
+     *                                      with 'label' and 'value' keys.
+     */
+    public function get_period_options() {
+        $period_options = array(
+            array(
+                'label' => __( 'This month', 'wc-vendors' ),
+                'value' => 'this_month',
+            ),
+            array(
+                'label' => __( 'Last 7 days', 'wc-vendors' ),
+                'value' => 'last_7_days',
+            ),
+            array(
+                'label' => __( 'Last 14 days', 'wc-vendors' ),
+                'value' => 'last_14_days',
+            ),
+            array(
+                'label' => __( 'Last 30 days', 'wc-vendors' ),
+                'value' => 'last_30_days',
+            ),
+            array(
+                'label' => __( 'Last 3 months', 'wc-vendors' ),
+                'value' => 'last_3_months',
+            ),
+            array(
+                'label' => __( 'Last 6 months', 'wc-vendors' ),
+                'value' => 'last_6_months',
+            ),
+            array(
+                'label' => __( 'Last year', 'wc-vendors' ),
+                'value' => 'last_year',
+            ),
+            array(
+                'label' => __( 'Custom', 'wc-vendors' ),
+                'value' => 'custom',
+            ),
+        );
+
+        $filtered = apply_filters( 'wcv_dashboard_period_options', $period_options );
+
+        if ( ! is_array( $filtered ) || empty( $filtered ) ) {
+            return $period_options;
+        }
+
+        foreach ( $filtered as $option ) {
+            if ( ! isset( $option['label'] ) || ! isset( $option['value'] ) ) {
+                return $period_options;
+            }
+        }
+
+        return $filtered;
+    }
+
+    /**
+     * Get default period
+     *
+     * @since 2.6.5
+     *
+     * @return array Default period
+     */
+    public function get_default_period() {
+        $default_period = array(
+            'label' => __( 'This month', 'wc-vendors' ),
+            'value' => 'this_month',
+        );
+
+        return apply_filters( 'wcv_dashboard_default_period', $default_period );
+    }
+
+    /**
+     * Get promotion plugins
+     *
+     * @since 2.6.4
+     *
+     * @return array|null Array of promotion plugin or null if all plugins are active
+     */
+    public function get_promotion_plugin() {
+        $promotion_plugins = WCV_Plugin_Installer::get_instance()->get_promotion_plugins();
+
+        // Filter out active plugins.
+        $inactive_plugins = array_filter(
+            $promotion_plugins,
+            function ( $plugin ) {
+                return ! $plugin['isActive'] || ! $plugin['isInstalled'];
+            }
+        );
+
+        // If all plugins are active, return null.
+        if ( empty( $inactive_plugins ) ) {
+            return null;
+        }
+
+        // Reset array keys after filtering.
+        $inactive_plugins = array_values( $inactive_plugins );
+
+        $previous_plugin = absint( get_option( 'wcvendors_promotion_plugin_index', 0 ) );
+        $next_plugin     = $previous_plugin + 1;
+
+        // If the next index is out of bounds, reset to 0.
+        if ( $next_plugin >= count( $inactive_plugins ) ) {
+            $next_plugin = 0;
+        }
+
+        update_option( 'wcvendors_promotion_plugin_index', $next_plugin );
+
+        return $inactive_plugins[ $next_plugin ];
     }
 }
 

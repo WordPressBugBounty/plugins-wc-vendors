@@ -6,7 +6,8 @@
  * @author  Matt Gates <http://mgates.me>, WC Vendors <http://wcvendors.com>
  * @package WCVendors
  *
- * @version 2.4.8
+ * @since    2.4.8
+ * @version  2.6.5 Fix security issues.
  */
 
 /**
@@ -170,7 +171,7 @@ class WCV_Vendors {
      * @param WC_Order $order The order object.
      *
      * @return array|WP_Error $vendors Array of vendor details or WP_Error if invalid order.
-     * @version 2.0.0
+     * @version  2.6.5 Corrected text domain.
      * @since   2.4.8 - Added HPOS Compatibility.
      */
     public static function get_vendors_from_order( $order ) {
@@ -180,7 +181,7 @@ class WCV_Vendors {
         if ( ! is_a( $order, 'WC_Order' ) ) {
             return new WP_Error(
                 'invalid_order',
-                __( 'Cannot get vendors from an invalid order object.', 'wcvendors' )
+                __( 'Cannot get vendors from an invalid order object.', 'wc-vendors' )
             );
         }
 
@@ -451,21 +452,20 @@ class WCV_Vendors {
      * @param int $order_id  The order ID.
      *
      * @return string|null
+     * @version  2.6.5 Fix security issues.
      */
     public static function count_due_by_vendor( $vendor_id, $order_id ) {
 
         global $wpdb;
-
-        $count = $wpdb->get_var(
-            $wpdb->prepare(
-                "SELECT COUNT(*) FROM {$wpdb->prefix}pv_commission WHERE vendor_id = %d AND order_id = %d AND status = %s",
-                $vendor_id,
-                $order_id,
-                'due'
-            )
+        $sql   = $wpdb->prepare(
+            "SELECT COUNT(*) FROM {$wpdb->prefix}pv_commission WHERE vendor_id = %d AND order_id = %d AND status = %s",
+            $vendor_id,
+            $order_id,
+            'due'
         );
+        $count = $wpdb->get_var( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 
-        return $count;
+        return (int) $count ? (int) $count : 0;
     }
 
     /**
@@ -474,18 +474,23 @@ class WCV_Vendors {
      * @param int $vendor_id The vendor ID.
      *
      * @return array
+     * @version  2.6.5 Fix security issues.
      */
     public static function get_due_orders_by_vendor( $vendor_id ) {
 
         global $wpdb;
 
-        $results = $wpdb->get_results(
-            $wpdb->prepare(
-                "SELECT * FROM {$wpdb->prefix}pv_commission WHERE vendor_id = %d AND status = %s",
-                $vendor_id,
-                'due'
-            )
+        $sql = $wpdb->prepare(
+            "SELECT * FROM {$wpdb->prefix}pv_commission WHERE vendor_id = %d AND status = %s",
+            $vendor_id,
+            'due'
         );
+
+        $results = $wpdb->get_results( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+
+        if ( ! is_array( $results ) ) {
+            return array();
+        }
 
         return $results;
     }
@@ -572,8 +577,8 @@ class WCV_Vendors {
 
         $users = get_users(
             array(
-                'meta_key'   => 'pv_shop_slug',
-                'meta_value' => sanitize_title( $input ),
+                'meta_key'   => 'pv_shop_slug', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+                'meta_value' => sanitize_title( $input ), // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
             )
         );
 
@@ -978,7 +983,7 @@ class WCV_Vendors {
 
         // Manually update the post author since the COT does not have post_author.
         if ( ! wcv_cot_enabled() ) {
-            $wpdb->update(
+            $wpdb->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
                 $wpdb->posts,
                 array(
                     'post_author' => $args['customer_id'],

@@ -6,6 +6,9 @@
  * It provides support for both development (HMR) and production environments.
  *
  * @package WC_Vendors
+ * @version 2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

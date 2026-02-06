@@ -416,12 +416,12 @@ if ( ! class_exists( 'WCVendors_Settings_Display', false ) ) :
                         ),
 
                         array(
-                            'title'   => __( 'Single Product Header', 'wc-vendors' ),
-                            'desc'    => __( 'Enable shop headers on single product pages.', 'wc-vendors' ),
-                            'tip'     => __( 'Check to enable the entire header on /shop/product-category/product-name/', 'wc-vendors' ),
-                            'id'      => 'wcvendors_store_single_headers',
-                            'type'    => 'checkbox',
-                            'default' => 'no',
+                            'title'    => __( 'Single Product Header', 'wc-vendors' ),
+                            'desc'     => __( 'Enable shop headers on single product pages.', 'wc-vendors' ),
+                            'desc_tip' => __( 'Check to enable the entire header on single product pages. Requires "Shop Header" to be enabled for this setting to take effect.', 'wc-vendors' ),
+                            'id'       => 'wcvendors_store_single_headers',
+                            'type'     => 'checkbox',
+                            'default'  => 'no',
                         ),
 
                         array(

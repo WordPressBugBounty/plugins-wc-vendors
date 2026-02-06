@@ -2,6 +2,12 @@
 /**
  * Admin setup
  *
+ * @version 2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound
+ * @phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery
+ * @phpcs:disable WordPress.DB.DirectDatabaseQuery.NoCaching
+ *
  * @author      Jamie Madden, WC Vendors
  * @category    Admin
  * @package     WCVendors/Admin
@@ -282,7 +288,7 @@ class WCV_Admin_Setup {
     public function export_commissions() {
 
         // prepare the items to export.
-        if ( isset( $_GET['action'], $_GET['nonce'] ) && wp_verify_nonce( wp_unslash( $_GET['nonce'] ), 'export_commissions' ) && 'export_commissions' === wp_unslash( $_GET['action'] ) ) {
+        if ( isset( $_GET['action'], $_GET['nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['nonce'] ) ), 'export_commissions' ) && 'export_commissions' === sanitize_text_field( wp_unslash( $_GET['action'] ) ) ) {
 
             include_once 'class-wcv-commissions-csv-exporter.php';
 
@@ -290,10 +296,10 @@ class WCV_Admin_Setup {
 
             $date = gmdate( 'Y-M-d' );
 
-            if ( ! empty( $_GET['com_status'] ) ) { // WPCS: input var ok.
-                $exporter->set_filename( 'wcv_commissions_' . wp_unslash( $_GET['com_status'] ) . '-' . $date . '.csv' ); // WPCS: input var ok, sanitization ok.
+            if ( ! empty( sanitize_text_field( wp_unslash( $_GET['com_status'] ) ) ) ) {
+                $exporter->set_filename( 'wcv_commissions_' . sanitize_text_field( wp_unslash( $_GET['com_status'] ) ) . '-' . $date . '.csv' );
             } else {
-                $exporter->set_filename( 'wcv_commissions-' . $date . '.csv' ); // WPCS: input var ok, sanitization ok.
+                $exporter->set_filename( 'wcv_commissions-' . $date . '.csv' );
             }
 
             $exporter->export();
@@ -308,7 +314,7 @@ class WCV_Admin_Setup {
     public function export_sum_commissions() {
 
         // prepare the items to export.
-        if ( isset( $_GET['action'], $_GET['nonce'] ) && wp_verify_nonce( wp_unslash( $_GET['nonce'] ), 'export_commission_totals' ) && 'export_commission_totals' === wp_unslash( $_GET['action'] ) ) {
+        if ( isset( $_GET['action'], $_GET['nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['nonce'] ) ), 'export_commission_totals' ) && 'export_commission_totals' === sanitize_text_field( wp_unslash( $_GET['action'] ) ) ) {
 
             include_once 'class-wcv-commissions-sum-csv-exporter.php';
 
@@ -316,10 +322,10 @@ class WCV_Admin_Setup {
 
             $date = gmdate( 'Y-M-d' );
 
-            if ( ! empty( $_GET['com_status'] ) ) { // WPCS: input var ok.
-                $exporter->set_filename( 'wcv_commissions_sum_' . wp_unslash( $_GET['com_status'] ) . '-' . $date . '.csv' ); // WPCS: input var ok, sanitization ok.
+            if ( ! empty( sanitize_text_field( wp_unslash( $_GET['com_status'] ) ) ) ) {
+                $exporter->set_filename( 'wcv_commissions_sum_' . sanitize_text_field( wp_unslash( $_GET['com_status'] ) ) . '-' . $date . '.csv' );
             } else {
-                $exporter->set_filename( 'wcv_commissions_sum-' . $date . '.csv' ); // WPCS: input var ok, sanitization ok.
+                $exporter->set_filename( 'wcv_commissions_sum-' . $date . '.csv' );
             }
 
             $exporter->export();
@@ -336,7 +342,7 @@ class WCV_Admin_Setup {
     public function export_paypal_masspay() {
 
         // prepare the items to export.
-        if ( isset( $_GET['action'], $_GET['nonce'] ) && wp_verify_nonce( wp_unslash( $_GET['nonce'] ), 'export_paypal_masspay' ) && 'export_paypal_masspay' === wp_unslash( $_GET['action'] ) ) {
+        if ( isset( $_GET['action'], $_GET['nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['nonce'] ) ), 'export_paypal_masspay' ) && 'export_paypal_masspay' === sanitize_text_field( wp_unslash( $_GET['action'] ) ) ) {
 
             include_once 'class-wcv-commissions-paypal-csv-exporter.php';
 
@@ -344,10 +350,10 @@ class WCV_Admin_Setup {
 
             $date = gmdate( 'Y-M-d' );
 
-            if ( ! empty( $_GET['com_status'] ) ) { // WPCS: input var ok.
-                $exporter->set_filename( 'wcv_commissions_sum_' . wp_unslash( $_GET['com_status'] ) . '-' . $date . '.csv' ); // WPCS: input var ok, sanitization ok.
+            if ( ! empty( sanitize_text_field( wp_unslash( $_GET['com_status'] ) ) ) ) {
+                $exporter->set_filename( 'wcv_commissions_sum_' . sanitize_text_field( wp_unslash( $_GET['com_status'] ) ) . '-' . $date . '.csv' );
             } else {
-                $exporter->set_filename( 'wcv_commissions_sum-' . $date . '.csv' ); // WPCS: input var ok, sanitization ok.
+                $exporter->set_filename( 'wcv_commissions_sum-' . $date . '.csv' );
             }
 
             $exporter->export();
@@ -363,7 +369,7 @@ class WCV_Admin_Setup {
     public function mark_all_paid() {
 
         // set all.
-        if ( isset( $_GET['action'], $_GET['nonce'] ) && wp_verify_nonce( wp_unslash( $_GET['nonce'] ), 'mark_all_paid' ) && 'mark_all_paid' === wp_unslash( $_GET['action'] ) ) {
+        if ( isset( $_GET['action'], $_GET['nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['nonce'] ) ), 'mark_all_paid' ) && 'mark_all_paid' === sanitize_text_field( wp_unslash( $_GET['action'] ) ) ) {
 
         global $wpdb;
         $result = $wpdb->query( "UPDATE `{$wpdb->prefix}pv_commission` SET `status` = 'paid' WHERE `status` = 'due'" );

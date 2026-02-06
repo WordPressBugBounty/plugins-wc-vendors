@@ -1,5 +1,13 @@
 <?php
-// Exit if accessed directly.
+/**
+ * Display the lite bar on the admin pages to promote the Pro version
+ *
+ * @since    2.4.8
+ * @version  2.6.5 Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound
+ */
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
@@ -61,15 +69,15 @@ class WCV_Admin_Lite_Bar {
      * Display bar
      *
      * @since 2.4.8
-     * @version 2.4.8
+     * @version  2.6.5 Corrected text domain.
      */
     private function display_bar() {
 
         $message = sprintf(
             '%s <a href="%s" target="_blank">%s</a>.',
-            __( 'You\'re using WC Vendors Marketplace by WC Vendors free version. To unlock more features consider', 'wcvendors' ),
+            __( 'You\'re using WC Vendors Marketplace by WC Vendors free version. To unlock more features consider', 'wc-vendors' ),
             esc_url( 'https://www.wcvendors.com/pricing/?utm_source=plugin&utm_medium=upsell&utm_campaign=litebar' ),
-            __( 'upgrading to Pro', 'wcvendors' )
+            __( 'upgrading to Pro', 'wc-vendors' )
         );
         include WCV_ABSPATH_ADMIN . 'views/html-admin-lite-bar.php';
     }

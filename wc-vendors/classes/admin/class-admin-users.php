@@ -5,6 +5,10 @@
  *
  * @author  Matt Gates <http://mgates.me>
  * @package WC_Vendors
+ *
+ * @version 2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable 		WordPress.DB.SlowDBQuery.slow_db_query_meta_value
  */
 class WCV_Admin_Users {
 
@@ -415,42 +419,70 @@ class WCV_Admin_Users {
 
         $users = get_users(
             array(
-                'meta_key'   => 'pv_shop_slug',
-                'meta_value' => sanitize_title( $_POST['pv_shop_name'] ),
+                'meta_key'   => 'pv_shop_slug', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+                'meta_value' => isset( $_POST['pv_shop_name'] ) ? sanitize_title( wp_unslash( $_POST['pv_shop_name'] ) ) : '', // phpcs:ignore WordPress.Security.NonceVerification.Missing
             )
         );
 		if ( empty( $users ) || $users[0]->ID == $vendor_id ) { // phpcs:ignore
-            update_user_meta( $vendor_id, 'pv_shop_name', sanitize_text_field( $_POST['pv_shop_name'] ) );
-            update_user_meta( $vendor_id, 'pv_shop_slug', sanitize_title( $_POST['pv_shop_name'] ) );
+            $shop_name = isset( $_POST['pv_shop_name'] ) ? sanitize_text_field( wp_unslash( $_POST['pv_shop_name'] ) ) : '';
+            $shop_slug = isset( $_POST['pv_shop_name'] ) ? sanitize_title( wp_unslash( $_POST['pv_shop_name'] ) ) : '';
+            update_user_meta( $vendor_id, 'pv_shop_name', $shop_name );
+            update_user_meta( $vendor_id, 'pv_shop_slug', $shop_slug );
         }
 
-        update_user_meta( $vendor_id, 'pv_paypal', sanitize_text_field( $_POST['pv_paypal'] ) );
-        update_user_meta( $vendor_id, 'pv_shop_html_enabled', isset( $_POST['pv_shop_html_enabled'] ) );
+        $paypal_address = isset( $_POST['pv_paypal'] ) ? sanitize_email( wp_unslash( $_POST['pv_paypal'] ) ) : '';
+        update_user_meta( $vendor_id, 'pv_paypal', $paypal_address );
+        $shop_html_enabled = isset( $_POST['pv_shop_html_enabled'] ) ? wc_string_to_bool( sanitize_text_field( wp_unslash( $_POST['pv_shop_html_enabled'] ) ) ) : false;
+        update_user_meta( $vendor_id, 'pv_shop_html_enabled', $shop_html_enabled );
 
         if ( apply_filters( 'wcvendors_admin_user_meta_commission_rate_enable', true ) ) {
-            update_user_meta( $vendor_id, 'pv_custom_commission_rate', sanitize_text_field( $_POST['pv_custom_commission_rate'] ) );
+            $commission_rate = isset( $_POST['pv_custom_commission_rate'] ) ? sanitize_text_field( wp_unslash( $_POST['pv_custom_commission_rate'] ) ) : '';
+            update_user_meta( $vendor_id, 'pv_custom_commission_rate', $commission_rate );
         }
 
         // PayPal Masspay Web.
-        update_user_meta( $vendor_id, 'wcv_paypal_masspay_wallet', sanitize_text_field( $_POST['wcv_paypal_masspay_wallet'] ) );
-        update_user_meta( $vendor_id, 'wcv_paypal_masspay_venmo_id', sanitize_text_field( $_POST['wcv_paypal_masspay_venmo_id'] ) );
+        $paypal_masspay_wallet = isset( $_POST['wcv_paypal_masspay_wallet'] ) ? sanitize_text_field( wp_unslash( $_POST['wcv_paypal_masspay_wallet'] ) ) : '';
+        update_user_meta( $vendor_id, 'wcv_paypal_masspay_wallet', $paypal_masspay_wallet );
+        $paypal_masspay_venmo_id = isset( $_POST['wcv_paypal_masspay_venmo_id'] ) ? sanitize_text_field( wp_unslash( $_POST['wcv_paypal_masspay_venmo_id'] ) ) : '';
+        update_user_meta( $vendor_id, 'wcv_paypal_masspay_venmo_id', $paypal_masspay_venmo_id );
 
         $allow_shop_desc_html = wc_string_to_bool( get_option( 'wcvendors_display_shop_description_html', 'no' ) );
         $allow_markup         = wc_string_to_bool( get_option( 'wcvendors_allow_form_markup', 'no' ) );
-        $striped_description  = $allow_shop_desc_html ? wp_kses( $_POST['pv_shop_description'], wcv_allowed_html_tags() ) : wp_strip_all_tags( $_POST['pv_shop_description'] );
-        $striped_seller_info  = $allow_markup ? wp_kses( $_POST['pv_seller_info'], wcv_allowed_html_tags() ) : wp_strip_all_tags( $_POST['pv_seller_info'] );
-        update_user_meta( $vendor_id, 'pv_shop_description', $striped_description );
-        update_user_meta( $vendor_id, 'pv_seller_info', $striped_seller_info );
+
+        $striped_description = '';
+        if ( isset( $_POST['pv_shop_description'] ) ) {
+            $striped_description = $allow_shop_desc_html ? wp_kses( wp_unslash( $_POST['pv_shop_description'] ), wcv_allowed_html_tags() ) : wp_strip_all_tags( wp_unslash( $_POST['pv_shop_description'] ) ); // phpcs:ignore
+            update_user_meta( $vendor_id, 'pv_shop_description', $striped_description );
+        }
+
+        $striped_seller_info = '';
+        if ( isset( $_POST['pv_seller_info'] ) ) {
+            $striped_seller_info = $allow_markup ? wp_kses( wp_unslash( $_POST['pv_seller_info'] ), wcv_allowed_html_tags() ) : wp_strip_all_tags( wp_unslash( $_POST['pv_seller_info'] ) ); // phpcs:ignore
+            update_user_meta( $vendor_id, 'pv_seller_info', $striped_seller_info );
+        }
+
         update_user_meta( $vendor_id, 'wcv_give_vendor_tax', isset( $_POST['wcv_give_vendor_tax'] ) );
         update_user_meta( $vendor_id, 'wcv_give_vendor_shipping', isset( $_POST['wcv_give_vendor_shipping'] ) );
 
         // Bank details.
-        update_user_meta( $vendor_id, 'wcv_bank_account_name', sanitize_text_field( $_POST['wcv_bank_account_name'] ) );
-        update_user_meta( $vendor_id, 'wcv_bank_account_number', sanitize_text_field( $_POST['wcv_bank_account_number'] ) );
-        update_user_meta( $vendor_id, 'wcv_bank_name', sanitize_text_field( $_POST['wcv_bank_name'] ) );
-        update_user_meta( $vendor_id, 'wcv_bank_routing_number', sanitize_text_field( $_POST['wcv_bank_routing_number'] ) );
-        update_user_meta( $vendor_id, 'wcv_bank_iban', sanitize_text_field( $_POST['wcv_bank_iban'] ) );
-        update_user_meta( $vendor_id, 'wcv_bank_bic_swift', sanitize_text_field( $_POST['wcv_bank_bic_swift'] ) );
+        if ( isset( $_POST['wcv_bank_account_name'] ) ) {
+            update_user_meta( $vendor_id, 'wcv_bank_account_name', sanitize_text_field( wp_unslash( $_POST['wcv_bank_account_name'] ) ) );
+        }
+        if ( isset( $_POST['wcv_bank_account_number'] ) ) {
+            update_user_meta( $vendor_id, 'wcv_bank_account_number', sanitize_text_field( wp_unslash( $_POST['wcv_bank_account_number'] ) ) );
+        }
+        if ( isset( $_POST['wcv_bank_name'] ) ) {
+            update_user_meta( $vendor_id, 'wcv_bank_name', sanitize_text_field( wp_unslash( $_POST['wcv_bank_name'] ) ) );
+        }
+        if ( isset( $_POST['wcv_bank_routing_number'] ) ) {
+            update_user_meta( $vendor_id, 'wcv_bank_routing_number', sanitize_text_field( wp_unslash( $_POST['wcv_bank_routing_number'] ) ) );
+        }
+        if ( isset( $_POST['wcv_bank_iban'] ) ) {
+            update_user_meta( $vendor_id, 'wcv_bank_iban', sanitize_text_field( wp_unslash( $_POST['wcv_bank_iban'] ) ) );
+        }
+        if ( isset( $_POST['wcv_bank_bic_swift'] ) ) {
+            update_user_meta( $vendor_id, 'wcv_bank_bic_swift', sanitize_text_field( wp_unslash( $_POST['wcv_bank_bic_swift'] ) ) );
+        }
 
         do_action( 'wcvendors_update_admin_user', $vendor_id );
     }
@@ -692,13 +724,13 @@ class WCV_Admin_Users {
             update_user_meta( $user_id, '_wcv_vendor_status', 'inactive' );
         }
         $shop_name = WCV_Vendors::get_vendor_shop_name( $user_id );
-        update_user_meta( $user_id, 'pv_shop_name', sanitize_text_field( $shop_name ) );
+        update_user_meta( $user_id, 'pv_shop_name', sanitize_text_field( wp_unslash( $shop_name ) ) );
 
-        $shop_slug = sanitize_title( $shop_name );
+        $shop_slug = sanitize_title( wp_unslash( $shop_name ) );
         $users     = get_users(
             array(
-                'meta_key'   => 'pv_shop_slug',
-                'meta_value' => $shop_slug,
+                'meta_key'   => 'pv_shop_slug', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+                'meta_value' => $shop_slug, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
             )
         );
 		if ( empty( $users ) || $users[0]->ID == $user_id ) { // phpcs:ignore

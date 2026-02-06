@@ -90,7 +90,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     ?>
     <?php do_action( 'wcvendors_setup_wizard_after_wcvendors_vendor_give_taxes' ); ?>
     </div>
-
+    <?php if ( is_wcv_pro_active() ) : ?>
     <div class="wcv-setup-input">
     <?php do_action( 'wcvendors_setup_wizard_before_wcvendors_vendor_give_shipping' ); ?>
     <?php
@@ -113,7 +113,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     ?>
     <?php do_action( 'wcvendors_setup_wizard_after_wcvendors_vendor_give_shipping' ); ?>
     </div>
-
+    <?php endif; ?>
     <div class="wcv-setup-input">
     <?php do_action( 'wcvendors_setup_wizard_before_wcvendors_capability_orders_export' ); ?>
     <?php

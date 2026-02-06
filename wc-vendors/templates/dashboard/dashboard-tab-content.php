@@ -2,10 +2,11 @@
 /**
  * New dashboard tab content
  *
- * @version 2.5.4
- * @since   2.5.4
+ * @version 2.6.5 - Fix security issues.
  *
- * @package WCVendors
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+ * @package    WC_Vendors
+ * @since      2.5.4
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

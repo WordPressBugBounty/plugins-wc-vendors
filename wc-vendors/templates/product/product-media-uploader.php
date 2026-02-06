@@ -7,6 +7,12 @@
  * @since     2.5.2
  * @package   WCVendors
  * @subpackage templates/product
+ * @version    2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+ * @phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+ * @phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_meta_value
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

@@ -4,8 +4,11 @@
  *
  * @package WC_Vendors
  *
- * @version 2.5.4
  * @since 2.5.4
+ * @version 2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+ * @package    WC_Vendors
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

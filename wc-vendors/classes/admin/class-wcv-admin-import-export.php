@@ -5,6 +5,10 @@
  *
  * Allow vendor details to be exported and imported via the product screen as admins.
  *
+ * @version 2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound
+ *
  * @package    WCVendors
  * @subpackage WCVendors/admin
  * @author     Jamie Madden <support@wcvendors.com>
@@ -139,11 +143,11 @@ class WCV_Admin_Import_Export {
      *
      * @param array $data - The product args.
      * @return array $data - The product args.
-     * @version 2.2.1
-     * @since   2.2.1
+     * @since    2.2.1
+     * @version  2.6.5 Corrected text domain.
      */
     public function avoid_empty_product( $data ) {
-        if ( ! $this->is_product_author( $data ) && isset( $data['post_title'] ) && __( 'Product', 'woocommerce' ) === $data['post_title'] ) {
+        if ( ! $this->is_product_author( $data ) && isset( $data['post_title'] ) && __( 'Product', 'wc-vendors' ) === $data['post_title'] ) {
             return array();
         }
 

@@ -47,7 +47,7 @@ abstract class WCV_API {
      * @return string
      */
     protected function get_user_ip() {
-        return isset( $_SERVER['REMOTE_ADDR'] ) ? filter_var( $_SERVER['REMOTE_ADDR'], FILTER_VALIDATE_IP ) : '';
+        return isset( $_SERVER['REMOTE_ADDR'] ) ? filter_var( wp_unslash( $_SERVER['REMOTE_ADDR'] ), FILTER_VALIDATE_IP ) : '';
     }
 
     /**
@@ -135,7 +135,7 @@ abstract class WCV_API {
             $ip_address = $this->get_user_ip();
 
             // Get the current time.
-            $current_time = current_time( 'timestamp' ); // phpcs:ignore
+            $current_time = time(); // phpcs:ignore
 
             // Get the time of the last request.
             $last_request_time = get_transient( 'wcv_last_request_time_' . $ip_address );

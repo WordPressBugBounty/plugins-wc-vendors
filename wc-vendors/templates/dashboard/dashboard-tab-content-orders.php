@@ -1,3 +1,12 @@
+<?php
+/**
+ * Dashboard tab content orders
+ *
+ * @version 2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+ */
+?>
 <div class="wcv-cols-group wcv-horizontal-gutters column-group ink-stacker gutters wcv-flex wcv-flex-wrap wcv-cols-group-wide">
     <div class="all-100 wcv-section-gap <?php echo $should_show_ratings ? 'large-50 xlarge-50' : ''; ?>">
         <div class="wcv-recent-orders wcv-section wcv-section-small">

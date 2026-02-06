@@ -1,6 +1,4 @@
 <?php
-
-
 /**
  * Empty class of old settings systems.
  *
@@ -8,6 +6,9 @@
  *
  * @since 2.0.0
  * @version 2.5.2 - Fix conflict wit third party plugins
+ * @version 2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound
  */
 class WCV_SF_Settings_API {
 

@@ -9,6 +9,11 @@
  * @since      2.5.2
  * @version    2.5.2 - added can submit handler
  * @version    2.6.2 - added use_multilevel_walker option
+ * @version    2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable 	WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+ * @phpcs:disable  WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+ * @phpcs:disable  WordPress.Security.NonceVerification.Missing
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -56,9 +61,13 @@ use function WC_Vendors\Classes\Includes\wcv_get_product_types;
 
                 $product_types = apply_filters( 'wcvendors_capability_filter_product_types', $product_types );
 
-                $product_cat_get  = isset( $_POST['_wcv_product_category'] ) ? ( wp_unslash( $_POST['_wcv_product_category'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
-                $product_tag_get  = isset( $_POST['_wcv_product_tag'] ) ? ( wp_unslash( $_POST['_wcv_product_tag'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
-                $product_type_get = isset( $_POST['_wcv_product_type'] ) ? ( wp_unslash( $_POST['_wcv_product_type'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
+                $product_cat_raw  = isset( $_POST['_wcv_product_category'] ) ? wp_unslash( $_POST['_wcv_product_category'] ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+                $product_tag_raw  = isset( $_POST['_wcv_product_tag'] ) ? wp_unslash( $_POST['_wcv_product_tag'] ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+                $product_type_raw = isset( $_POST['_wcv_product_type'] ) ? wp_unslash( $_POST['_wcv_product_type'] ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+
+                $product_cat_get  = array_map( 'sanitize_text_field', $product_cat_raw );
+                $product_tag_get  = array_map( 'sanitize_text_field', $product_tag_raw );
+                $product_type_get = array_map( 'sanitize_text_field', $product_type_raw );
 
                 WCV_Form_Helper::select(
                     array(

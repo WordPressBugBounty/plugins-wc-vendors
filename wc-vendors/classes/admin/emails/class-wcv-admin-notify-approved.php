@@ -138,7 +138,7 @@ if ( ! class_exists( 'WCVendors_Admin_Notify_Approved' ) ) :
                     'plain_text'    => false,
                     'email'         => $this,
                     'user'          => $this->user,
-                    'status'        => $this->status,
+                    'status'        => 'approved' === $this->status ? __( 'approved', 'wc-vendors' ) : $this->status,
                 ),
                 'woocommerce',
                 $this->template_base
@@ -161,7 +161,7 @@ if ( ! class_exists( 'WCVendors_Admin_Notify_Approved' ) ) :
                     'plain_text'    => true,
                     'email'         => $this,
                     'user'          => $this->user,
-                    'status'        => $this->status,
+                    'status'        => 'approved' === $this->status ? __( 'approved', 'wc-vendors' ) : $this->status,
                 ),
                 'woocommerce',
                 $this->template_base

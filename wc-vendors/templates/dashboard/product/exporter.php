@@ -2,8 +2,10 @@
 /**
  * Dashboard: Product Export
  *
- * @package WCVendors_Pro\Dashboard\Product\Export
- * @version    1.8.0
+ * @package    WC_Vendors
+ * @version    2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

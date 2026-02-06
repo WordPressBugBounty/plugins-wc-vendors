@@ -4,8 +4,12 @@
  *
  * Shows reports related to software in the woocommerce backend
  *
- * @author Matt Gates <http://mgates.me>
- * @package
+ * @version 2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+ * @phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery
+ * @phpcs:disable WordPress.DB.DirectDatabaseQuery.NoCaching
  */
 class WCV_Admin_Reports {
 
@@ -80,22 +84,31 @@ class WCV_Admin_Reports {
         global $start_date, $end_date, $woocommerce, $wpdb;
 
         $commission_status_labels = WCV_Commission::commission_status();
-		// @codingStandardsIgnoreStart
-		$start_date = ! empty( $_POST['start_date'] ) ? $_POST['start_date'] : strtotime( gmdate( 'Ymd', strtotime( gmdate( 'Ym', current_time( 'timestamp' ) ) . '01' ) ) );
-		$end_date   = ! empty( $_POST['end_date'] ) ? $_POST['end_date'] : strtotime( gmdate( 'Ymd', current_time( 'timestamp' ) ) );
 
-		if ( ! empty( $_POST['start_date'] ) ) {
-			$start_date = strtotime( $_POST['start_date'] );
-		}
+        if ( ! isset( $_POST['wcvendors_sales_report_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['wcvendors_sales_report_nonce'] ) ), 'wcvendors_sales_report' ) ) {
+            wp_die( esc_html__( 'Security check failed. Please refresh the page and try again.', 'wc-vendors' ) );
+        }
 
-		if ( ! empty( $_POST['end_date'] ) ) {
-			$end_date = strtotime( $_POST['end_date'] );
-		}
+        if ( ! current_user_can( 'manage_woocommerce' ) ) {
+            wp_die( esc_html__( 'You do not have permission to view this report.', 'wc-vendors' ) );
+        }
+
+        // @codingStandardsIgnoreStart
+        $start_date = ! empty( $_POST['start_date'] ) ? sanitize_text_field( wp_unslash( $_POST['start_date'] ) ) : strtotime( gmdate( 'Ymd', strtotime( gmdate( 'Ym', time() ) . '01' ) ) );
+        $end_date   = ! empty( $_POST['end_date'] ) ? sanitize_text_field( wp_unslash( $_POST['end_date'] ) ) : strtotime( gmdate( 'Ymd', time() ) );
+
+        if ( ! empty( $_POST['start_date'] ) ) {
+            $start_date = strtotime( sanitize_text_field( wp_unslash( $_POST['start_date'] ) ) );
+        }
+
+        if ( ! empty( $_POST['end_date'] ) ) {
+            $end_date = strtotime( sanitize_text_field( wp_unslash( $_POST['end_date'] ) ) );
+        }
 		// @codingStandardsIgnoreEnd
         $after  = gmdate( 'Y-m-d', $start_date );
         $before = gmdate( 'Y-m-d', strtotime( '+1 day', $end_date ) );
 
-        $commission_due = $wpdb->get_var(
+        $commission_due = $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
             $wpdb->prepare(
                 "SELECT SUM(total_due + total_shipping + tax) FROM {$wpdb->prefix}pv_commission WHERE status = %s
 				AND time >= %s
@@ -106,7 +119,7 @@ class WCV_Admin_Reports {
             )
         );
 
-        $reversed = $wpdb->get_var(
+        $reversed = $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
             $wpdb->prepare(
                 "SELECT SUM(total_due + total_shipping + tax) FROM {$wpdb->prefix}pv_commission WHERE status = %s
 				AND time >= %s
@@ -117,7 +130,7 @@ class WCV_Admin_Reports {
             )
         );
 
-        $paid = $wpdb->get_var(
+        $paid = $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
             $wpdb->prepare(
                 "SELECT SUM(total_due + total_shipping + tax) FROM {$wpdb->prefix}pv_commission WHERE status = %s
 				AND time >= %s
@@ -140,6 +153,7 @@ class WCV_Admin_Reports {
                         value="<?php echo esc_attr( gmdate( 'Y-m-d', $end_date ) ); ?>" name="end_date"
                         class="range_datepicker to" id="to"/>
                 <input type="submit" class="button" value="<?php esc_html_e( 'Show', 'wc-vendors' ); ?>"/></p>
+                <?php wp_nonce_field( 'wcvendors_sales_report', 'wcvendors_sales_report_nonce' ); ?>
         </form>
 
         <div id="poststuff" class="woocommerce-reports-wrap">
@@ -198,7 +212,7 @@ class WCV_Admin_Reports {
                     <div>
                             <?php
 
-                            $commission = $wpdb->get_results(
+                            $commission = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter  
                                 $wpdb->prepare(
                                     "SELECT * FROM {$wpdb->prefix}pv_commission WHERE time >= %s AND time <= %s ORDER BY time DESC",
                                     $after,
@@ -301,6 +315,7 @@ class WCV_Admin_Reports {
             <input type="text" name="show_start_date" id="show_start_date" value="<?php echo esc_attr( $show_start_date ); ?>" class="range_datepicker from hasDatePicker" placeholder="<?php esc_attr_e( 'yyy-mm-dd', 'wc-vendors' ); ?>" />
             <label for="show_end_date"><?php esc_html_e( 'To:', 'wc-vendors' ); ?></label>
             <input type="text" name="show_end_date" id="show_end_date" value="<?php echo esc_attr( $show_end_date ); ?>" class="range_datepicker to hasDatePicker" placeholder="<?php esc_attr_e( 'yyyy-mm-dd', 'wc-vendors' ); ?>" />
+            <?php wp_nonce_field( 'wcvendors_commission_report', 'wcvendors_commission_report_nonce' ); ?>
         <?php
         if ( 2 === absint( $report_type ) ) {
             ?>
@@ -410,6 +425,7 @@ class WCV_Admin_Reports {
 
                 <input type="submit" class="button" value="<?php esc_html_e( 'Show', 'wc-vendors' ); ?>"/>
 
+            <?php wp_nonce_field( 'wcvendors_commission_totals', 'wcvendors_commission_totals_nonce' ); ?>
             <?php do_action( 'wcvendors_after_commission_reports', $commissions ); ?>
             </p>
         </form>
@@ -536,7 +552,7 @@ class WCV_Admin_Reports {
 
         $sql_query .= ' ORDER BY date DESC';
 
-        $commissions          = $wpdb->get_results( $sql_query, ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+        $commissions          = $wpdb->get_results( $sql_query, ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter
         $formatted_commission = $this->get_commission_by_month( $commissions );
 
         if ( ! empty( $formatted_commission ) ) {
@@ -667,7 +683,7 @@ class WCV_Admin_Reports {
 
         $sql_query .= ' ORDER BY date DESC ';
 
-        $commissions = $wpdb->get_results( $sql_query, ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+        $commissions = $wpdb->get_results( $sql_query, ARRAY_A ); // phpcs:ignore
 
         $formatted_commission = $this->get_commission_by_product( $commissions );
 

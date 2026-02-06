@@ -189,7 +189,7 @@ class WCVendors_Admin_Notices {
     public static function hide_notices() {
 
         if ( isset( $_GET['wcv-hide-notice'] ) && isset( $_GET['_wcv_notice_nonce'] ) ) {
-            if ( ! wp_verify_nonce( $_GET['_wcv_notice_nonce'], 'wcvendors_hide_notices_nonce' ) ) {
+            if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wcv_notice_nonce'] ) ), 'wcvendors_hide_notices_nonce' ) ) {
                 wp_die( esc_attr( __( 'Action failed. Please refresh the page and retry.', 'wc-vendors' ) ) );
             }
 
@@ -197,7 +197,7 @@ class WCVendors_Admin_Notices {
                 wp_die( esc_attr( __( 'Cheatin&#8217; huh?', 'wc-vendors' ) ) );
             }
 
-            $hide_notice = sanitize_text_field( $_GET['wcv-hide-notice'] );
+            $hide_notice = sanitize_text_field( wp_unslash( $_GET['wcv-hide-notice'] ) );
             self::remove_notice( $hide_notice );
             do_action( 'wcvendors_hide_' . $hide_notice . '_notice' );
         }
@@ -407,15 +407,15 @@ class WCVendors_Admin_Notices {
      * @return void
      */
     public static function ajax_process_dismiss_notice() {
-        $nonce = isset( $_POST['nonce'] ) ? sanitize_text_field( $_POST['nonce'] ) : '';
+        $nonce = isset( $_POST['nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['nonce'] ) ) : '';
         if ( ! wp_verify_nonce( $nonce, 'wcv_dismiss_notice' ) || ( defined( 'DOING_AJAX' ) && ! DOING_AJAX ) ) {
             return;
         }
 
         $action_key   = 'wcvendors_notice_scheduled_action';
-        $is_delay     = isset( $_POST['is_delay'] ) ? wc_string_to_bool( $_POST['is_delay'] ) : false;
-        $notice_key   = isset( $_POST['notice_key'] ) ? sanitize_text_field( $_POST['notice_key'] ) : '';
-        $data_dismiss = isset( $_POST['data_dismiss'] ) ? sanitize_text_field( $_POST['data_dismiss'] ) : '';
+        $is_delay     = isset( $_POST['is_delay'] ) ? wc_string_to_bool( sanitize_text_field( wp_unslash( $_POST['is_delay'] ) ) ) : false;
+        $notice_key   = isset( $_POST['notice_key'] ) ? sanitize_text_field( wp_unslash( $_POST['notice_key'] ) ) : '';
+        $data_dismiss = isset( $_POST['data_dismiss'] ) ? sanitize_text_field( wp_unslash( $_POST['data_dismiss'] ) ) : '';
 
         if ( empty( $notice_key ) || ! self::has_notice( $notice_key ) ) {
             return;

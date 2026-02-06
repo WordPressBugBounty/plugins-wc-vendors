@@ -8,7 +8,8 @@
  *
  * @author        Jamie Madden, WC Vendors
  * @package       WCVendors/Templates/Emails/HTML
- * @version       2.0.0
+ * @since         2.0.0
+ * @version       2.6.5 Fix security issues.
  *
  *
  * Template Variables available
@@ -23,11 +24,11 @@
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
-	exit;
+    exit;
 }
 ?>
 
-<div class="wcv-shop-header-name"><?php echo $shop_name; ?></div>
+<div class="wcv-shop-header-name"><?php echo esc_html( $shop_name ); ?></div>
 <div class="wcv_shop_description">
-	<?php echo $shop_description; ?>
+    <?php echo wp_kses_post( $shop_description ); ?>
 </div>

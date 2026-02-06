@@ -6,6 +6,10 @@
  *
  * @package WCVendors/Functions
  * @version 2.0.0
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
+ * @phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery
+ * @phpcs:disable WordPress.DB.DirectDatabaseQuery.NoCaching
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

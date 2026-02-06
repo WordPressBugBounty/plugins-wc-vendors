@@ -9,6 +9,7 @@
   const PendingVendors = defineAsyncComponent(() => import('./PendingVendors.vue'))
   const HelpFulLinks = defineAsyncComponent(() => import('./HelpFulLinks.vue'))
   const LicenseInfo = defineAsyncComponent(() => import('./LicenseInfo.vue'))
+  const CrossPromo = defineAsyncComponent(() => import('./CrossPromo.vue'))
   const dashboardStore = useDashboardStore()
 
   onMounted(() => {
@@ -18,7 +19,7 @@
 </script>
 <template>
   <div class="dashboard-container">
-    <Col :xs="24" :sm="24" :md="24" :lg="20" :xl="20" class="main-content">
+    <Col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" :xxl="20" class="main-content">
     <!-- Header Section (Filter) -->
     <Row>
       <Col :span="24">
@@ -31,7 +32,7 @@
     <!-- Main Content and Sidebar -->
     <Row :gutter="24">
       <!-- Main Content (Left) -->
-      <Col :xs="24" :sm="24" :md="24" :lg="16" :xl="16">
+      <Col :xs="24" :sm="24" :md="24" :lg="18" :xl="18" :xxl="20">
       <!-- Metrics Section -->
       <Metrics />
 
@@ -41,7 +42,8 @@
       </Col>
 
       <!-- Sidebar (Right) -->
-      <Col :xs="24" :sm="24" :md="24" :lg="8" :xl="8" class="sidebar-column">
+      <Col :xs="24" :sm="24" :md="24" :lg="6" :xl="6" :xxl="4" class="sidebar-column">
+      <CrossPromo />
       <HelpFulLinks />
       <LicenseInfo />
       </Col>

@@ -8,8 +8,10 @@
  * @link       http://www.wcvendors.com
  * @since      1.0.0
  *
- * @package    WCVendors_Pro
- * @subpackage WCVendors_Pro/public/partials
+ * @version 2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
  */
 $vertical_menu = wc_string_to_bool( get_option( 'wcvendors_use_vertical_menu', 'no' ) );
 

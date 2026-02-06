@@ -3,6 +3,10 @@
  * The main WCV_Vendor_Dashboard class - moved from Pro to Free from version 2.5.2
  *
  * This is the main controller class for the dashboard, all actions are defined in this class.
+ *
+ * @version 2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
  */
 
 use WC_Vendors\Classes\Front\WCV_Public_Assets;
@@ -624,19 +628,21 @@ class WCV_Vendor_Dashboard {
             if ( 'shop_order_vendor' === $order->get_type() ) {
                 $order_owner = (int) $order->get_meta( 'wcv_vendor_id' );
 
-                return ( get_current_user_id() === $order_owner ) ? true : false;
+                return ( get_current_user_id() === $order_owner );
             } elseif ( 'shop_order' === $order->get_type() ) {
                 $vendors_ids = (array) $order->get_meta( 'wcv_vendor_ids' );
 
-                return in_array( get_current_user_id(), $vendors_ids, true );
+                // Only allow access if vendor_ids meta exists and contains current user.
+                if ( ! empty( $vendors_ids ) ) {
+                    return in_array( get_current_user_id(), $vendors_ids, true );
+                }
+
+                // If wcv_vendor_ids meta is missing, deny access for security.
+                return false;
             }
 
-            $vendor_products = WCV_Queries::get_products_for_order( $object_id );
-                if ( empty( $vendor_products ) ) {
-                    return false;
-                } else {
-                    return true;
-                }
+            // Unknown order type - deny access.
+            return false;
         } else {
             $post_owner = get_post_field( 'post_author', $object_id );
         }
@@ -721,10 +727,16 @@ class WCV_Vendor_Dashboard {
             return $can_view;
         }
 
-        $referer               = wp_get_referer();
-        $user                  = get_userdata( $user_id );
-        $user_roles            = $user->roles;
-        $accept_terms          = isset( $_GET['terms'] ) ? wc_string_to_bool( sanitize_text_field( wp_unslash( $_GET['terms'] ) ) ) : false; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        $referer      = wp_get_referer();
+        $user         = get_userdata( $user_id );
+        $user_roles   = $user->roles;
+        $accept_terms = false;
+        if ( isset( $_GET['terms'] ) ) {
+            // Verify nonce if present, otherwise default to false for security.
+            if ( isset( $_GET['apply_for_vendor_nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['apply_for_vendor_nonce'] ) ), 'apply_for_vendor' ) ) {
+                $accept_terms = wc_string_to_bool( sanitize_text_field( wp_unslash( $_GET['terms'] ) ) );
+            }
+        }
         $is_vendor             = in_array( 'vendor', $user_roles, true );
         $is_admin              = in_array( 'administrator', $user_roles, true ) || in_array( 'shop_manager', $user_roles, true );
         $is_pending_vendor     = in_array( 'pending_vendor', $user_roles, true );
@@ -1406,13 +1418,13 @@ class WCV_Vendor_Dashboard {
      * Redirect old slug to new slug
      */
     public function redirect_old_slug() {
-        $slugs = array(
+        $slugs       = array(
             'vendor_dashboard/orders'         => 'vendor_dashboard/order',
             '/vendor_dashboard/shop-settings' => 'vendor_dashboard/settings',
         );
-
+        $request_uri = isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
         foreach ( $slugs as $old_slug => $new_slug ) {
-            if ( strpos( $_SERVER['REQUEST_URI'], $old_slug ) !== false ) {
+            if ( strpos( $request_uri, $old_slug ) !== false ) {
                 wp_safe_redirect( home_url( $new_slug ), 301 );
                 exit;
             }

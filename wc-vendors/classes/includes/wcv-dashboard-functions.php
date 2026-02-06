@@ -1,4 +1,12 @@
 <?php
+/**
+ * WC Vendors Dashboard Functions
+ *
+ * @version 2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedNamespaceFound
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+ */
 namespace WC_Vendors\Classes\Includes;
 
 use WC_Vendors\Classes\Includes\WCV_Product_Dropdown_Walker;

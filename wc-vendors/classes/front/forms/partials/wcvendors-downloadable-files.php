@@ -7,7 +7,13 @@
  *
  * @link       http://www.wcvendors.com
  * @since      2.5.2
- * @version    2.5.2
+ * @version    2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable 	WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedNamespaceFound
+ * @phpcs:disable 	WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+ * @phpcs:disable 	WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+ * @phpcs:disable 	WordPress.DB.DirectDatabaseQuery.DirectQuery
+ * @phpcs:disable 	WordPress.DB.DirectDatabaseQuery.NoCaching
  */
 
 $downloadable_files = ! empty( $post_id ) ? wc_get_product( $post_id )->get_downloads( 'edit' ) : '';

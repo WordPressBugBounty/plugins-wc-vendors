@@ -1,4 +1,22 @@
 <?php
+
+/**
+ * Product Controller Class
+ *
+ * Defines relevant methods for generating a display table for public facing pages.
+ *
+ * @version 2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedNamespaceFound
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound
+ * @phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery
+ * @phpcs:disable WordPress.DB.DirectDatabaseQuery.NoCaching
+ * @phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+ * @phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+ * @phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+ */
 namespace WC_Vendors\Classes\Front;
 
 use function WC_Vendors\Classes\Includes\wcv_get_product_types;
@@ -123,12 +141,12 @@ class WCV_Product_Controller {
             return;
         }
 
-        if ( ! isset( $_POST['_wcv-save_product'] ) || ! wp_verify_nonce( $_POST['_wcv-save_product'], 'wcv-save_product' ) || ! is_user_logged_in() ) {
+        if ( ! isset( $_POST['_wcv-save_product'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wcv-save_product'] ) ), 'wcv-save_product' ) || ! is_user_logged_in() ) {
             return;
         }
 
         $can_submit_live     = wc_string_to_bool( get_option( 'wcvendors_capability_products_live', 'no' ) );
-        $current_post_status = isset( $_POST['post_status'] ) ? $_POST['post_status'] : '';
+        $current_post_status = isset( $_POST['post_status'] ) ? sanitize_text_field( wp_unslash( $_POST['post_status'] ) ) : '';
         $can_edit_approved   = wc_string_to_bool( get_option( 'wcvendors_capability_products_approved', 'no' ) );
         $trusted_vendor      = 'yes' === get_user_meta( get_current_user_id(), '_wcv_trusted_vendor', true ) ? true : false;
         $untrusted_vendor    = 'yes' === get_user_meta( get_current_user_id(), '_wcv_untrusted_vendor', true ) ? true : false;
@@ -146,14 +164,14 @@ class WCV_Product_Controller {
             'type'   => 'success',
         );
 
-        if ( isset( $_POST['post_id'] ) && is_numeric( $_POST['post_id'] ) ) {
+        if ( isset( $_POST['post_id'] ) && is_numeric( sanitize_text_field( wp_unslash( $_POST['post_id'] ) ) ) ) {
 
             // check the object owner.
-            if ( ! \WCV_Vendor_Dashboard::check_object_permission( 'product', absint( $_POST['post_id'] ) ) ) {
+            if ( ! \WCV_Vendor_Dashboard::check_object_permission( 'product', absint( sanitize_text_field( wp_unslash( $_POST['post_id'] ) ) ) ) ) {
                 return;
             }
 
-            $post_id = $this->save_product( (int) ( $_POST['post_id'] ) );
+            $post_id = $this->save_product( (int) ( sanitize_text_field( wp_unslash( $_POST['post_id'] ) ) ) );
 
             if ( $post_id ) {
 
@@ -249,7 +267,7 @@ class WCV_Product_Controller {
                 $url = self::get_product_edit_link( $post_id );
                 break;
             case 'list':
-                $current_page = ( isset( $_POST['page_number'] ) && 1 < $_POST['page_number'] ) ? '/page/' . $_POST['page_number'] : '';
+                $current_page = ( isset( $_POST['page_number'] ) && 1 < (int) sanitize_text_field( wp_unslash( $_POST['page_number'] ) ) ) ? '/page/' . sanitize_text_field( wp_unslash( $_POST['page_number'] ) ) : '';
                 $url          = \WCV_Vendor_Dashboard::get_dashboard_page_url( 'product' ) . $current_page;
                 break;
             case 'view':
@@ -275,15 +293,15 @@ class WCV_Product_Controller {
      * @version 2.5.5
      */
     public function process_search_and_filter( $args ) {
-        $request = $_SERVER['REQUEST_METHOD'];
+        $request = isset( $_SERVER['REQUEST_METHOD'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ) ) : '';
         if ( 'POST' === $request ) {
-            $nonce = isset( $_POST['wcv_product_table_nonce'] ) ? $_POST['wcv_product_table_nonce'] : '';
+            $nonce = isset( $_POST['wcv_product_table_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['wcv_product_table_nonce'] ) ) : '';
             if ( ! wp_verify_nonce( $nonce, 'wcv_product_table_nonce' ) ) {
                 wp_die( 'Invalid nonce' );
             }
         }
 
-        $search       = isset( $_POST['wcv-search'] ) ? sanitize_text_field( $_POST['wcv-search'] ) : '';
+        $search       = isset( $_POST['wcv-search'] ) ? sanitize_text_field( wp_unslash( $_POST['wcv-search'] ) ) : '';
         $product_tag   = isset( $_POST['_wcv_product_tag'] ) ? $_POST['_wcv_product_tag'] : ''; // phpcs:ignore
         $product_cat   = isset( $_POST['_wcv_product_category'] ) ? $_POST['_wcv_product_category'] : ''; // phpcs:ignore
         $product_type = isset( $_POST['_wcv_product_type'] ) ? $_POST['_wcv_product_type'] : ''; // phpcs:ignore
@@ -307,7 +325,7 @@ class WCV_Product_Controller {
                     'posts_per_page' => -1,
                     'fields'         => 'ids',
                     'author'         => get_current_user_id(),
-                    'meta_query'     => array(
+                    'meta_query'     => array( //phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
                         array(
                             'key'     => '_sku',
                             'value'   => $search,
@@ -390,8 +408,14 @@ class WCV_Product_Controller {
 
             if ( 'product' === $object && 'delete' === $action && is_numeric( $id ) ) {
 
-				if ( null != $id ) { //phpcs:ignore
-					if ( \WCV_Vendor_Dashboard::check_object_permission( 'product', $id ) == false ) { //phpcs:ignore
+                $nonce = isset( $_GET['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ) : ''; //phpcs:ignore
+
+                if ( ! wp_verify_nonce( $nonce, 'wcv-delete-product-' . $id ) ) {
+                    wp_die( esc_html__( 'You are not authorized to delete this product.', 'wc-vendors' ) );
+                }
+
+                if ( null !== $id ) {
+                    if ( \WCV_Vendor_Dashboard::check_object_permission( 'product', absint( $id ) ) !== true ) {
                         return false;
                     }
                 }
@@ -499,7 +523,7 @@ class WCV_Product_Controller {
         $can_edit_live       = wc_string_to_bool( get_option( 'wcvendors_capability_products_edit', 'no' ) );
         $can_edit_approved   = wc_string_to_bool( get_option( 'wcvendors_capability_products_approved', 'no' ) );
         $post_status         = '';
-        $current_post_status = isset( $_POST['post_status'] ) ? $_POST['post_status'] : '';
+        $current_post_status = isset( $_POST['post_status'] ) ? sanitize_text_field( wp_unslash( $_POST['post_status'] ) ) : '';
 
         if ( isset( $_POST['draft_button'] ) ) {
             $post_status = 'draft';
@@ -532,22 +556,22 @@ class WCV_Product_Controller {
             $post_status = 'pending';
         }
 
-        $product_type = empty( $_POST['product-type'] ) ? 'simple' : sanitize_title( stripslashes( $_POST['product-type'] ) );
-        $categories   = isset( $_POST['product_cat'] ) ? wc_clean( $_POST['product_cat'] ) : get_option( 'default_product_cat' );
+        $product_type = empty( $_POST['product-type'] ) ? 'simple' : sanitize_title( stripslashes( sanitize_text_field( wp_unslash( $_POST['product-type'] ) ) ) );
+        $categories   = isset( $_POST['product_cat'] ) ? wc_clean( $_POST['product_cat'] ) : get_option( 'default_product_cat' ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 
         $_product = array(
-            'post_title'  => $this->allow_markup ? wc_clean( $_POST['post_title'] ) : wp_strip_all_tags( wc_clean( $_POST['post_title'] ) ),
+            'post_title'  => isset( $_POST['post_title'] ) ? ( $this->allow_markup ? wc_clean( $_POST['post_title'] ) : wp_strip_all_tags( wc_clean( $_POST['post_title'] ) ) ) : '', //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
             'post_status' => $post_status,
             'post_type'   => 'product',
             'post_author' => get_current_user_id(),
         );
 
         if ( isset( $_POST['post_excerpt'] ) ) {
-            $_product['post_excerpt'] = wc_string_to_bool( get_option( 'wcvendors_allow_product_html', 'no' ) ) ? wp_kses_post( $_POST['post_excerpt'] ) : wp_strip_all_tags( $_POST['post_excerpt'] );
+            $_product['post_excerpt'] = wc_string_to_bool( get_option( 'wcvendors_allow_product_html', 'no' ) ) ? wp_kses_post( $_POST['post_excerpt'] ) : wp_strip_all_tags( $_POST['post_excerpt'] ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
         }
 
         if ( isset( $_POST['post_content'] ) ) {
-            $_product['post_content'] = wc_string_to_bool( get_option( 'wcvendors_allow_product_html', 'no' ) ) ? wp_kses_post( $_POST['post_content'] ) : wp_strip_all_tags( $_POST['post_content'] );
+            $_product['post_content'] = wc_string_to_bool( get_option( 'wcvendors_allow_product_html', 'no' ) ) ? wp_kses_post( $_POST['post_content'] ) : wp_strip_all_tags( $_POST['post_content'] ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
         }
 
         do_action( 'wcvendors_before_product_save', $post_id );
@@ -580,15 +604,15 @@ class WCV_Product_Controller {
         do_action( 'wcvendors_before_product_save_images', $product_id );
 
         // Featured Image.
-        if ( isset( $_POST['_featured_image_id'] ) && '' !== $_POST['_featured_image_id'] ) {
-            set_post_thumbnail( $product_id, (int) $_POST['_featured_image_id'] );
+        if ( isset( $_POST['_featured_image_id'] ) && '' !== sanitize_text_field( wp_unslash( $_POST['_featured_image_id'] ) ) ) {
+            set_post_thumbnail( $product_id, (int) sanitize_text_field( wp_unslash( $_POST['_featured_image_id'] ) ) );
         } else {
             delete_post_thumbnail( $product_id );
         }
 
         // // Gallery Images
-        if ( isset( $_POST['product_image_gallery'] ) && '' !== $_POST['product_image_gallery'] ) {
-            $images_gallery = explode( ',', sanitize_text_field( $_POST['product_image_gallery'] ) );
+        if ( isset( $_POST['product_image_gallery'] ) && '' !== sanitize_text_field( wp_unslash( $_POST['product_image_gallery'] ) ) ) {
+            $images_gallery = explode( ',', sanitize_text_field( wp_unslash( $_POST['product_image_gallery'] ) ) );
             $images_gallery = array_map( 'absint', $images_gallery );
             $images_gallery = array_unique( $images_gallery );
             $images_gallery = implode( ',', $images_gallery );
@@ -601,7 +625,7 @@ class WCV_Product_Controller {
 
         $hide_categories = wc_string_to_bool( get_option( 'wcvendors_hide_product_basic_categories', 'no' ) ) && $this->is_pro_active;
         // Categories.
-        if ( isset( $_POST['product_cat'] ) && is_array( $_POST['product_cat'] ) ) {
+        if ( isset( $_POST['product_cat'] ) && is_array( $_POST['product_cat'] ) ) { //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
             $categories = array_map( 'intval', $_POST['product_cat'] );
             $categories = array_unique( $categories );
 
@@ -617,11 +641,9 @@ class WCV_Product_Controller {
         // Tags.
         if ( isset( $_POST['product_tags'] ) ) {
 
-            $post_tags = array();
+            $post_tags = is_array( $_POST['product_tags'] ) ? $_POST['product_tags'] : array(); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 
-            if ( is_array( $_POST['product_tags'] ) ) {
-                $post_tags = $_POST['product_tags'];
-            }
+            $post_tags = array_map( 'intval', $post_tags );
 
             $tags = array();
 
@@ -731,7 +753,7 @@ class WCV_Product_Controller {
 
         if ( isset( $_POST['product-type'] ) ) {
 
-            $classname = \WC_Product_Factory::get_classname_from_product_type( $_POST['product-type'] );
+            $classname = \WC_Product_Factory::get_classname_from_product_type( sanitize_text_field( wp_unslash( $_POST['product-type'] ) ) );
 
             if ( ! class_exists( $classname ) ) {
                 $classname = 'WC_Product_Simple';
@@ -741,7 +763,7 @@ class WCV_Product_Controller {
 
             // Featured Product.
             if ( isset( $_POST['featured'] ) ) {
-                $product->set_featured( $_POST['featured'] );
+                $product->set_featured( sanitize_text_field( wp_unslash( $_POST['featured'] ) ) );
             }
 
             // Catalog visibility.
@@ -754,7 +776,7 @@ class WCV_Product_Controller {
             }
 
             if ( isset( $_POST['_stock_status'] ) ) {
-                $stock_status = true === $_POST['_stock_status'] ? 'instock' : 'outofstock';
+                $stock_status = wc_string_to_bool( sanitize_text_field( wp_unslash( $_POST['_stock_status'] ) ) ) ? 'instock' : 'outofstock';
             } else {
                 $stock_status = $product->get_stock_status();
             }
@@ -764,12 +786,12 @@ class WCV_Product_Controller {
 
                 // Manage stock.
                 if ( isset( $_POST['_manage_stock'] ) ) {
-                    $product->set_manage_stock( $_POST['_manage_stock'] );
+                    $product->set_manage_stock( sanitize_text_field( wp_unslash( $_POST['_manage_stock'] ) ) );
                 }
 
                 // Backorders.
                 if ( isset( $_POST['_backorders'] ) ) {
-                    $product->set_backorders( $_POST['_backorders'] );
+                    $product->set_backorders( sanitize_text_field( wp_unslash( $_POST['_backorders'] ) ) );
                 }
 
                 if ( $product->is_type( 'grouped' ) ) {
@@ -790,7 +812,7 @@ class WCV_Product_Controller {
 
                     // Stock quantity.
                     if ( isset( $_POST['_stock'] ) ) {
-                        $product->set_stock_quantity( (int) wc_stock_amount( $_POST['_stock'] ) );
+                        $product->set_stock_quantity( (int) wc_stock_amount( sanitize_text_field( wp_unslash( $_POST['_stock'] ) ) ) );
                     }
                 } else {
                     // Don't manage stock.
@@ -818,14 +840,14 @@ class WCV_Product_Controller {
         // Set catalog visibility.
         if ( isset( $_POST['_private_listing'] ) ) {
             update_post_meta( $post_id, '_visibility', 'hidden' );
-            update_post_meta( $post_id, '_private_listing', isset( $_POST['_private_listing'] ) ? 'yes' : 'no' );
+            update_post_meta( $post_id, '_private_listing', isset( $_POST['_private_listing'] ) ? 'yes' : 'no' ); //phpcs:ignore
         } else {
             update_post_meta( $post_id, '_visibility', 'visible' );
             delete_post_meta( $post_id, '_private_listing' );
         }
 
         // Get types.
-        $product_type    = empty( $_POST['product-type'] ) ? 'simple' : sanitize_title( stripslashes( $_POST['product-type'] ) );
+        $product_type    = isset( $_POST['product-type'] ) && empty( $_POST['product-type'] ) ? 'simple' : sanitize_title( stripslashes( sanitize_text_field( wp_unslash( $_POST['product-type'] ) ) ) );
         $is_downloadable = isset( $_POST['_downloadable'] ) ? 'yes' : 'no';
         $is_virtual      = isset( $_POST['_virtual'] ) ? 'yes' : 'no';
 
@@ -836,33 +858,33 @@ class WCV_Product_Controller {
 
         // Update post meta.
         if ( isset( $_POST['_regular_price'] ) ) {
-            update_post_meta( $post_id, '_regular_price', ( '' === $_POST['_regular_price'] ) ? '' : wc_format_decimal( $_POST['_regular_price'] ) );
+            update_post_meta( $post_id, '_regular_price', ( '' === sanitize_text_field( wp_unslash( $_POST['_regular_price'] ) ) ) ? '' : wc_format_decimal( sanitize_text_field( wp_unslash( $_POST['_regular_price'] ) ) ) );
         }
 
         if ( isset( $_POST['_sale_price'] ) ) {
 
-            $sale_price = ( '' === $_POST['_sale_price'] ) ? '' : wc_format_decimal( $_POST['_sale_price'] );
-            update_post_meta( $post_id, '_sale_price', ( '' === $_POST['_sale_price'] ? '' : wc_format_decimal( $_POST['_sale_price'] ) ) );
+            $sale_price = ( '' === sanitize_text_field( wp_unslash( $_POST['_sale_price'] ) ) ) ? '' : wc_format_decimal( sanitize_text_field( wp_unslash( $_POST['_sale_price'] ) ) );
+            update_post_meta( $post_id, '_sale_price', ( '' === sanitize_text_field( wp_unslash( $_POST['_sale_price'] ) ) ? '' : wc_format_decimal( sanitize_text_field( wp_unslash( $_POST['_sale_price'] ) ) ) ) );
             update_post_meta( $post_id, '_price', $sale_price );
         }
 
         if ( isset( $_POST['_tax_status'] ) ) {
-            update_post_meta( $post_id, '_tax_status', wc_clean( $_POST['_tax_status'] ) );
+            update_post_meta( $post_id, '_tax_status', sanitize_text_field( wp_unslash( $_POST['_tax_status'] ) ) );
         }
 
         if ( isset( $_POST['_tax_class'] ) ) {
-            update_post_meta( $post_id, '_tax_class', wc_clean( $_POST['_tax_class'] ) );
+            update_post_meta( $post_id, '_tax_class', sanitize_text_field( wp_unslash( $_POST['_tax_class'] ) ) );
         }
 
         if ( isset( $_POST['_purchase_note'] ) ) {
-            update_post_meta( $post_id, '_purchase_note', wc_clean( $_POST['_purchase_note'] ) );
+            update_post_meta( $post_id, '_purchase_note', sanitize_text_field( wp_unslash( $_POST['_purchase_note'] ) ) );
         }
 
         if ( isset( $_POST['menu_order'] ) ) {
             wp_update_post(
                 array(
                     'ID'         => $post_id,
-                    'menu_order' => absint( $_POST['menu_order'] ),
+                    'menu_order' => absint( sanitize_text_field( wp_unslash( $_POST['menu_order'] ) ) ),
                 )
             );
         }
@@ -873,19 +895,19 @@ class WCV_Product_Controller {
             do_action( 'wcvendors_before_product_save_dimensions', $post_id );
 
             if ( isset( $_POST['_weight'] ) ) {
-                update_post_meta( $post_id, '_weight', ( '' === $_POST['_weight'] ) ? '' : wc_format_decimal( $_POST['_weight'] ) );
+                update_post_meta( $post_id, '_weight', ( '' === sanitize_text_field( wp_unslash( $_POST['_weight'] ) ) ) ? '' : wc_format_decimal( sanitize_text_field( wp_unslash( $_POST['_weight'] ) ) ) );
             }
 
             if ( isset( $_POST['_length'] ) ) {
-                update_post_meta( $post_id, '_length', ( '' === $_POST['_length'] ) ? '' : wc_format_decimal( $_POST['_length'] ) );
+                update_post_meta( $post_id, '_length', ( '' === sanitize_text_field( wp_unslash( $_POST['_length'] ) ) ) ? '' : wc_format_decimal( sanitize_text_field( wp_unslash( $_POST['_length'] ) ) ) );
             }
 
             if ( isset( $_POST['_width'] ) ) {
-                update_post_meta( $post_id, '_width', ( '' === $_POST['_width'] ) ? '' : wc_format_decimal( $_POST['_width'] ) );
+                update_post_meta( $post_id, '_width', ( '' === sanitize_text_field( wp_unslash( $_POST['_width'] ) ) ) ? '' : wc_format_decimal( sanitize_text_field( wp_unslash( $_POST['_width'] ) ) ) );
             }
 
             if ( isset( $_POST['_height'] ) ) {
-                update_post_meta( $post_id, '_height', ( '' === $_POST['_height'] ) ? '' : wc_format_decimal( $_POST['_height'] ) );
+                update_post_meta( $post_id, '_height', ( '' === sanitize_text_field( wp_unslash( $_POST['_height'] ) ) ) ? '' : wc_format_decimal( sanitize_text_field( wp_unslash( $_POST['_height'] ) ) ) );
             }
 
             do_action( 'wcvendors_before_product_save_shipping_rates', $post_id );
@@ -899,7 +921,7 @@ class WCV_Product_Controller {
 
         // Save shipping class.
         if ( isset( $_POST['product_shipping_class'] ) ) {
-            $product_shipping_class = $_POST['product_shipping_class'] > 0 && 'external' !== $product_type ? absint( $_POST['product_shipping_class'] ) : '';
+            $product_shipping_class = isset( $_POST['product_shipping_class'] ) && $_POST['product_shipping_class'] > 0 && 'external' !== $product_type ? absint( sanitize_text_field( wp_unslash( $_POST['product_shipping_class'] ) ) ) : '';
             wp_set_object_terms( $post_id, $product_shipping_class, 'product_shipping_class' );
         }
 
@@ -907,7 +929,7 @@ class WCV_Product_Controller {
         if ( isset( $_POST['_sku'] ) ) {
 
             $sku     = get_post_meta( $post_id, '_sku', true );
-            $new_sku = wc_clean( stripslashes( $_POST['_sku'] ) );
+            $new_sku = wc_clean( stripslashes( sanitize_text_field( wp_unslash( $_POST['_sku'] ) ) ) );
 
             if ( '' === $new_sku ) {
                 update_post_meta( $post_id, '_sku', '' );
@@ -937,21 +959,17 @@ class WCV_Product_Controller {
 
         if ( isset( $_POST['attribute_names'] ) && isset( $_POST['attribute_values'] ) ) {
 
-            $attribute_names  = $_POST['attribute_names'];
-            $attribute_values = $_POST['attribute_values'];
+            $attribute_names  = isset( $_POST['attribute_names'] ) ? $_POST['attribute_names'] : array(); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+            $attribute_values = isset( $_POST['attribute_values'] ) ? $_POST['attribute_values'] : array(); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 
             $attribute_names_count = count( $attribute_names );
 
-            if ( isset( $_POST['attribute_visibility'] ) ) {
-                $attribute_visibility = $_POST['attribute_visibility'];
-            }
+            $attribute_visibility = isset( $_POST['attribute_visibility'] ) ? $_POST['attribute_visibility'] : array(); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 
-            if ( isset( $_POST['attribute_variation'] ) ) {
-                $attribute_variation = $_POST['attribute_variation'];
-            }
+            $attribute_variation = isset( $_POST['attribute_variation'] ) ? $_POST['attribute_variation'] : array(); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 
-            $attribute_is_taxonomy   = $_POST['attribute_is_taxonomy'];
-            $attribute_position      = $_POST['attribute_position'];
+            $attribute_is_taxonomy   = isset( $_POST['attribute_is_taxonomy'] ) ? $_POST['attribute_is_taxonomy'] : array(); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+            $attribute_position      = isset( $_POST['attribute_position'] ) ? $_POST['attribute_position'] : array(); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
             $attribute_names_max_key = max( array_keys( $attribute_names ) );
 
             $pos = 0;
@@ -1060,10 +1078,10 @@ class WCV_Product_Controller {
 
         } else {
 
-            $date_from = isset( $_POST['_sale_price_dates_from'] ) ? wc_clean( $_POST['_sale_price_dates_from'] ) : '';
-            $date_to   = isset( $_POST['_sale_price_dates_to'] ) ? wc_clean( $_POST['_sale_price_dates_to'] ) : '';
+            $date_from = isset( $_POST['_sale_price_dates_from'] ) ? sanitize_text_field( wp_unslash( $_POST['_sale_price_dates_from'] ) ) : '';
+            $date_to   = isset( $_POST['_sale_price_dates_to'] ) ? sanitize_text_field( wp_unslash( $_POST['_sale_price_dates_to'] ) ) : '';
 
-			if ( wc_clean( $date_from ) == wc_clean( $date_to ) ) { //phpcs:ignore
+			if ( sanitize_text_field( wp_unslash( $date_from ) ) == sanitize_text_field( wp_unslash( $date_to ) ) ) { //phpcs:ignore
                 $date_to   = '';
                 $date_from = '';
             }
@@ -1082,22 +1100,22 @@ class WCV_Product_Controller {
             }
 
             if ( $date_to && ! $date_from ) {
-				update_post_meta( $post_id, '_sale_price_dates_from', strtotime( 'NOW', current_time( 'timestamp' ) ) ); //phpcs:ignore
+				update_post_meta( $post_id, '_sale_price_dates_from', time() ); //phpcs:ignore
             }
 
             // Update price if on sale.
             if ( isset( $_POST['_sale_price'] ) && '' !== $_POST['_sale_price'] && '' === $date_to && '' === $date_from ) {
-                update_post_meta( $post_id, '_price', wc_format_localized_price( $_POST['_sale_price'] ) );
+                update_post_meta( $post_id, '_price', wc_format_localized_price( sanitize_text_field( wp_unslash( $_POST['_sale_price'] ) ) ) );
             } else {
-                update_post_meta( $post_id, '_price', ( '' === $_POST['_regular_price'] ) ? '' : wc_format_localized_price( $_POST['_regular_price'] ) );
+                update_post_meta( $post_id, '_price', ( '' === sanitize_text_field( wp_unslash( $_POST['_regular_price'] ) ) ) ? '' : wc_format_localized_price( sanitize_text_field( wp_unslash( $_POST['_regular_price'] ) ) ) );
             }
 
-			if ( isset( $_POST['_sale_price'] ) && '' !== $_POST['_sale_price'] && $date_from && strtotime( $date_from ) < strtotime( 'NOW', current_time( 'timestamp' ) ) ) { //phpcs:ignore
-                update_post_meta( $post_id, '_price', wc_format_localized_price( $_POST['_sale_price'] ) );
+			if ( isset( $_POST['_sale_price'] ) && '' !== $_POST['_sale_price'] && $date_from && strtotime( $date_from ) < time() ) { //phpcs:ignore
+                update_post_meta( $post_id, '_price', wc_format_localized_price( sanitize_text_field( wp_unslash( $_POST['_sale_price'] ) ) ) );
             }
 
-			if ( $date_to && strtotime( $date_to ) < strtotime( 'NOW', current_time( 'timestamp' ) ) ) { //phpcs:ignore
-                update_post_meta( $post_id, '_price', ( '' === $_POST['_regular_price'] ) ? '' : wc_format_localized_price( $_POST['_regular_price'] ) );
+			if ( $date_to && strtotime( $date_to ) < time() ) { //phpcs:ignore
+                update_post_meta( $post_id, '_price', ( '' === sanitize_text_field( wp_unslash( $_POST['_regular_price'] ) ) ) ? '' : wc_format_localized_price( sanitize_text_field( wp_unslash( $_POST['_regular_price'] ) ) ) );
                 update_post_meta( $post_id, '_sale_price_dates_from', '' );
                 update_post_meta( $post_id, '_sale_price_dates_to', '' );
             }
@@ -1108,14 +1126,14 @@ class WCV_Product_Controller {
             wp_update_post(
                 array(
                     'ID'          => $post_id,
-                    'post_parent' => absint( $_POST['parent_id'] ),
+                    'post_parent' => absint( sanitize_text_field( wp_unslash( $_POST['parent_id'] ) ) ),
                 )
             );
 
         }
 
-        if ( $product->is_type( 'grouped' ) && isset( $_POST['grouped_products'] ) && $_POST['grouped_products'] ) {
-            $product->set_children( $_POST['grouped_products'] );
+        if ( $product->is_type( 'grouped' ) && isset( $_POST['grouped_products'] ) && wc_clean( $_POST['grouped_products'] ) ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+            $product->set_children( wc_clean( $_POST['grouped_products'] ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
         }
 
         // Sold Individually.
@@ -1133,7 +1151,7 @@ class WCV_Product_Controller {
 
                 $manage_stock = 'no';
                 $backorders   = 'no';
-                $stock_status = wc_clean( $_POST['_stock_status'] );
+                $stock_status = sanitize_text_field( wp_unslash( $_POST['_stock_status'] ) );
 
                 if ( 'external' === $product_type ) {
 
@@ -1146,11 +1164,11 @@ class WCV_Product_Controller {
 
                     if ( ! empty( $_POST['_manage_stock'] ) ) {
                         $manage_stock = 'yes';
-                        $backorders   = wc_clean( $_POST['_backorders'] );
+                        $backorders   = sanitize_text_field( wp_unslash( $_POST['_backorders'] ) );
                     }
                 } elseif ( 'grouped' !== $product_type && ! empty( $_POST['_manage_stock'] ) ) {
                     $manage_stock = 'yes';
-                    $backorders   = wc_clean( $_POST['_backorders'] );
+                    $backorders   = sanitize_text_field( wp_unslash( $_POST['_backorders'] ) );
                 }
 
                 update_post_meta( $post_id, '_manage_stock', $manage_stock );
@@ -1162,29 +1180,29 @@ class WCV_Product_Controller {
 
                 if ( ! empty( $_POST['_manage_stock'] ) ) {
                     $product = wc_get_product( $post_id );
-                    $product->set_stock_quantity( wc_stock_amount( wp_unslash( $_POST['_stock'] ) ) );
+                    $product->set_stock_quantity( wc_stock_amount( sanitize_text_field( wp_unslash( $_POST['_stock'] ) ) ) );
                     $product->save();
 
                 } else {
                     update_post_meta( $post_id, '_stock', '' );
                 }
             } else {
-                wc_update_product_stock_status( $post_id, wc_clean( $_POST['_stock_status'] ) );
+                wc_update_product_stock_status( $post_id, sanitize_text_field( wp_unslash( $_POST['_stock_status'] ) ) );
             }
         } else {
             // Set default to be instock if not managed at all.
-            wc_update_product_stock_status( $post_id, wc_clean( 'instock' ) );
+            wc_update_product_stock_status( $post_id, 'instock' );
         }
 
         // Downloadable options.
         if ( 'yes' === $is_downloadable ) {
 
-            $_download_limit = absint( $_POST['_download_limit'] );
+            $_download_limit = isset( $_POST['_download_limit'] ) ? absint( sanitize_text_field( wp_unslash( $_POST['_download_limit'] ) ) ) : 0;
             if ( ! $_download_limit ) {
                 $_download_limit = -1; // 0 or blank = unlimited.
             }
 
-            $_download_expiry = absint( $_POST['_download_expiry'] );
+            $_download_expiry = isset( $_POST['_download_expiry'] ) ? absint( sanitize_text_field( wp_unslash( $_POST['_download_expiry'] ) ) ) : 0;
             if ( ! $_download_expiry ) {
                 $_download_expiry = -1; // 0 or blank = unlimited.
             }
@@ -1194,15 +1212,15 @@ class WCV_Product_Controller {
                     'download_limit'  => $_download_limit,
                     'download_expiry' => $_download_expiry,
                     'downloads'       => self::prepare_downloads(
-                        isset( $_POST['_wc_file_names'] ) ? $_POST['_wc_file_names'] : array(),
-                        isset( $_POST['_wc_file_urls'] ) ? $_POST['_wc_file_urls'] : array(),
-                        isset( $_POST['_wc_file_hashes'] ) ? $_POST['_wc_file_hashes'] : array()
+                        isset( $_POST['_wc_file_names'] ) ? wc_clean( $_POST['_wc_file_names'] ) : array(), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+                        isset( $_POST['_wc_file_urls'] ) ? wc_clean( $_POST['_wc_file_urls'] ) : array(), // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+                        isset( $_POST['_wc_file_hashes'] ) ? wc_clean( $_POST['_wc_file_hashes'] ) : array() // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
                     ),
                 )
             );
 
             if ( isset( $_POST['_download_type'] ) ) {
-                update_post_meta( $post_id, '_download_type', wc_clean( $_POST['_download_type'] ) );
+                update_post_meta( $post_id, '_download_type', sanitize_text_field( wp_unslash( $_POST['_download_type'] ) ) );
             }
         }
 
@@ -1210,31 +1228,31 @@ class WCV_Product_Controller {
         if ( 'external' === $product_type ) {
 
             if ( isset( $_POST['_product_url'] ) ) {
-                update_post_meta( $post_id, '_product_url', esc_url_raw( $_POST['_product_url'] ) );
+                update_post_meta( $post_id, '_product_url', esc_url_raw( sanitize_text_field( wp_unslash( $_POST['_product_url'] ) ) ) );
             }
 
             if ( isset( $_POST['_button_text'] ) ) {
-                update_post_meta( $post_id, '_button_text', wc_clean( $_POST['_button_text'] ) );
+                update_post_meta( $post_id, '_button_text', sanitize_text_field( wp_unslash( $_POST['_button_text'] ) ) );
             }
         }
 
         // Upsells.
         if ( isset( $_POST['upsell_ids'] ) && ! empty( $_POST['upsell_ids'] ) ) {
-            update_post_meta( $post_id, '_upsell_ids', $_POST['upsell_ids'] );
+            update_post_meta( $post_id, '_upsell_ids', sanitize_text_field( wp_unslash( $_POST['upsell_ids'] ) ) );
         } else {
             update_post_meta( $post_id, '_upsell_ids', '' );
         }
 
         // Cross sells.
         if ( isset( $_POST['crosssell_ids'] ) && ! empty( $_POST['crosssell_ids'] ) ) {
-            update_post_meta( $post_id, '_crosssell_ids', $_POST['crosssell_ids'] );
+            update_post_meta( $post_id, '_crosssell_ids', sanitize_text_field( wp_unslash( $_POST['crosssell_ids'] ) ) );
         } else {
             update_post_meta( $post_id, '_crosssell_ids', '' );
         }
 
         // Product template page.
         if ( ! empty( $_POST['_wcv_product_form_template'] ) ) {
-            update_post_meta( $post_id, '_wcv_product_form_template', $_POST['_wcv_product_form_template'] );
+            update_post_meta( $post_id, '_wcv_product_form_template', sanitize_text_field( wp_unslash( $_POST['_wcv_product_form_template'] ) ) );
         } else {
             update_post_meta( $post_id, '_wcv_product_form_template', '' );
         }
@@ -1272,26 +1290,26 @@ class WCV_Product_Controller {
 
         if ( ! $hide_seo ) {
 
-            $seo_title = ! empty( $_POST['wcv_product_seo_title'] ) ? wcv_strip_html( $_POST['wcv_product_seo_title'] ) : '';
+            $seo_title = ! empty( $_POST['wcv_product_seo_title'] ) ? wcv_strip_html( sanitize_text_field( wp_unslash( $_POST['wcv_product_seo_title'] ) ) ) : '';
             update_post_meta( $post_id, 'wcv_product_seo_title', $seo_title );
 
-            $seo_description = ! empty( $_POST['wcv_product_seo_description'] ) ? wcv_strip_html( $_POST['wcv_product_seo_description'] ) : '';
+            $seo_description = ! empty( $_POST['wcv_product_seo_description'] ) ? wcv_strip_html( sanitize_text_field( wp_unslash( $_POST['wcv_product_seo_description'] ) ) ) : '';
             update_post_meta( $post_id, 'wcv_product_seo_description', $seo_description );
 
-            $seo_keywords = ! empty( $_POST['wcv_product_seo_keywords'] ) ? wcv_strip_html( $_POST['wcv_product_seo_keywords'] ) : '';
+            $seo_keywords = ! empty( $_POST['wcv_product_seo_keywords'] ) ? wcv_strip_html( sanitize_text_field( wp_unslash( $_POST['wcv_product_seo_keywords'] ) ) ) : '';
             update_post_meta( $post_id, 'wcv_product_seo_keywords', $seo_keywords );
 
-            $seo_opengraph = isset( $_POST['wcv_product_seo_opengraph'] ) ? esc_attr( $_POST['wcv_product_seo_opengraph'] ) : 'no';
+            $seo_opengraph = isset( $_POST['wcv_product_seo_opengraph'] ) ? esc_attr( sanitize_text_field( wp_unslash( $_POST['wcv_product_seo_opengraph'] ) ) ) : 'no';
             update_post_meta( $post_id, 'wcv_product_seo_opengraph', $seo_opengraph );
 
-            $seo_twitter_card = isset( $_POST['wcv_product_seo_twitter_card'] ) ? esc_attr( $_POST['wcv_product_seo_twitter_card'] ) : 'no';
+            $seo_twitter_card = isset( $_POST['wcv_product_seo_twitter_card'] ) ? esc_attr( sanitize_text_field( wp_unslash( $_POST['wcv_product_seo_twitter_card'] ) ) ) : 'no';
             update_post_meta( $post_id, 'wcv_product_seo_twitter_card', $seo_twitter_card );
 
         }
 
         $product->set_props(
             array(
-                'low_stock_amount' => isset( $_POST['_low_stock_amount'] ) && '' !== $_POST['_low_stock_amount'] ? wc_stock_amount( wp_unslash( $_POST['_low_stock_amount'] ) ) : '',
+                'low_stock_amount' => isset( $_POST['_low_stock_amount'] ) && '' !== wc_clean( $_POST['_low_stock_amount'] ) ? wc_stock_amount( sanitize_text_field( wp_unslash( $_POST['_low_stock_amount'] ) ) ) : '', // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
             )
         );
 
@@ -1313,7 +1331,7 @@ class WCV_Product_Controller {
 
         $this->allow_markup = wc_string_to_bool( get_option( 'wcvendors_allow_form_markup', 'no' ) );
         $attributes         = (array) maybe_unserialize( get_post_meta( $post_id, '_product_attributes', true ) );
-        $deleted_variations = isset( $_POST['wcv_deleted_variations'] ) ? json_decode( stripslashes( $_POST['wcv_deleted_variations'] ) ) : array();
+        $deleted_variations = isset( $_POST['wcv_deleted_variations'] ) ? json_decode( stripslashes( $_POST['wcv_deleted_variations'] ) ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
         $variation_indexes  = array();
 
         // Store variations deleted from the UI and remove them if there is any.
@@ -1338,40 +1356,40 @@ class WCV_Product_Controller {
             }
         }
 
-        if ( ! isset( $_POST['variable_post_id'] ) ) {
+        if ( ! isset( $_POST['variable_post_id'] ) || ! is_array( $_POST['variable_post_id'] ) ) {
             return;
         }
+        // phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+        $variable_post_id               = isset( $_POST['variable_post_id'] ) ? array_map( 'absint', $_POST['variable_post_id'] ) : array();
+        $variable_sku                   = isset( $_POST['variable_sku'] ) && is_array( $_POST['variable_sku'] ) ? array_map( 'sanitize_text_field', $_POST['variable_sku'] ) : array();
+        $variable_regular_price         = isset( $_POST['variable_regular_price'] ) && is_array( $_POST['variable_regular_price'] ) ? array_map( 'wc_format_decimal', $_POST['variable_regular_price'] ) : array();
+        $variable_sale_price            = isset( $_POST['variable_sale_price'] ) && is_array( $_POST['variable_sale_price'] ) ? array_map( 'wc_format_decimal', $_POST['variable_sale_price'] ) : array();
+        $upload_image_id                = isset( $_POST['upload_image_id'] ) && is_array( $_POST['upload_image_id'] ) ? array_map( 'absint', $_POST['upload_image_id'] ) : array();
+        $variable_download_limit        = isset( $_POST['variable_download_limit'] ) && is_array( $_POST['variable_download_limit'] ) ? array_map( 'absint', $_POST['variable_download_limit'] ) : array();
+        $variable_download_expiry       = isset( $_POST['variable_download_expiry'] ) && is_array( $_POST['variable_download_expiry'] ) ? array_map( 'absint', $_POST['variable_download_expiry'] ) : array();
+        $variable_shipping_class        = isset( $_POST['variable_shipping_class'] ) && is_array( $_POST['variable_shipping_class'] ) ? array_map( 'sanitize_text_field', $_POST['variable_shipping_class'] ) : array();
+        $variable_tax_class             = isset( $_POST['variable_tax_class'] ) && is_array( $_POST['variable_tax_class'] ) ? array_map( 'sanitize_text_field', $_POST['variable_tax_class'] ) : array();
+        $variable_menu_order            = isset( $_POST['variation_menu_order'] ) && is_array( $_POST['variation_menu_order'] ) ? array_map( 'absint', $_POST['variation_menu_order'] ) : array();
+        $variable_sale_price_dates_from = isset( $_POST['variable_sale_price_dates_from'] ) && is_array( $_POST['variable_sale_price_dates_from'] ) ? array_map( 'sanitize_text_field', $_POST['variable_sale_price_dates_from'] ) : array();
+        $variable_sale_price_dates_to   = isset( $_POST['variable_sale_price_dates_to'] ) && is_array( $_POST['variable_sale_price_dates_to'] ) ? array_map( 'sanitize_text_field', $_POST['variable_sale_price_dates_to'] ) : array();
 
-        $variable_post_id               = $_POST['variable_post_id'];
-        $variable_sku                   = $_POST['variable_sku'];
-        $variable_regular_price         = $_POST['variable_regular_price'];
-        $variable_sale_price            = $_POST['variable_sale_price'];
-        $upload_image_id                = $_POST['upload_image_id'];
-        $variable_download_limit        = $_POST['variable_download_limit'];
-        $variable_download_expiry       = $_POST['variable_download_expiry'];
-        $variable_shipping_class        = $_POST['variable_shipping_class'];
-        $variable_tax_class             = isset( $_POST['variable_tax_class'] ) ? $_POST['variable_tax_class'] : array();
-        $variable_menu_order            = $_POST['variation_menu_order'];
-        $variable_sale_price_dates_from = $_POST['variable_sale_price_dates_from'];
-        $variable_sale_price_dates_to   = $_POST['variable_sale_price_dates_to'];
+        $variable_weight          = isset( $_POST['variable_weight'] ) && is_array( $_POST['variable_weight'] ) ? array_map( 'wc_format_decimal', $_POST['variable_weight'] ) : array();
+        $variable_length          = isset( $_POST['variable_length'] ) && is_array( $_POST['variable_length'] ) ? array_map( 'wc_format_decimal', $_POST['variable_length'] ) : array();
+        $variable_width           = isset( $_POST['variable_width'] ) && is_array( $_POST['variable_width'] ) ? array_map( 'wc_format_decimal', $_POST['variable_width'] ) : array();
+        $variable_height          = isset( $_POST['variable_height'] ) && is_array( $_POST['variable_height'] ) ? array_map( 'wc_format_decimal', $_POST['variable_height'] ) : array();
+        $variable_enabled         = isset( $_POST['variable_enabled'] ) && is_array( $_POST['variable_enabled'] ) ? array_map( 'sanitize_text_field', $_POST['variable_enabled'] ) : array();
+        $variable_is_virtual      = isset( $_POST['variable_is_virtual'] ) && is_array( $_POST['variable_is_virtual'] ) ? array_map( 'sanitize_text_field', $_POST['variable_is_virtual'] ) : array();
+        $variable_is_downloadable = isset( $_POST['variable_is_downloadable'] ) && is_array( $_POST['variable_is_downloadable'] ) ? array_map( 'sanitize_text_field', $_POST['variable_is_downloadable'] ) : array();
 
-        $variable_weight          = isset( $_POST['variable_weight'] ) ? $_POST['variable_weight'] : array();
-        $variable_length          = isset( $_POST['variable_length'] ) ? $_POST['variable_length'] : array();
-        $variable_width           = isset( $_POST['variable_width'] ) ? $_POST['variable_width'] : array();
-        $variable_height          = isset( $_POST['variable_height'] ) ? $_POST['variable_height'] : array();
-        $variable_enabled         = isset( $_POST['variable_enabled'] ) ? $_POST['variable_enabled'] : array();
-        $variable_is_virtual      = isset( $_POST['variable_is_virtual'] ) ? $_POST['variable_is_virtual'] : array();
-        $variable_is_downloadable = isset( $_POST['variable_is_downloadable'] ) ? $_POST['variable_is_downloadable'] : array();
+        $variable_manage_stock = isset( $_POST['variable_manage_stock'] ) && is_array( $_POST['variable_manage_stock'] ) ? array_map( 'sanitize_text_field', $_POST['variable_manage_stock'] ) : array();
+        $variable_stock        = isset( $_POST['variable_stock'] ) && is_array( $_POST['variable_stock'] ) ? array_map( 'absint', $_POST['variable_stock'] ) : array();
+        $variable_backorders   = isset( $_POST['variable_backorders'] ) && is_array( $_POST['variable_backorders'] ) ? array_map( 'sanitize_text_field', $_POST['variable_backorders'] ) : array();
+        $variable_stock_status = isset( $_POST['variable_stock_status'] ) && is_array( $_POST['variable_stock_status'] ) ? array_map( 'sanitize_text_field', $_POST['variable_stock_status'] ) : array();
 
-        $variable_manage_stock = isset( $_POST['variable_manage_stock'] ) ? $_POST['variable_manage_stock'] : array();
-        $variable_stock        = isset( $_POST['variable_stock'] ) ? $_POST['variable_stock'] : array();
-        $variable_backorders   = isset( $_POST['variable_backorders'] ) ? $_POST['variable_backorders'] : array();
-        $variable_stock_status = isset( $_POST['variable_stock_status'] ) ? $_POST['variable_stock_status'] : array();
-
-        $variable_description = isset( $_POST['variable_description'] ) ? $_POST['variable_description'] : array();
+        $variable_description = isset( $_POST['variable_description'] ) && is_array( $_POST['variable_description'] ) ? array_map( 'wp_kses_post', $_POST['variable_description'] ) : array();
 
         $max_loop = max( array_keys( $_POST['variable_post_id'] ) );
-
+        // phpcs:enable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
         for ( $i = 0; $i <= $max_loop; $i++ ) {
 
             if ( ! isset( $variable_post_id[ $i ] ) ) {
@@ -1417,7 +1435,7 @@ class WCV_Product_Controller {
 
             } else {
 
-				$modified_date = date_i18n( 'Y-m-d H:i:s', current_time( 'timestamp' ) ); //phpcs:ignore
+				$modified_date = date_i18n( 'Y-m-d H:i:s', time() ); //phpcs:ignore
 
                 $wpdb->update(
                     $wpdb->posts,
@@ -1531,7 +1549,7 @@ class WCV_Product_Controller {
             update_post_meta( $variation_id, '_sale_price_dates_to', $date_to ? strtotime( $date_to ) : '' );
 
             if ( $date_to && ! $date_from ) {
-				update_post_meta( $variation_id, '_sale_price_dates_from', strtotime( 'NOW', current_time( 'timestamp' ) ) ); //phpcs:ignore
+				update_post_meta( $variation_id, '_sale_price_dates_from', time() ); //phpcs:ignore
             }
 
             // Update price if on sale.
@@ -1541,11 +1559,11 @@ class WCV_Product_Controller {
                 update_post_meta( $variation_id, '_price', $regular_price );
             }
 
-			if ( '' !== $sale_price && $date_from && strtotime( $date_from ) < strtotime( 'NOW', current_time( 'timestamp' ) ) ) { //phpcs:ignore
+			if ( '' !== $sale_price && $date_from && strtotime( $date_from ) < time() ) { //phpcs:ignore
                 update_post_meta( $variation_id, '_price', $sale_price );
             }
 
-			if ( $date_to && strtotime( $date_to ) < strtotime( 'NOW', current_time( 'timestamp' ) ) ) { //phpcs:ignore
+			if ( $date_to && strtotime( $date_to ) < time() ) { //phpcs:ignore
                 update_post_meta( $variation_id, '_price', $regular_price );
                 update_post_meta( $variation_id, '_sale_price_dates_from', '' );
                 update_post_meta( $variation_id, '_sale_price_dates_to', '' );
@@ -1562,7 +1580,7 @@ class WCV_Product_Controller {
                 update_post_meta( $variation_id, '_download_expiry', wc_clean( $variable_download_expiry[ $i ] ) );
 
                 $attr_key = isset( $_POST['_wc_variation_file_urls'][ $variation_id ] ) ? $variation_id : $i;
-
+                // phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
                 $files              = array();
                 $file_names         = isset( $_POST['_wc_variation_file_names'][ $attr_key ] ) ? array_map( 'wc_clean', $_POST['_wc_variation_file_names'][ $attr_key ] ) : array();
                 $file_urls          = isset( $_POST['_wc_variation_file_urls'][ $attr_key ] ) ? array_map( 'wc_clean', $_POST['_wc_variation_file_urls'][ $attr_key ] ) : array();
@@ -1570,7 +1588,7 @@ class WCV_Product_Controller {
                 $file_display       = isset( $_POST['_wc_variation_file_display'][ $attr_key ] ) ? array_map( 'wc_clean', $_POST['_wc_variation_file_display'][ $attr_key ] ) : array();
                 $file_url_size      = count( $file_urls );
                 $allowed_file_types = get_allowed_mime_types();
-
+                // phpcs:enable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
                 for ( $ii = 0; $ii < $file_url_size; $ii++ ) {
                     if ( ! empty( $file_urls[ $ii ] ) ) {
                         // Find type and file URL.
@@ -1657,14 +1675,14 @@ class WCV_Product_Controller {
                 if ( $attribute['is_variation'] ) {
                     $attribute_key            = 'attribute_' . sanitize_title( $attribute['name'] );
                     $updated_attribute_keys[] = $attribute_key;
-
+                    // phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
                     if ( $attribute['is_taxonomy'] ) {
                         // Don't use wc_clean as it destroys sanitized characters.
                         $value = isset( $_POST[ $attribute_key ][ $i ] ) ? sanitize_title( stripslashes( $_POST[ $attribute_key ][ $i ] ) ) : '';
                     } else {
                         $value = isset( $_POST[ $attribute_key ][ $i ] ) ? wc_clean( stripslashes( $_POST[ $attribute_key ][ $i ] ) ) : '';
                     }
-
+                    // phpcs:enable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
                     update_post_meta( $variation_id, $attribute_key, $value );
                 }
             }
@@ -1694,9 +1712,9 @@ class WCV_Product_Controller {
 
                     if ( $attribute['is_taxonomy'] ) {
                         // Don't use wc_clean as it destroys sanitized characters.
-                        $value = sanitize_title( trim( stripslashes( $_POST[ 'default_attribute_' . sanitize_title( $attribute['name'] ) ] ) ) );
+                        $value = sanitize_title( trim( stripslashes( $_POST[ 'default_attribute_' . sanitize_title( $attribute['name'] ) ] ) ) ); // phpcs:ignore
                     } else {
-                        $value = wc_clean( trim( stripslashes( $_POST[ 'default_attribute_' . sanitize_title( $attribute['name'] ) ] ) ) );
+                        $value = wc_clean( trim( stripslashes( $_POST[ 'default_attribute_' . sanitize_title( $attribute['name'] ) ] ) ) ); // phpcs:ignore
                     }
                 }
 
@@ -1723,7 +1741,7 @@ class WCV_Product_Controller {
 
         check_ajax_referer( 'wcv-search-products', 'security' );
 
-        $term = (string) wc_clean( stripslashes( $_GET['term'] ) );
+        $term = isset( $_GET['term'] ) ? sanitize_text_field( wp_unslash( $_GET['term'] ) ) : '';
 
         if ( empty( $term ) ) {
             die();
@@ -1819,7 +1837,7 @@ class WCV_Product_Controller {
 
         check_ajax_referer( 'wcv-search-product-tags', 'security' );
 
-        $term = (string) wc_clean( stripslashes( $_GET['term'] ) );
+        $term = isset( $_GET['term'] ) ? sanitize_text_field( wp_unslash( $_GET['term'] ) ) : '';
 
         if ( empty( $term ) ) {
             die();
@@ -1961,8 +1979,9 @@ class WCV_Product_Controller {
 
         foreach ( $rows as $row ) {
 
-            $product = wc_get_product( $row->ID );
-            $new_row = new \stdClass();
+            $product      = wc_get_product( $row->ID );
+            $new_row      = new \stdClass();
+            $delete_nonce = wp_create_nonce( 'wcv-delete-product-' . $product->get_id() );
 
             $row_actions = apply_filters(
                 'wcv_product_table_row_actions',
@@ -2002,7 +2021,7 @@ class WCV_Product_Controller {
                             'class'      => 'confirm_delete',
                             'wrap_class' => 'danger',
                             'custom'     => array( 'data-confirm_text' => __( 'Delete product?', 'wc-vendors' ) ),
-                            'url'        => \WCV_Vendor_Dashboard::get_dashboard_page_url( 'product/delete/' . $product->get_id() ),
+                            'url'        => \WCV_Vendor_Dashboard::get_dashboard_page_url( 'product/delete/' . $product->get_id() ) . '?_wpnonce=' . $delete_nonce,
                             'icon'       => 'wcv-icon-trash',
                         )
                     ),
@@ -2207,8 +2226,8 @@ class WCV_Product_Controller {
         global $wc_product_attributes;
 
         $post_id       = 0;
-        $taxo          = sanitize_text_field( $_POST['taxonomy'] );
-        $i             = absint( $_POST['i'] );
+        $taxo          = isset( $_POST['taxonomy'] ) ? sanitize_text_field( wp_unslash( $_POST['taxonomy'] ) ) : '';
+        $i             = isset( $_POST['i'] ) ? absint( wp_unslash( $_POST['i'] ) ) : 0;
         $position      = 0;
         $metabox_class = array();
         $attribute     = array(
@@ -2268,8 +2287,8 @@ class WCV_Product_Controller {
             die();
         }
 
-        $taxonomy = esc_attr( $_POST['taxonomy'] );
-        $term     = wc_clean( $_POST['term'] );
+        $taxonomy = isset( $_POST['taxonomy'] ) ? sanitize_text_field( wp_unslash( $_POST['taxonomy'] ) ) : '';
+        $term     = isset( $_POST['term'] ) ? sanitize_text_field( wp_unslash( $_POST['term'] ) ) : '';
 
         if ( taxonomy_exists( $taxonomy ) ) {
 
@@ -2450,9 +2469,9 @@ class WCV_Product_Controller {
             die( -1 );
         }
 
-        $attributes                = $_POST['attributes'];
-        $loop                      = intval( $_POST['loop'] );
-        $parent_data               = $_POST['parent_data'];
+        $attributes                = isset( $_POST['attributes'] ) ? wc_clean( $_POST['attributes'] ) : array(); //phpcs:ignore 
+        $loop                      = isset( $_POST['loop'] ) ? intval( sanitize_text_field( wp_unslash( $_POST['loop'] ) ) ) : 0;
+        $parent_data               = isset( $_POST['parent_data'] ) ? wc_clean( $_POST['parent_data'] ) : array(); //phpcs:ignore 
         $parent_data['attributes'] = $attributes;
 
         $variation_id = 0;
@@ -2577,13 +2596,14 @@ class WCV_Product_Controller {
 			@set_time_limit( 0 ); //phpcs:ignore
         }
 
-        $attributes           = $_POST['attributes'];
-        $available_variations = isset( $_POST['available_variations'] ) ? $_POST['available_variations'] : array();
-        $parent_data          = $_POST['parent_data'];
-        $loop                 = $_POST['loop'];
+        // phpcs:disable WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+        $attributes           = isset( $_POST['attributes'] ) ? wc_clean( $_POST['attributes'] ) : array();
+        $available_variations = isset( $_POST['available_variations'] ) ? wc_clean( $_POST['available_variations'] ) : array();
+        $parent_data          = isset( $_POST['parent_data'] ) ? wc_clean( $_POST['parent_data'] ) : array();
+        $loop                 = isset( $_POST['loop'] ) ? intval( sanitize_text_field( wp_unslash( $_POST['loop'] ) ) ) : 0;
         $variations           = array();
         $added                = 1;
-
+        // phpcs:enable WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
         // No attributes? return.
         if ( ! $attributes ) {
             die();
@@ -2750,10 +2770,51 @@ class WCV_Product_Controller {
 
         check_ajax_referer( 'wcv-add-variation', 'security' );
 
-        $attributes = $_POST['attributes'];
+        // Check if user can edit products and is vendor.
+        $user_id   = get_current_user_id();
+        $is_vendor = \WCV_Vendors::is_vendor( $user_id );
+
+        if ( ! current_user_can( 'edit_products' ) || ! $is_vendor ) { //phpcs:ignore
+            wp_send_json_error( array( 'message' => __( 'Unauthorized.', 'wc-vendors' ) ) );
+            die();
+        }
+
+        // Recursively sanitize nested array structure while preserving array types.
+        $attributes = isset( $_POST['attributes'] ) && is_array( $_POST['attributes'] ) ? self::sanitize_variation_attributes( $_POST['attributes'] ) : array(); // phpcs:ignore
 
         include wcv_deprecated_filter( 'wcvendors_pro_product_variation_default_path', '2.5.2', 'wcvendors_product_variation_default_path', 'forms/partials/wcvendors-product-variations-default-attribute.php' );
         die();
+    }
+
+    /**
+     * Recursively sanitize variation attributes array structure
+     *
+     * @since  2.6.4.1
+     * @access private
+     *
+     * @param array $attributes The attributes array to sanitize.
+     * @return array Sanitized attributes array with preserved structure.
+     */
+    private static function sanitize_variation_attributes( $attributes ) { //phpcs:ignore
+        if ( ! is_array( $attributes ) ) {
+            return array();
+        }
+
+        $sanitized = array();
+
+        foreach ( $attributes as $key => $value ) {
+            $sanitized_key = sanitize_text_field( $key );
+
+            if ( is_array( $value ) ) {
+                // Recursively sanitize nested arrays.
+                $sanitized[ $sanitized_key ] = self::sanitize_variation_attributes( $value );
+            } else {
+                // Sanitize scalar values.
+                $sanitized[ $sanitized_key ] = sanitize_text_field( $value );
+            }
+        }
+
+        return $sanitized;
     }
 
     /**
@@ -3510,7 +3571,7 @@ class WCV_Product_Controller {
         $is_product_review = false;
         $referer           = wp_get_referer();
 
-        if ( isset( $_POST['comment_post_ID'] ) && 'product' === get_post_type( $_POST['comment_post_ID'] ) && isset( $_POST['rating'] ) ) {
+        if ( isset( $_POST['comment_post_ID'] ) && 'product' === get_post_type( sanitize_text_field( wp_unslash( $_POST['comment_post_ID'] ) ) ) && isset( $_POST['rating'] ) ) {
             $is_product_review = true;
         }
 

@@ -1,10 +1,16 @@
 <?php
 /**
  * Admin view: Review Request Notice
+ *
+ * @version 2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable 	WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
  */
 if ( ! defined( 'ABSPATH' ) ) {
         exit;
-    }
+}
+$filter_link           = esc_attr( 'filter=5#new-post' );
+$wcv_review_notice_url = 'https://wordpress.org/support/plugin/wc-vendors/reviews/?' . $filter_link;
 ?>
 
 <div class="notice notice-info is-dismissible wcv-notice-container" id="wcv-review-notice" data-notice-key="review_request"> 
@@ -21,7 +27,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 ?>
 </p>
 <div class="wcv-notice-buttons">
-<p><a class="wcv-dismiss-notice" href="https://wordpress.org/support/plugin/wc-vendors/reviews/?filter=5#new-post" target="_blank"><?php esc_html_e( 'Ok, you deserve it!', 'wc-vendors' ); ?></a></p>
+<p><a class="wcv-dismiss-notice" href="<?php echo esc_url( $wcv_review_notice_url ); ?>" target="_blank">
+    <?php esc_html_e( 'Ok, you deserve it!', 'wc-vendors' ); ?></a>
+</p>
 <p><a class="wcv-dismiss-notice" href="#"><?php esc_html_e( 'I already did', 'wc-vendors' ); ?></a></p>
 <p><a class="wcv-dismiss-notice-delay" href="#"><?php esc_html_e( 'Nope, maybe later', 'wc-vendors' ); ?></a></p>
 </div>

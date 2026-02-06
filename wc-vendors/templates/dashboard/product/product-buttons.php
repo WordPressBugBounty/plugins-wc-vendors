@@ -1,3 +1,14 @@
+<?php
+/**
+ * Product buttons template
+ *
+ * @package    WC_Vendors
+ * @version    2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+ */
+?>
 <div class="small-70 wcv-product-table-buttons wcv-flex wcv-flex-wrap wcv-flex-end">
     <?php if ( ! $lock_new_products && $can_submit ) : ?>
         <?php foreach ( $template_overrides as $key => $template_data ) : ?>

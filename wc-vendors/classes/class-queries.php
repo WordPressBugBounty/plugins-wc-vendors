@@ -2,7 +2,11 @@
 /**
  * Queries class
  *
- * @version 2.4.8
+ * @version 2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery
+ * @phpcs:disable WordPress.DB.DirectDatabaseQuery.NoCaching
+ *
  * @since   2.4.8 - Add HPOS Compatibility
  */
 class WCV_Queries {
@@ -385,8 +389,8 @@ class WCV_Queries {
         }
         // phpcs:enable
 
-        $start_date = WC()->session->get( 'wcv_order_start_date', strtotime( current_time( 'Y-M' ) . '-01' ) );
-        $end_date   = WC()->session->get( 'wcv_order_end_date', strtotime( current_time( 'mysql' ) ) );
+        $start_date = WC()->session->get( 'wcv_order_start_date', strtotime( current_time( 'Y-M' ) . '-01' ) ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound   
+        $end_date   = WC()->session->get( 'wcv_order_end_date', strtotime( current_time( 'mysql' ) ) ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
 
         $after  = gmdate( 'Y-m-d', $start_date );
         $before = gmdate( 'Y-m-d', strtotime( '+1 day', $end_date ) );

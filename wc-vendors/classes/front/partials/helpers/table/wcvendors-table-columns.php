@@ -7,9 +7,9 @@
  *
  * @link       http://www.wcvendors.com
  * @since      1.0.0
- * @version    2.5.4
+ * @version    2.6.5 - Fix security issues.
  *
- * @package    WC_Vendors
+ * @phpcs:disable 	WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
  */
 
 $time               = time();

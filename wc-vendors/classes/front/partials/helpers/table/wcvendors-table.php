@@ -7,9 +7,9 @@
  *
  * @link       http://www.wcvendors.com
  * @since      1.0.0
+ * @version    2.6.5 - Fix security issues.
  *
- * @package    WCVendors_Pro
- * @subpackage WCVendors_Pro/public/partials/helpers/table
+ * @phpcs:disable 	WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
  */
 
 $table_class = apply_filters( "wcvendors_table_{$this->id}_class", 'wcv-table wcvendors-table has-background' );

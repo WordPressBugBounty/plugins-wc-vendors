@@ -9,6 +9,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @version 2.4.8
  * @since   2.4.8 - Added
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
  */
 class WCV_Shipping_Providers {
     /**

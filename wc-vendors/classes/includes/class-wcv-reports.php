@@ -309,7 +309,8 @@ class WCV_Reports {
             $wpdb->query( "DROP TEMPORARY TABLE IF EXISTS {$temp_table_name}" ); // phpcs:ignore
 
             // Create temporary table.
-            $wpdb->query(
+            // phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange
+            $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
                 $wpdb->prepare(
                     'CREATE TEMPORARY TABLE %i (
                 order_id bigint(20),
@@ -318,6 +319,7 @@ class WCV_Reports {
                     $temp_table_name
                 )
             );
+            // phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange
 
             // Insert order and product pairs into temp table.
             $insert_values = array();
@@ -570,12 +572,20 @@ class WCV_Reports {
         // Batch fetch user meta.
         $shop_names = array();
         if ( ! empty( $vendor_ids ) ) {
-            $shop_names = $wpdb->get_results(
-                "SELECT user_id, meta_value FROM {$wpdb->usermeta} 
-                WHERE meta_key = 'pv_shop_name' 
-                AND user_id IN (" . implode( ',', $vendor_ids ) . ')', // phpcs:ignore
-                OBJECT_K
-            );
+            // Sanitize vendor IDs to ensure they are integers.
+            $vendor_ids = array_map( 'absint', $vendor_ids );
+            $vendor_ids = array_filter( $vendor_ids );
+
+            if ( ! empty( $vendor_ids ) ) {
+                $placeholders = implode( ',', array_fill( 0, count( $vendor_ids ), '%d' ) );
+                $query        = $wpdb->prepare(
+                    "SELECT user_id, meta_value FROM {$wpdb->usermeta} 
+                    WHERE meta_key = 'pv_shop_name' 
+                    AND user_id IN ($placeholders)", // phpcs:ignore
+                    ...$vendor_ids
+                );
+                $shop_names   = $wpdb->get_results( $query, OBJECT_K ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
+            }
         }
         foreach ( $commission_results as $commission ) {
             // Initialize total_revenue.

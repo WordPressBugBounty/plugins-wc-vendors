@@ -1,6 +1,10 @@
 <?php
 /**
  * Admin View: Recommended Plugins Step
+ *
+ * @version 2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
  */
 
 // Exit if accessed directly.

@@ -83,11 +83,11 @@ class WCV_Vendor_Signup {
      * @return object|null
      */
     public function vendor_registration_errors( $errors ) {
-        if ( ! isset( $_POST['apply_for_vendor'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['apply_for_vendor_nonce'] ) ), 'apply_for_vendor' ) ) {
+        if ( ! isset( $_POST['apply_for_vendor'] ) || ! isset( $_POST['apply_for_vendor_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['apply_for_vendor_nonce'] ) ), 'apply_for_vendor' ) ) {
             return;
         }
 
-        if ( empty( $_POST['agree_to_terms'] ) || ( ! empty( $_POST['agree_to_terms'] ) && '' === trim( $_POST['agree_to_terms'] ) ) ) {
+        if ( ! isset( $_POST['agree_to_terms'] ) || empty( $_POST['agree_to_terms'] ) || ( ! empty( $_POST['agree_to_terms'] ) && '' === trim( wp_unslash( $_POST['agree_to_terms'] ) ) ) ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
             $errors->add( 'terms_errors', sprintf( '<strong>%s</strong>: %s', __( 'ERROR', 'wc-vendors' ), __( 'Please agree to the terms and conditions', 'wc-vendors' ) ) );
         }
 
@@ -148,7 +148,7 @@ class WCV_Vendor_Signup {
      * @version 1.0.0
      */
     public function login_save_pending( $user_id ) {
-        if ( ! isset( $_POST['apply_for_vendor'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['apply_for_vendor_nonce'] ) ), 'apply_for_vendor' ) ) {
+        if ( ! isset( $_POST['apply_for_vendor'] ) || ! isset( $_POST['apply_for_vendor_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['apply_for_vendor_nonce'] ) ), 'apply_for_vendor' ) ) {
             return;
         }
 
@@ -170,7 +170,7 @@ class WCV_Vendor_Signup {
      * @return void|WP_Error|WP_User
      */
     public function login_vendor_check( $user ) {
-        if ( ! isset( $_POST['apply_for_vendor'] ) || ! wp_verify_nonce( $_POST['apply_for_vendor_nonce'], 'apply_for_vendor' ) ) {
+        if ( ! isset( $_POST['apply_for_vendor'] ) || ! isset( $_POST['apply_for_vendor_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['apply_for_vendor_nonce'] ) ), 'apply_for_vendor' ) ) {
             return;
         }
 
@@ -222,7 +222,7 @@ class WCV_Vendor_Signup {
             return;
         }
 
-        if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['apply_for_vendor_nonce'] ) ), 'apply_for_vendor' ) ) {
+        if ( ! isset( $_POST['apply_for_vendor_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['apply_for_vendor_nonce'] ) ), 'apply_for_vendor' ) ) {
             wc_add_notice(
                 __( 'Your application was not submitted. Please refresh the page and then try again.', 'wc-vendors' ),
                 'error'
@@ -255,7 +255,7 @@ class WCV_Vendor_Signup {
      * @return void
      */
     public function validate_vendor_registration( $username, $email, $validation_errors ) {
-        if ( ! isset( $_POST['apply_for_vendor'] ) || ! wp_verify_nonce( $_POST['apply_for_vendor_nonce'], 'apply_for_vendor' ) ) {
+        if ( ! isset( $_POST['apply_for_vendor'] ) || ! isset( $_POST['apply_for_vendor_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['apply_for_vendor_nonce'] ) ), 'apply_for_vendor' ) ) {
             return;
         }
 

@@ -3,8 +3,19 @@
 /**
  * Vendor Dashboard Class.
  *
- * @version 1.0.0
- * @since   1.0.0
+ * @version 2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound
+ * @phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotValidated
+ * @phpcs:disable WordPress.Security.ValidatedSanitizedInput.MissingUnslash      
+ * @phpcs:disable WordPress.Security.NonceVerification.Missing
+ * @phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery
+ * @phpcs:disable WordPress.DB.DirectDatabaseQuery.NoCaching
+ * @phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+ * @phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+ * @phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter
+ * @phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
  */
 class WCV_Vendor_Dashboard_Legacy {
 

@@ -1,4 +1,11 @@
 <?php
+/**
+ * Pro Admin Functions
+ *
+ * @version 2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedNamespaceFound
+ */
 namespace WC_Vendors\Classes\Admin;
 
 if ( ! function_exists( 'wcv_admin_checkbox' ) ) {

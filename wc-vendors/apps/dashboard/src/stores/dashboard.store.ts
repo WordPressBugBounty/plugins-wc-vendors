@@ -8,7 +8,7 @@ import type { DashboardResponse, Period } from '../types'
 export const useDashboardStore = defineStore('dashboard', () => {
   const dashboardData = ref<DashboardResponse | null>(null)
   const isLoading = ref<boolean>(false)
-  const period = ref<Period>({ label: i18n().filter.last30Days, value: 'last_30_days' })
+  const period = ref<Period>(window.wcv_dashboard_data.default_period)
   const startDate = ref<string | null>(null)
   const endDate = ref<string | null>(null)
 

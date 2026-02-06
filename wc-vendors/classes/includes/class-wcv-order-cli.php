@@ -186,7 +186,7 @@ class WCV_Order_CLI {
         $order_items_table     = $wpdb->prefix . 'woocommerce_order_items';
         $order_itemmeta_table  = $wpdb->prefix . 'woocommerce_order_itemmeta';
         $order_ids_placeholder = implode( ',', array_fill( 0, count( $order_ids ), '%d' ) );
-        $wpdb->query( 'START TRANSACTION' );
+        $wpdb->query( 'START TRANSACTION' ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
         $is_error = false;
 
         try {
@@ -208,7 +208,7 @@ class WCV_Order_CLI {
             //phpcs:enable
         } catch ( Exception $e ) {
             $this->log( 'Error deleting orders: ' . $e->getMessage() );
-            $wpdb->query( 'ROLLBACK' );
+            $wpdb->query( 'ROLLBACK' ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
             $is_error = true;
         }
 
@@ -224,7 +224,7 @@ class WCV_Order_CLI {
     private function get_duplicate_orders( $batch_size, $offset ) {
         global $wpdb;
         $duplicate_orders = array();
-        $orders           = $wpdb->get_results(
+        $orders           = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
             $wpdb->prepare(
                 "SELECT post_id, meta_value AS sub_orders
                 FROM $wpdb->postmeta
@@ -238,7 +238,7 @@ class WCV_Order_CLI {
 
         foreach ( $orders as $order ) {
 
-            $real_sub_order_ids = $wpdb->get_col(
+            $real_sub_order_ids = $wpdb->get_col( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
                 $wpdb->prepare(
                     "SELECT ID FROM $wpdb->posts WHERE post_parent = %d AND post_type = 'shop_order_vendor'",
                     $order->post_id
@@ -273,7 +273,7 @@ class WCV_Order_CLI {
     private function get_no_parent_sub_orders( $batch_size, $offset ) {
         global $wpdb;
         $no_parent_sub_orders = array();
-        $results              = $wpdb->get_results(
+        $results              = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
             $wpdb->prepare(
                 "SELECT ID FROM $wpdb->posts WHERE post_parent = 0 AND post_type = 'shop_order_vendor' ORDER BY ID DESC LIMIT %d OFFSET %d",
                 $batch_size,

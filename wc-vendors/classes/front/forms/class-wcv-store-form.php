@@ -1,7 +1,19 @@
 <?php
+
+/**
+ * The WCV Store Form Class
+ *
+ * This is the store form class
+ *
+ * @version    2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable 	WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedNamespaceFound
+ * @phpcs:disable 	WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+ * @phpcs:disable 	WordPress.DB.DirectDatabaseQuery.DirectQuery
+ * @phpcs:disable 	WordPress.DB.DirectDatabaseQuery.NoCaching
+ */
 namespace WC_Vendors\Classes\Front\Forms;
 
-use WC_Vendors;
 use WC_Vendors\Classes\Front\WCV_Form_Helper;
 use WC_Vendors\Classes\Front\WCV_Dashboard_Controller;
 

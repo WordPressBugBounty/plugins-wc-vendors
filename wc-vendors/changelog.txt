@@ -1,5 +1,39 @@
 Changelog for WC Vendors Marketplace
 
+Version 2.6.5 - 17th December 2025
+
+ * Feature: Introduce hooks for WC Vendors signup.
+ * Improvement: Add a "This Month" filter option and set it as the default for the WC Vendors admin dashboard reports.
+ * Bug Fix: Resolve code quality issues found during plugin checks.
+
+Version 2.6.4.1 - 3rd December 2025
+
+ * Bug Fix: Fatal error while deactivating WooCommerce immediately
+ * Bug Fix: Security issues
+ * Security Fix: Prevent unauthorized vendor order access
+
+Version 2.6.4 - 14th November 2025
+
+ * Feature: Option to write a custom message in vendor denial/approval emails per vendor
+ * Feature: Dashboard cross-promo box with 1-click install
+ * Improvement: Add SaveTo Wishlist Lite for WooCommerce to the About page
+ * Improvement: Update the Select2 script handle to resolve the WooCommerce 10.3.0+ deprecation warning
+ * Improvement: Add a parameter to display product categories in the Products by Vendor shortcode
+ * Bug Fix: Remove PayPal Adaptive Payments and fix the test gateway crash
+ * Bug Fix: Auction downloadable missing general tab/option to upload files
+ * Bug Fix: Theme overrides not applied for certain dashboard templates due to the wrong path in the controller
+ * Bug Fix: Incorrect refund detection when handling partial refunds per vendor
+
+Version 2.6.3 - 13th October 2025
+
+ * Feature: Add vendor detail modal for admin to review pending vendors on the All Vendors page
+ * Improvement: Support username and user ID in the "vendor" parameter of the products by vendor shortcodes
+ * Improvement: Add parameter to limit the number of displayed products without pagination via shortcodes
+ * Improvement: Hide vendor shipping feature in free version
+ * Improvement: Clarify single product header dependency on shop header
+ * Bug Fix: Vendors and admins receive duplicate emails on new vendor application
+ * Bug Fix: Admin notification emails for vendor applications are not sent when site language is not English
+
 Version 2.6.2 - 26th September 2025
 
  * Feature: Group subcategories under parent categories in category filter dropdown

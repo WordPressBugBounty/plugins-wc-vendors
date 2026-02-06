@@ -3,6 +3,11 @@
  * The template for displaying the Product edit form
  *
  * Override this template by copying it to yourtheme/wc-vendors/dashboard/
+ *
+ * @version 2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
  */
 use WC_Vendors\Classes\Front\Forms\WCV_Product_Form;
 use WC_Vendors\Classes\Front\WCV_Form_Helper;

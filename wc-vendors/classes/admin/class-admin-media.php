@@ -54,10 +54,17 @@ class WCVendors_Admin_Media {
         }
 
         $vendor_to_assign = 0;
-        if ( isset( $_REQUEST['vendor'] ) && $_REQUEST['vendor'] && '-1' !== $_REQUEST['vendor'] ) {
-            $vendor_to_assign = $_REQUEST['vendor'];
-        } elseif ( isset( $_REQUEST['vendor2'] ) && $_REQUEST['vendor2'] && '-1' !== $_REQUEST['vendor2'] ) {
-            $vendor_to_assign = $_REQUEST['vendor2'];
+
+        $vendor = isset( $_REQUEST['vendor'] ) ? intval( sanitize_text_field( wp_unslash( $_REQUEST['vendor'] ) ) ) : 0;
+
+        if ( $vendor && 0 < $vendor ) {
+            $vendor_to_assign = $vendor;
+        }
+
+        $vendor2 = isset( $_REQUEST['vendor2'] ) ? intval( sanitize_text_field( wp_unslash( $_REQUEST['vendor2'] ) ) ) : 0;
+
+        if ( $vendor2 && 0 < $vendor2 ) {
+            $vendor_to_assign = $vendor2;
         }
 
         if ( ! $vendor_to_assign ) {
@@ -166,15 +173,15 @@ class WCVendors_Admin_Media {
         if ( ! isset( $_REQUEST['assigned_attachment'] ) || ! isset( $_REQUEST['vendor_id'] ) ) {
             return;
         }
-        $count     = intval( $_REQUEST['assigned_attachment'] );
-        $vendor_id = intval( $_REQUEST['vendor_id'] );
+        $count     = intval( sanitize_text_field( wp_unslash( $_REQUEST['assigned_attachment'] ) ) );
+        $vendor_id = intval( sanitize_text_field( wp_unslash( $_REQUEST['vendor_id'] ) ) );
         $vendor    = new WP_User( $vendor_id );
 
         printf(
             '<div class="notice notice-success is-dismissible"><p>%s</p></div>',
             sprintf(
                 /* translators: %d number of assigned media files. %s vendor display name */
-                esc_attr( _n( '%1$d media file has been assigned to %2$s.', '%1$d media files have been assigned to %2$s.', $count, 'wc-vendor' ) ),
+                esc_attr( _n( '%1$d media file has been assigned to %2$s.', '%1$d media files have been assigned to %2$s.', $count, 'wc-vendors' ) ),
                 esc_attr( number_format_i18n( $count ) ),
                 esc_html( $vendor->display_name )
             )

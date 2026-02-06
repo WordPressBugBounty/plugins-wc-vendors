@@ -1,6 +1,10 @@
 <?php
 /**
  * Admin View: Notice - Template Check
+ *
+ * @version 2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

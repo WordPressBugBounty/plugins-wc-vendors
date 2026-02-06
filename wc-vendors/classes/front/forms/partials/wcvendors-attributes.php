@@ -6,11 +6,14 @@
  * This file is used to load the overall product attributes
  *
  * @link    http://www.wcvendors.com
- * @version 2.5.2
  * @since   2.5.2
+ * @version 2.6.5 - Fix security issues.
  *
- * @package    WCVendors_Pro
- * @subpackage WCVendors_Pro/public/partials/product
+ * @phpcs:disable 	WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedNamespaceFound
+ * @phpcs:disable 	WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+ * @phpcs:disable 	WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+ * @phpcs:disable 	WordPress.DB.DirectDatabaseQuery.DirectQuery
+ * @phpcs:disable 	WordPress.DB.DirectDatabaseQuery.NoCaching
  */
 ?>
 

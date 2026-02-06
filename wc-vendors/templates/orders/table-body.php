@@ -6,43 +6,44 @@
  *
  * @author  WC Vendors
  * @package WCVendors/Templates/Orders/
- * @version 2.0.0
+ * @version 2.6.5 Fix security issues.
+ * @since    2.0.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
-	exit;
+    exit;
 }
 
 if ( $count > 1 ) : ?>
 
 <tr>
 
-	<?php endif; ?>
+    <?php endif; ?>
 
-	<?php if ( $item->get_formatted_meta_data() ) : ?>
+    <?php if ( $item->get_formatted_meta_data() ) : ?>
 
-	<td colspan="5">
-		<?php echo wc_display_item_meta( $item ); ?>
-	</td>
+    <td colspan="5">
+        <?php echo wp_kses_post( wc_display_item_meta( $item ) ); ?>
+    </td>
 
 <td colspan="3">
 
 <?php else : ?>
 
-	<td colspan="100%">
+    <td colspan="100%">
 
-		<?php endif; ?>
+        <?php endif; ?>
 
-		<?php printf( __( 'Quantity: %d', 'wc-vendors' ), $item['qty'] ); ?>
+        <?php printf( /* translators: %d: quantity */ esc_html__( 'Quantity: %d', 'wc-vendors' ), esc_html( $item['qty'] ) ); ?>
 
-		<?php if ( $refund && !empty( $refund ) ) : ?>
-			<br />
-			<?php printf( __( 'Refunded total: %s', 'wc-vendors' ), wc_price( $refund['total'] ) ); ?>
-		<?php endif; ?>
+        <?php if ( $refund && ! empty( $refund ) ) : ?>
+            <br />
+            <?php printf( /* translators: %s: refunded total */ esc_html__( 'Refunded total: %s', 'wc-vendors' ), wp_kses_post( wc_price( $refund['total'] ) ) ); ?>
+        <?php endif; ?>
 
-	</td>
+    </td>
 
-	<?php if ( $count > 1 ) : ?>
+    <?php if ( $count > 1 ) : ?>
 
 </tr>
 

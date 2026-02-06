@@ -178,8 +178,8 @@ class WCVendors_Commissions_Page extends WP_List_Table {
             : admin_url( 'post.php?post=' . absint( $item->order_id ) ) . '&action=edit';
 
         $action_nonce = wp_create_nonce( 'delete_commission_nonce' );
-        $page         = isset( $_GET['page'] ) ? htmlspecialchars( $_GET['page'] ) : ''; //phpcs:ignore WordPress.Security.NonceVerification.Recommended
-        $paged        = isset( $_GET['paged'] ) ? htmlspecialchars( $_GET['paged'] ) : 1; //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        $page         = isset( $_GET['page'] ) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : ''; //phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        $paged        = isset( $_GET['paged'] ) ? sanitize_text_field( wp_unslash( $_GET['paged'] ) ) : 1; //phpcs:ignore WordPress.Security.NonceVerification.Recommended
         $actions      = array(
             'delete' => sprintf(
                 '<a class="delete_commission" href="?page=%s&action=%s&id[]=%s&_wpnonce=%s&paged=%s">Delete</a>',
@@ -521,7 +521,7 @@ class WCVendors_Commissions_Page extends WP_List_Table {
         $sql  = $wpdb->prepare( "UPDATE `{$wpdb->prefix}pv_commission` SET `status` = %s WHERE `status` = %s AND id IN", 'paid', 'due' );
         $sql .= " $ids";
 
-        $result = $wpdb->query( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+        $result = $wpdb->query( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,PluginCheck.Security.DirectDB.UnescapedDBParameter
 
         return $result;
     }
@@ -547,7 +547,7 @@ class WCVendors_Commissions_Page extends WP_List_Table {
         $sql  = $wpdb->prepare( "UPDATE `{$wpdb->prefix}pv_commission` SET `status` = %s WHERE id IN", 'reversed' );
         $sql .= " $ids";
 
-        $result = $wpdb->query( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+        $result = $wpdb->query( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,PluginCheck.Security.DirectDB.UnescapedDBParameter
 
         return $result;
     }
@@ -573,7 +573,7 @@ class WCVendors_Commissions_Page extends WP_List_Table {
         $sql  = $wpdb->prepare( "UPDATE `{$wpdb->prefix}pv_commission` SET `status` = %s WHERE id IN", 'due' );
         $sql .= " $ids";
 
-        $result = $wpdb->query( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+        $result = $wpdb->query( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,PluginCheck.Security.DirectDB.UnescapedDBParameter
 
         return $result;
     }
@@ -595,7 +595,7 @@ class WCVendors_Commissions_Page extends WP_List_Table {
         $ids    = explode( ',', $ids );
         $ids    = escape_array_for_in_operator( $ids, true );
         $sql    = "DELETE FROM `{$wpdb->prefix}pv_commission` WHERE id IN $ids";
-        $result = $wpdb->query( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+        $result = $wpdb->query( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,PluginCheck.Security.DirectDB.UnescapedDBParameter
 
         return $result;
     }
@@ -673,7 +673,7 @@ class WCVendors_Commissions_Page extends WP_List_Table {
             $sql       .= $vendor_sql;
         }
 
-        $max = (int) $wpdb->get_var( $sql ); //phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared 
+        $max = (int) $wpdb->get_var( $sql ); //phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,PluginCheck.Security.DirectDB.UnescapedDBParameter
 
         $sql = "SELECT *, ( total_due + total_shipping + tax ) as totals FROM {$wpdb->prefix}pv_commission";
 
@@ -713,7 +713,7 @@ class WCVendors_Commissions_Page extends WP_List_Table {
         $sql      = apply_filters_deprecated( 'wcv_get_commissions_sql', array( $sql, $sql_args ), '2.2.2', 'wcvendors_get_commissions_sql' );
         $sql      = apply_filters( 'wcvendors_get_commissions_sql', $sql, $sql_args );
 
-        $this->items = $wpdb->get_results( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+        $this->items = $wpdb->get_results( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,PluginCheck.Security.DirectDB.UnescapedDBParameter
         $product_ids = array();
 
         foreach ( $this->items as $item ) {

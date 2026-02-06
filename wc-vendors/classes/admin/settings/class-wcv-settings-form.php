@@ -1,6 +1,11 @@
 <?php
 /**
  * Class WCV_Setting_Form
+ *
+ * @version 2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
  */
 class WCV_Setting_Form extends WCVendors_Settings_Page {
     /**

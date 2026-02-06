@@ -7,6 +7,9 @@
  * @author        Jamie Madden, WC Vendors
  * @package       WCVendors/Templates/dashboard
  * @version       2.2.1
+ * @version       2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

@@ -1,4 +1,17 @@
 <?php
+/**
+ * The WCV Product Form class
+ *
+ * This is the product form class
+ *
+ * @phpcs:disable 	WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedNamespaceFound
+ * @phpcs:disable 	WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+ * @phpcs:disable 	WordPress.DB.DirectDatabaseQuery.DirectQuery
+ * @phpcs:disable 	WordPress.DB.DirectDatabaseQuery.NoCaching
+ * @phpcs:disable 	WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_exclude
+ *
+ * @version 2.6.5 - Fix security issues.
+ */
 namespace WC_Vendors\Classes\Front\Forms;
 
 use WC_Vendors\Classes\Front\WCV_Form_Helper;
@@ -660,7 +673,7 @@ class WCV_Product_Form {
                 ),
                 'downloadable' => array(
                     'id'            => '_downloadable',
-                    'wrapper_class' => 'show_if_simple',
+                    'wrapper_class' => 'show_if_simple show_if_auction',
                     'label'         => __( 'Downloadable', 'wc-vendors' ),
                     'description'   => __( 'Downloadable products give access to a file upon purchase.', 'wc-vendors' ),
                     'default'       => 'no',
@@ -1497,9 +1510,9 @@ class WCV_Product_Form {
                     array(
                         'post_id'           => $post_id,
                         'id'                => '_stock_status',
-                        'wrapper_class'     => 'hide_if_variable',
+                        'wrapper_class'     => 'hide_if_variable hide_if_auction',
                         'label'             => __( 'Stock status', 'wc-vendors' ),
-                        'wrapper_start'     => '<div class="all-100 stock_status_field hide_if_variable hide_if_external hide_if_grouped">',
+                        'wrapper_start'     => '<div class="all-100 stock_status_field hide_if_variable hide_if_external hide_if_grouped hide_if_auction">',
                         'wrapper_end'       => '</div>',
                         'desc_tip'          => true,
                         'style'             => 'width: 100%;',
@@ -1940,12 +1953,12 @@ class WCV_Product_Form {
             'general'        => array(
                 'label'  => __( 'General', 'wc-vendors' ),
                 'target' => 'general',
-                'class'  => array( 'hide_if_grouped' ),
+                'class'  => array( 'hide_if_grouped', 'show_if_downloadable_auction' ),
             ),
             'inventory'      => array(
                 'label'  => __( 'Inventory', 'wc-vendors' ),
                 'target' => 'inventory',
-                'class'  => array( 'show_if_simple', 'show_if_variable', 'show_if_grouped', 'show_if_external' ),
+                'class'  => array( 'show_if_simple', 'show_if_variable', 'show_if_grouped', 'show_if_external', 'show_if_auction' ),
             ),
             'shipping'       => array(
                 'label'  => __( 'Shipping', 'wc-vendors' ),

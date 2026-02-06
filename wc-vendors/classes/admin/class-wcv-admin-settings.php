@@ -49,7 +49,6 @@ class WCVendors_Admin_Settings extends WC_Admin_Settings {
             $settings[] = include WCV_ABSPATH_ADMIN . 'settings/class-wcv-settings-commission.php';
             $settings[] = include WCV_ABSPATH_ADMIN . 'settings/class-wcv-settings-capabilities.php';
             $settings[] = include WCV_ABSPATH_ADMIN . 'settings/class-wcv-settings-display.php';
-            $settings[] = include WCV_ABSPATH_ADMIN . 'settings/class-wcv-settings-payments.php';
             $settings[] = include WCV_ABSPATH_ADMIN . 'settings/class-wcv-settings-advanced.php';
             if ( ! is_wcv_pro_active() ) {
                 $settings[] = include WCV_ABSPATH_ADMIN . 'settings/class-wcv-settings-form.php';
@@ -67,7 +66,7 @@ class WCVendors_Admin_Settings extends WC_Admin_Settings {
     public static function save() {
         global $current_tab;
 
-        if ( empty( $_REQUEST['_wpnonce'] ) || ! wp_verify_nonce( $_REQUEST['_wpnonce'], 'wcvendors-settings' ) ) {
+        if ( empty( $_REQUEST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_REQUEST['_wpnonce'] ) ), 'wcvendors-settings' ) ) {
             die( esc_attr__( 'Action failed. Please refresh the page and retry.', 'wc-vendors' ) );
         }
 
@@ -159,9 +158,17 @@ class WCVendors_Admin_Settings extends WC_Admin_Settings {
             if ( ! isset( $value['suffix'] ) ) {
                 $value['suffix'] = '';
             }
+            if ( ! isset( $value['should_hide'] ) ) {
+                $value['should_hide'] = false;
+            }
 
             // Custom attribute handling.
             $custom_attributes = isset( $value['custom_attributes'] ) && is_array( $value['custom_attributes'] ) ? $value['custom_attributes'] : array();
+
+            // Check if field should be hidden.
+            if ( isset( $value['should_hide'] ) && $value['should_hide'] ) {
+                continue;
+            }
 
             // Description handling.
             $field_description = self::get_field_description( $value );

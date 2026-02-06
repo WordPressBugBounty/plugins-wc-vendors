@@ -2,8 +2,8 @@
 Contributors: jkohlbach, RymeraWebCo, Rymera01, smub
 Tags: multivendor, marketplace, multi vendor, product vendors, woocommerce commissions
 Requires at least: 5.5.0
-Tested up to: 6.8
-Stable tag: 2.6.2
+Tested up to: 6.9
+Stable tag: 2.6.5
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -299,6 +299,36 @@ You can report security bugs through the Patchstack Vulnerability Disclosure Pro
 
 == Changelog ==
 
+= Version 2.6.5 - 17th December 2025 =
+ * Feature: Introduce hooks for WC Vendors signup.
+ * Improvement: Add a "This Month" filter option and set it as the default for the WC Vendors admin dashboard reports.
+ * Bug Fix: Resolve code quality issues found during plugin checks.
+
+= Version 2.6.4.1 - 3rd December 2025 =
+ * Bug Fix: Fatal error while deactivating WooCommerce immediately
+ * Bug Fix: Security issues
+ * Security Fix: Prevent unauthorized vendor order access
+
+= Version 2.6.4 - 14th November 2025 =
+ * Feature: Option to write a custom message in vendor denial/approval emails per vendor
+ * Feature: Dashboard cross-promo box with 1-click install
+ * Improvement: Add SaveTo Wishlist Lite for WooCommerce to the About page
+ * Improvement: Update the Select2 script handle to resolve the WooCommerce 10.3.0+ deprecation warning
+ * Improvement: Add a parameter to display product categories in the Products by Vendor shortcode
+ * Bug Fix: Remove PayPal Adaptive Payments and fix the test gateway crash
+ * Bug Fix: Auction downloadable missing general tab/option to upload files
+ * Bug Fix: Theme overrides not applied for certain dashboard templates due to the wrong path in the controller
+ * Bug Fix: Incorrect refund detection when handling partial refunds per vendor
+
+= Version 2.6.3 - 13th October 2025 =
+ * Feature: Add vendor detail modal for admin to review pending vendors on the All Vendors page
+ * Improvement: Support username and user ID in the "vendor" parameter of the products by vendor shortcodes
+ * Improvement: Add parameter to limit the number of displayed products without pagination via shortcodes
+ * Improvement: Hide vendor shipping feature in free version
+ * Improvement: Clarify single product header dependency on shop header
+ * Bug Fix: Vendors and admins receive duplicate emails on new vendor application
+ * Bug Fix: Admin notification emails for vendor applications are not sent when site language is not English
+
 = Version 2.6.2 - 26th September 2025 =
  * Feature: Group subcategories under parent categories in category filter dropdown
  * Improvement: Enhanced admin setting field custom attributes rendering
@@ -329,30 +359,5 @@ You can report security bugs through the Patchstack Vulnerability Disclosure Pro
  * Bug Fix: Vendor singular term not applied to My Account dashboard menu
  * Bug Fix: Total Discount Coupon displayed in the vendor's new order email instead of the amount per vendor coupon
 
-= Version 2.5.9 - 8th July 2025 =
- * Improvement: Order search functionality for Vendors
- * Improvement: Separate order status and shipped status in Export Vendor Orders CSV
- * Bug Fix: Missing text domains in wc-vendors-product-table-row-details.php template strings
- * Bug Fix: Saving settings of other tabs redirects to the store tab
- * Bug Fix: Revert to include admin orders and fix marketplace commission calculation
- * Bug Fix: All products page broken with AIO SEO when language/profile language is Netherlands
- * Bug Fix: One click setup does not dismiss the setup wizard message from the admin screen
- * Bug Fix: Orders widget on the Vendor Dashboard ignores customer info visibility settings
- * Bug Fix: Remove extra line breaks in product titles on Export Vendor Orders CSV
- * Bug Fix: Store policies content is not saving correctly when using HTML tags from the All Vendors Page
- * Bug Fix: The marketplace dashboard includes with the admin product order as well
- * Bug Fix: Lock new/edit product messages not displaying on Vendor Dashboard
- * Bug Fix: The Vendor singular term option is not applied to the vendor list search placeholder
- * Bug Fix: Products created with downloadable/virtual template not filtered by WooCommerce Price Widget
- * Bug Fix: The tax fields and attribute tab still visible to vendors despite settings to hide them
- * Bug Fix: Remove the incorrect png image file
-
-= Version 2.5.8 - 9th June 2025 = 
- * Improvement: Add Patchstack VDP disclaimer to FAQ on readme
- * Bug Fix: Store description content is not saving correctly when using HTML tags from the admin panel
- * Bug fix: New orders do not appear on Marketplace Dashboard when dashboard cache is enabled
- * Bug Fix: General box should hide when Variable product type selected
- * Bug Fix: Difficulties in Adding Variation Images
- * Bug Fix: Setup Wizard: Can not click on the Next button on small screen
 
 

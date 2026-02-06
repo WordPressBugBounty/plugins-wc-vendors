@@ -3,6 +3,12 @@
  * The template for displaying the store settings form
  *
  * Override this template by copying it to yourtheme/wc-vendors/dashboard/
+ *
+ * @package    WC_Vendors
+ * @version    2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
  */
 use WC_Vendors\Classes\Front\Forms\WCV_Store_Form;
 

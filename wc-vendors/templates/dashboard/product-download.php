@@ -4,8 +4,11 @@
  *
  * Override this template by copying it to yourtheme/wc-vendors/dashboard/
  *
- * @since      2.5.9
- * @version    2.5.2
+ * @package    WC_Vendors
+ * @version    2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
  */
 use WC_Vendors\Classes\Front\Forms\WCV_Product_Form;
 use WC_Vendors\Classes\Front\WCV_Form_Helper;

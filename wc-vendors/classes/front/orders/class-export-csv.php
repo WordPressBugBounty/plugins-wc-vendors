@@ -3,6 +3,8 @@
  * WCV_Export_CSV class
  *
  * @version 2.4.8 - Apply PHPCS
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound
  */
 class WCV_Export_CSV {
 

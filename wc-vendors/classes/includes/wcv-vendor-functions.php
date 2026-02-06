@@ -2,6 +2,10 @@
 /**
  * Vendor related functions.
  *
+ * @version 2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
+ *
  * @since 2.4.0
  * @version 2.4.0
  * @since   2.4.8 - Addedd HPOS Compatibility.

@@ -6,15 +6,16 @@
  *
  * @author         Jamie Madden, WC Vendors
  * @package        WCVendors/Templates/Emails/Plain
- * @version        2.0.0
+ * @since       2.0.0
+ * @version    2.6.5 Fix security issues.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
-	exit;
+    exit;
 }
 
-echo '= ' . $email_heading . " =\n\n";
+echo '= ' . esc_html( $email_heading ) . " =\n\n";
 
-echo sprintf( __( '%1$s has marked  order #%2$s as shipped.' ), WCV_Vendors::get_vendor_shop_name( $vendor_id ), $order->get_id() ) . "\n\n";
+echo sprintf( /* translators: %1$s: vendor name, %2$s: order number */ esc_html__( '%1$s has marked  order #%2$s as shipped.', 'wc-vendors' ), esc_html( WCV_Vendors::get_vendor_shop_name( $vendor_id ) ), esc_html( $order->get_id() ) ) . "\n\n";
 
-echo apply_filters( 'woocommerce_email_footer_text', get_option( 'woocommerce_email_footer_text' ) );
+echo wp_kses_post( apply_filters( 'woocommerce_email_footer_text', get_option( 'woocommerce_email_footer_text' ) ) );

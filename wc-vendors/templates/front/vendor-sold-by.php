@@ -8,7 +8,8 @@
  *
  * @author        Jamie Madden, WC Vendors
  * @package       WCVendors/Templates/Emails/HTML
- * @version       2.1.17
+ * @since         2.1.17
+ * @version       2.6.5 Fix security issues.
  *
  *
  * Template Variables available
@@ -23,7 +24,7 @@
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
-	exit;
+    exit;
 }
 ?>
-<small class="wcvendors_sold_by_in_loop"><?php echo wcv_get_vendor_sold_by( $vendor_id ); ?></small><br/>
+<small class="wcvendors_sold_by_in_loop"><?php echo wp_kses_post( wcv_get_vendor_sold_by( $vendor_id ) ); ?></small><br/>

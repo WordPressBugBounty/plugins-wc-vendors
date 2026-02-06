@@ -3,6 +3,11 @@
  * The WCV_Export_Helper Class
  *
  * This is the this is the helper class to help exporting data for vendors
+ *
+ * @version 2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

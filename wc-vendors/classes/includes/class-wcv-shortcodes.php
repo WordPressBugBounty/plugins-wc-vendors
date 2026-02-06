@@ -1,7 +1,15 @@
 <?php
-
 /**
  * WCV_Shortcodes class.
+ *
+ * @version 2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+ * @phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+ * @phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+ * @phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery
+ * @phpcs:disable WordPress.DB.DirectDatabaseQuery.NoCaching
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
  *
  * @class          WCV_Shortcodes
  * @version        1.0.0
@@ -17,6 +25,13 @@ class WCV_Shortcodes {
      * @var bool $has_products True if the vendor has products.
      */
     public $has_products = false;
+
+    /**
+     * Current category separator for product categories display.
+     *
+     * @var string $category_separator The separator to use between categories.
+     */
+    public static $category_separator = ', ';
 
     /**
      * Initialize shortcodes
@@ -47,32 +62,57 @@ class WCV_Shortcodes {
         add_action( 'wcvendors_after_vendor_list', 'wcv_after_vendor_list' );
         add_action( 'wcvendors_vendor_list_filter', 'wcv_vendor_list_filter', 10, 3 );
         add_action( 'wcvendors_vendor_list_loop', 'wcv_vendor_list_loop', 10, 1 );
+        add_action( 'wp_head', array( 'WCV_Shortcodes', 'output_category_css' ), 999 );
     }
 
     /**
-     * Get vendor by slug.
+     * Get vendor by username, user ID, or slug.
      *
-     * @param string $slug The vendor slug.
-     * @return int|string
+     * @param string|int $vendor_identifier The vendor identifier (username, user ID, or slug).
+     * @return int The vendor ID or 0 if not found.
      */
-    public static function get_vendor( $slug ) {
+    public static function get_vendor( $vendor_identifier ) {
+        $vendor_identifier = sanitize_text_field( $vendor_identifier );
 
-        $vendor_id = get_user_by( 'slug', $slug );
-
-        if ( ! empty( $vendor_id ) ) {
-            $author = $vendor_id->ID;
-        } else {
-            $author = '';
+        if ( empty( $vendor_identifier ) ) {
+            return 0;
         }
 
-        return $author;
+        $user = null;
+
+        // Try by user ID first (most efficient for numeric values).
+        if ( is_numeric( $vendor_identifier ) ) {
+            $user_id = absint( $vendor_identifier );
+            if ( $user_id > 0 ) {
+                $user = get_user_by( 'ID', $user_id );
+            }
+        }
+
+        // Try by username (login) if not found by ID.
+        if ( ! $user ) {
+            $user = get_user_by( 'login', $vendor_identifier );
+        }
+
+        // Try by slug (nicename) if not found by username.
+        if ( ! $user ) {
+            $user = get_user_by( 'slug', $vendor_identifier );
+        }
+
+        // Return vendor ID if user exists and has vendor capability.
+        if ( $user && user_can( $user->ID, 'vendor' ) ) {
+            return (int) $user->ID;
+        }
+
+        return 0;
     }
 
     /**
-     * Get recent products based on vendor username
+     * Get recent products based on vendor username, user ID, or slug
      *
      * @param array|string $atts The shortcode attributes.
      * @return string
+     *
+     * @since 2.6.4 - Added category and category_separator.
      */
     public static function recent_products( $atts ) {
 
@@ -81,24 +121,36 @@ class WCV_Shortcodes {
         extract( // phpcs:ignore
             shortcode_atts(
                 array(
-                    'per_page' => '12',
-                    'vendor'   => '',
-                    'columns'  => '4',
-                    'orderby'  => 'date',
-                    'order'    => 'desc',
+                    'per_page'           => '12',
+                    'vendor'             => '',
+                    'columns'            => '4',
+                    'orderby'            => 'date',
+                    'order'              => 'desc',
+                    'limit'              => '',
+                    'category'           => 'no',
+                    'category_separator' => ', ',
                 ),
                 $atts
             )
         );
+
+        $vendor = self::get_vendor( $atts['vendor'] );
+
+        if ( ! $vendor ) {
+            return '';
+        }
+
+        // Use limit if provided, otherwise use per_page.
+        $posts_per_page = ! empty( $limit ) ? absint( $limit ) : absint( $per_page );
 
         $meta_query = WC()->query->get_meta_query();
 
         $args = array(
             'post_type'           => 'product',
             'post_status'         => 'publish',
-            'author'              => self::get_vendor( $vendor ),
+            'author'              => $vendor,
             'ignore_sticky_posts' => 1,
-            'posts_per_page'      => $per_page,
+            'posts_per_page'      => $posts_per_page,
             'orderby'             => $orderby,
             'order'               => $order,
             'meta_query'          => $meta_query,
@@ -110,6 +162,12 @@ class WCV_Shortcodes {
         $products = new WP_Query( apply_filters( 'wcvendors_shortcode_products_query', $args, $atts ) );
 
         $woocommerce_loop['columns'] = esc_attr( $columns );
+
+        // Hook to display categories if enabled.
+        $show_categories = wc_string_to_bool( $category );
+        if ( $show_categories ) {
+            self::setup_category_display( $category_separator );
+        }
 
         if ( $products->have_posts() ) : ?>
 
@@ -129,6 +187,11 @@ class WCV_Shortcodes {
             <?php
         endif;
 
+        // Remove the hook after rendering products.
+        if ( $show_categories ) {
+            self::remove_category_display();
+        }
+
         wp_reset_postdata();
 
         return '<div class="woocommerce columns-' . esc_attr( $columns ) . '">' . ob_get_clean() . '</div>';
@@ -142,6 +205,8 @@ class WCV_Shortcodes {
      * @param array|string $atts The shortcode attributes.
      *
      * @return string
+     *
+     * @since 2.6.4 - Added category and category_separator.
      */
     public static function products( $atts ) {
 
@@ -154,25 +219,37 @@ class WCV_Shortcodes {
         extract( // phpcs:ignore
             shortcode_atts(
                 array(
-                    'vendor'  => '',
-                    'columns' => '4',
-                    'orderby' => 'title',
-                    'order'   => 'asc',
+                    'vendor'             => '',
+                    'columns'            => '4',
+                    'orderby'            => 'title',
+                    'order'              => 'asc',
+                    'limit'              => '',
+                    'category'           => 'no',
+                    'category_separator' => ', ',
                 ),
                 $atts
             )
         );
+
+        $vendor = self::get_vendor( $atts['vendor'] );
+
+        if ( ! $vendor ) {
+            return '';
+        }
+
+        // Use limit if provided, otherwise show all products (-1).
+        $posts_per_page = ! empty( $limit ) ? absint( $limit ) : -1;
 
         $meta_query = WC()->query->get_meta_query();
 
         $args = array(
             'post_type'           => 'product',
             'post_status'         => 'publish',
-            'author'              => self::get_vendor( $vendor ),
+            'author'              => $vendor,
             'ignore_sticky_posts' => 1,
             'orderby'             => $orderby,
             'order'               => $order,
-            'posts_per_page'      => -1,
+            'posts_per_page'      => $posts_per_page,
             'meta_query'          => $meta_query,
         );
 
@@ -199,6 +276,12 @@ class WCV_Shortcodes {
 
         $woocommerce_loop['columns'] = esc_attr( $columns );
 
+        // Hook to display categories if enabled.
+        $show_categories = wc_string_to_bool( $category );
+        if ( $show_categories ) {
+            self::setup_category_display( $category_separator );
+        }
+
         if ( $products->have_posts() ) :
             ?>
 
@@ -220,9 +303,195 @@ class WCV_Shortcodes {
             <?php
         endif;
 
+        // Remove the hook after rendering products.
+        if ( $show_categories ) {
+            self::remove_category_display();
+        }
+
         wp_reset_postdata();
 
         return '<div class="woocommerce columns-' . esc_attr( $columns ) . '">' . ob_get_clean() . '</div>';
+    }
+
+
+    /**
+     * Display product categories in the product loop.
+     *
+     * @access public
+     * @static
+     *
+     * @return void
+     *
+     * @since 2.6.4 - Added category and category_separator.
+     */
+    public static function display_product_categories() {
+
+        global $product;
+
+        if ( ! $product ) {
+            return;
+        }
+
+        $categories = wc_get_product_category_list(
+            $product->get_id(),
+            self::$category_separator,
+            '<div class="wcv-product-categories">',
+            '</div>'
+        );
+
+        if ( $categories ) {
+            echo wp_kses_post( $categories );
+        }
+    }
+
+    /**
+     * Setup category display hook with custom separator.
+     *
+     * @access public
+     * @static
+     *
+     * @param string $category_separator The separator to use between categories.
+     * @return void
+     *
+     * @since 2.6.4
+     */
+    public static function setup_category_display( $category_separator = ', ' ) {
+        // Set the category separator for this shortcode instance.
+        self::$category_separator = $category_separator;
+        add_action( 'woocommerce_shop_loop_item_title', array( 'WCV_Shortcodes', 'display_product_categories' ), 6 );
+    }
+
+    /**
+     * Remove category display hook.
+     *
+     * @access public
+     * @static
+     *
+     * @return void
+     *
+     * @since 2.6.4
+     */
+    public static function remove_category_display() {
+        remove_action( 'woocommerce_shop_loop_item_title', array( 'WCV_Shortcodes', 'display_product_categories' ), 6 );
+    }
+
+    /**
+     * Output category display CSS if not already output.
+     *
+     * @access public
+     * @static
+     *
+     * @return void
+     *
+     * @since 2.6.4
+     */
+    public static function output_category_css() {
+        $list_of_shortcodes = array( 'wcv_recent_products', 'wcv_products', 'wcv_featured_products', 'wcv_sale_products', 'wcv_top_rated_products', 'wcv_best_selling_products' );
+
+        $has_shortcode = false;
+
+        if ( is_singular() ) {
+            $post = get_post();
+            if ( $post && $post->post_content ) {
+                foreach ( $list_of_shortcodes as $shortcode ) {
+                    if ( has_shortcode( $post->post_content, $shortcode ) ) {
+                        $has_shortcode = true;
+                    }
+                }
+            }
+        }
+
+        if ( $has_shortcode ) {
+            echo '<style id="wcv-product-categories-css">' . wp_kses_post( self::get_category_css() ) . '</style>';
+        }
+    }
+
+    /**
+     * Get category display CSS with customization options.
+     *
+     * @access public
+     * @static
+     *
+     * @return string The CSS styles.
+     *
+     * @since 2.6.4 - Added CSS for product categories.
+     */
+    public static function get_category_css() {
+        $default_styles = array(
+            'margin'          => '0',
+            'font_size'       => '1rem',
+            'line_height'     => '1.4',
+            'color'           => '#666666',
+            'link_color'      => '#666666',
+            'link_hover'      => '#0073aa',
+            'font_weight'     => '400',
+            'text_transform'  => 'none',
+            'letter_spacing'  => '0',
+            'display'         => 'inline-block',
+            'margin_right'    => '0',
+            'padding'         => '0',
+            'border_radius'   => '0',
+            'background'      => 'transparent',
+            'border'          => 'none',
+            'text_decoration' => 'none',
+        );
+
+        // Allow customization through filter.
+        $styles = apply_filters( 'wcv_product_categories_styles', $default_styles );
+
+        // Validate that the filtered value is an array, fallback to defaults if not.
+        if ( ! is_array( $styles ) ) {
+            $styles = $default_styles;
+        }
+
+        // Merge with defaults to ensure all required keys exist.
+        $styles = wp_parse_args( $styles, $default_styles );
+
+        $css = "
+        .wcv-product-categories {
+            margin: {$styles['margin']};
+            font-size: {$styles['font_size']};
+            line-height: {$styles['line_height']};
+            color: {$styles['color']};
+            font-weight: {$styles['font_weight']};
+            text-transform: {$styles['text_transform']};
+            letter-spacing: {$styles['letter_spacing']};
+        }
+        
+        .wcv-product-categories a {
+            display: {$styles['display']};
+            color: {$styles['link_color']};
+            text-decoration: {$styles['text_decoration']};
+            margin-right: {$styles['margin_right']};
+            padding: {$styles['padding']};
+            border-radius: {$styles['border_radius']};
+            background: {$styles['background']};
+            border: {$styles['border']};
+            font-weight: inherit;
+            transition: color 0.2s ease, background-color 0.2s ease;
+        }
+        
+        .wcv-product-categories a:hover,
+        .wcv-product-categories a:focus {
+            color: {$styles['link_hover']};
+            text-decoration: underline;
+        }
+        
+        .wcv-product-categories a:last-child {
+            margin-right: 0;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .wcv-product-categories {
+                font-size: calc({$styles['font_size']} * 0.9);
+                margin: calc({$styles['margin']} * 0.8);
+            }
+        }
+        ";
+
+        // Allow complete CSS override through filter.
+        return apply_filters( 'wcv_product_categories_css', $css, $styles );
     }
 
 
@@ -234,6 +503,8 @@ class WCV_Shortcodes {
      * @param array|string $atts The shortcode attributes.
      *
      * @return string
+     *
+     * @since 2.6.4 - Added category and category_separator.
      */
     public static function featured_products( $atts ) {
 
@@ -242,15 +513,26 @@ class WCV_Shortcodes {
         extract( // phpcs:ignore
             shortcode_atts(
                 array(
-                    'vendor'   => '',
-                    'per_page' => '12',
-                    'columns'  => '4',
-                    'orderby'  => 'date',
-                    'order'    => 'desc',
+                    'vendor'             => '',
+                    'per_page'           => '12',
+                    'columns'            => '4',
+                    'orderby'            => 'date',
+                    'order'              => 'desc',
+                    'limit'              => '',
+                    'category'           => 'no',
+                    'category_separator' => ', ',
                 ),
                 $atts
             )
         );
+
+        $vendor = self::get_vendor( $atts['vendor'] );
+        if ( ! $vendor ) {
+            return '';
+        }
+
+        // Use limit if provided, otherwise use per_page.
+        $posts_per_page = ! empty( $limit ) ? absint( $limit ) : absint( $per_page );
 
         $meta_query  = WC()->query->get_meta_query();
         $tax_query   = WC()->query->get_tax_query();
@@ -263,10 +545,10 @@ class WCV_Shortcodes {
 
         $args = array(
             'post_type'           => 'product',
-            'author'              => self::get_vendor( $vendor ),
+            'author'              => $vendor,
             'post_status'         => 'publish',
             'ignore_sticky_posts' => 1,
-            'posts_per_page'      => $per_page,
+            'posts_per_page'      => $posts_per_page,
             'orderby'             => $orderby,
             'order'               => $order,
             'meta_query'          => $meta_query,
@@ -280,6 +562,12 @@ class WCV_Shortcodes {
 
         $woocommerce_loop['columns'] = esc_attr( $columns );
 
+        // Hook to display categories if enabled.
+        $show_categories = wc_string_to_bool( $category );
+        if ( $show_categories ) {
+            self::setup_category_display( $category_separator );
+        }
+
         if ( $products->have_posts() ) :
             ?>
 
@@ -299,9 +587,14 @@ class WCV_Shortcodes {
             <?php woocommerce_product_loop_end(); ?>
 
             <?php
-            wp_reset_postdata();
-
         endif;
+
+        // Remove the hook after rendering products.
+        if ( $show_categories ) {
+            self::remove_category_display();
+        }
+
+        wp_reset_postdata();
 
         return '<div class="woocommerce columns-' . esc_attr( $columns ) . '">' . ob_get_clean() . '</div>';
     }
@@ -314,6 +607,8 @@ class WCV_Shortcodes {
      * @param array|string $atts The shortcode attributes.
      *
      * @return string
+     *
+     * @since 2.6.4 - Added category and category_separator.
      */
     public static function sale_products( $atts ) {
 
@@ -322,15 +617,26 @@ class WCV_Shortcodes {
         extract( // phpcs:ignore
             shortcode_atts(
                 array(
-                    'vendor'   => '',
-                    'per_page' => '12',
-                    'columns'  => '4',
-                    'orderby'  => 'title',
-                    'order'    => 'asc',
+                    'vendor'             => '',
+                    'per_page'           => '12',
+                    'columns'            => '4',
+                    'orderby'            => 'title',
+                    'order'              => 'asc',
+                    'limit'              => '',
+                    'category'           => 'no',
+                    'category_separator' => ', ',
                 ),
                 $atts
             )
         );
+
+        $vendor = self::get_vendor( $atts['vendor'] );
+        if ( ! $vendor ) {
+            return '';
+        }
+
+        // Use limit if provided, otherwise use per_page.
+        $posts_per_page = ! empty( $limit ) ? absint( $limit ) : absint( $per_page );
 
         // Get products on sale.
         $product_ids_on_sale = wc_get_product_ids_on_sale();
@@ -341,8 +647,8 @@ class WCV_Shortcodes {
         $meta_query   = array_filter( $meta_query );
 
         $args = array(
-            'posts_per_page' => $per_page,
-            'author'         => self::get_vendor( $vendor ),
+            'posts_per_page' => $posts_per_page,
+            'author'         => $vendor,
             'orderby'        => $orderby,
             'order'          => $order,
             'no_found_rows'  => 1,
@@ -359,6 +665,12 @@ class WCV_Shortcodes {
 
         $woocommerce_loop['columns'] = esc_attr( $columns );
 
+        // Hook to display categories if enabled.
+        $show_categories = wc_string_to_bool( $category );
+        if ( $show_categories ) {
+            self::setup_category_display( $category_separator );
+        }
+
         if ( $products->have_posts() ) :
             ?>
 
@@ -379,6 +691,11 @@ class WCV_Shortcodes {
 
             <?php
         endif;
+
+        // Remove the hook after rendering products.
+        if ( $show_categories ) {
+            self::remove_category_display();
+        }
 
         wp_reset_postdata();
 
@@ -393,6 +710,8 @@ class WCV_Shortcodes {
      * @param array|string $atts The shortcode attributes.
      *
      * @return string
+     *
+     * @since 2.6.4 - Added category and category_separator.
      */
     public static function top_rated_products( $atts ) {
 
@@ -401,26 +720,37 @@ class WCV_Shortcodes {
         extract( // phpcs:ignore
             shortcode_atts(
                 array(
-                    'vendor'   => '',
-                    'per_page' => '12',
-                    'columns'  => '4',
-                    'orderby'  => 'title',
-                    'order'    => 'asc',
+                    'vendor'             => '',
+                    'per_page'           => '12',
+                    'columns'            => '4',
+                    'orderby'            => 'title',
+                    'order'              => 'asc',
+                    'limit'              => '',
+                    'category'           => 'no',
+                    'category_separator' => ', ',
                 ),
                 $atts
             )
         );
 
+        $vendor = self::get_vendor( $atts['vendor'] );
+        if ( ! $vendor ) {
+            return '';
+        }
+
+        // Use limit if provided, otherwise use per_page.
+        $posts_per_page = ! empty( $limit ) ? absint( $limit ) : absint( $per_page );
+
         $meta_query = WC()->query->get_meta_query();
 
         $args = array(
             'post_type'           => 'product',
-            'author'              => self::get_vendor( $vendor ),
+            'author'              => $vendor,
             'post_status'         => 'publish',
             'ignore_sticky_posts' => 1,
             'orderby'             => $orderby,
             'order'               => $order,
-            'posts_per_page'      => $per_page,
+            'posts_per_page'      => $posts_per_page,
             'meta_query'          => $meta_query,
         );
 
@@ -434,6 +764,12 @@ class WCV_Shortcodes {
         remove_filter( 'posts_clauses', array( 'WC_Shortcodes', 'order_by_rating_post_clauses' ) );
 
         $woocommerce_loop['columns'] = esc_attr( $columns );
+
+        // Hook to display categories if enabled.
+        $show_categories = wc_string_to_bool( $category );
+        if ( $show_categories ) {
+            self::setup_category_display( $category_separator );
+        }
 
         if ( $products->have_posts() ) :
             ?>
@@ -454,8 +790,14 @@ class WCV_Shortcodes {
             <?php woocommerce_product_loop_end(); ?>
 
             <?php
-            wp_reset_postdata();
         endif;
+
+        // Remove the hook after rendering products.
+        if ( $show_categories ) {
+            self::remove_category_display();
+        }
+
+        wp_reset_postdata();
 
         return '<div class="woocommerce columns-' . esc_attr( $columns ) . '">' . ob_get_clean() . '</div>';
     }
@@ -468,6 +810,8 @@ class WCV_Shortcodes {
      * @param array $atts The shortcode attributes.
      *
      * @return string
+     *
+     * @since 2.6.4 - Added category and category_separator.
      */
     public static function best_selling_products( $atts ) {
 
@@ -476,20 +820,31 @@ class WCV_Shortcodes {
         extract( // phpcs:ignore
             shortcode_atts(
                 array(
-                    'vendor'   => '',
-                    'per_page' => '12',
-                    'columns'  => '4',
+                    'vendor'             => '',
+                    'per_page'           => '12',
+                    'columns'            => '4',
+                    'limit'              => '',
+                    'category'           => 'no',
+                    'category_separator' => ', ',
                 ),
                 $atts
             )
         );
 
+        $vendor = self::get_vendor( $atts['vendor'] );
+        if ( ! $vendor ) {
+            return '';
+        }
+
+        // Use limit if provided, otherwise use per_page.
+        $posts_per_page = ! empty( $limit ) ? absint( $limit ) : absint( $per_page );
+
         $args = array(
             'post_type'           => 'product',
             'post_status'         => 'publish',
-            'author'              => self::get_vendor( $vendor ),
+            'author'              => $vendor,
             'ignore_sticky_posts' => 1,
-            'posts_per_page'      => $per_page,
+            'posts_per_page'      => $posts_per_page,
             'meta_key'            => 'total_sales',
             'orderby'             => 'meta_value_num',
             'meta_query'          => array(
@@ -508,6 +863,12 @@ class WCV_Shortcodes {
 
         $woocommerce_loop['columns'] = esc_attr( $columns );
 
+        // Hook to display categories if enabled.
+        $show_categories = wc_string_to_bool( $category );
+        if ( $show_categories ) {
+            self::setup_category_display( $category_separator );
+        }
+
         if ( $products->have_posts() ) :
             ?>
 
@@ -528,6 +889,11 @@ class WCV_Shortcodes {
 
             <?php
         endif;
+
+        // Remove the hook after rendering products.
+        if ( $show_categories ) {
+            self::remove_category_display();
+        }
 
         wp_reset_postdata();
 
@@ -557,6 +923,7 @@ class WCV_Shortcodes {
                     'order'    => 'desc',
                     'category' => '',  // Slugs.
                     'operator' => 'IN', // Possible values are 'IN', 'NOT IN', 'AND'.
+                    'limit'    => '',
                 ),
                 $atts
             )
@@ -566,17 +933,25 @@ class WCV_Shortcodes {
             return '';
         }
 
+        $vendor = self::get_vendor( $atts['vendor'] );
+        if ( ! $vendor ) {
+            return '';
+        }
+
+        // Use limit if provided, otherwise use per_page.
+        $posts_per_page = ! empty( $limit ) ? absint( $limit ) : absint( $per_page );
+
         // Default ordering args.
         $ordering_args = WC()->query->get_catalog_ordering_args( $orderby, $order );
 
         $args = array(
             'post_type'           => 'product',
             'post_status'         => 'publish',
-            'author'              => self::get_vendor( $vendor ),
+            'author'              => $vendor,
             'ignore_sticky_posts' => 1,
             'orderby'             => $ordering_args['orderby'],
             'order'               => $ordering_args['order'],
-            'posts_per_page'      => $per_page,
+            'posts_per_page'      => $posts_per_page,
             'tax_query'           => array(
                 array(
                     'taxonomy' => 'product_visibility',
@@ -824,7 +1199,7 @@ class WCV_Shortcodes {
             $wp_u->product_count = $vendor->product_count;
 
             // Get vendor meta in one efficient query instead of multiple calls.
-            $vendor_meta = $wpdb->get_results(
+            $vendor_meta = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
                 $wpdb->prepare(
                     "SELECT meta_key, meta_value FROM {$wpdb->usermeta} WHERE user_id = %d",
                     $vendor->ID

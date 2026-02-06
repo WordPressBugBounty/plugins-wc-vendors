@@ -4,6 +4,9 @@
  * Promotion page for Advanced Coupons for WooCommerce.
  *
  * @since 2.5.1
+ * @version 2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound
  */
 class WCV_Admin_ACFWF_Promo_Page {
 

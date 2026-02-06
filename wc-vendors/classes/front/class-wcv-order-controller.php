@@ -1,4 +1,11 @@
 <?php
+/**
+ * The WCV Order Controller class.
+ *
+ * @phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound, WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound, WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedNamespaceFound
+ */
+
 namespace WC_Vendors\Classes\Front;
 
 use WCV_Vendor_Dashboard;
@@ -11,6 +18,7 @@ use function WC_Vendors\Classes\Includes\wcv_is_vendor_shipping_disabled;
  * This is the order controller class for all front end order management
  *
  * @author     Jamie Madden <support@wcvendors.com>
+ * @version    2.6.5 - Fix security issues.
  */
 class WCV_Order_Controller {
 
@@ -466,12 +474,12 @@ class WCV_Order_Controller {
 
         if ( isset( $_POST['wcv_order_id'] ) && isset( $_POST['wcv_add_note'] ) ) {
 
-            if ( ! wp_verify_nonce( $_POST['wcv_add_note'], 'wcv-add-note' ) ) {
+            if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['wcv_add_note'] ) ), 'wcv-add-note' ) ) {
                 return false;
             }
 
-            $order_id = (int) $_POST['wcv_order_id'];
-            $comment  = $_POST['wcv_comment_text'];
+            $order_id = isset( $_POST['wcv_order_id'] ) ? (int) sanitize_text_field( wp_unslash( $_POST['wcv_order_id'] ) ) : 0;
+            $comment  = isset( $_POST['wcv_comment_text'] ) ? sanitize_textarea_field( wp_unslash( $_POST['wcv_comment_text'] ) ) : '';
 
             if ( ! \WCV_Vendor_Dashboard::check_object_permission( 'order', absint( $order_id ) ) ) {
                 return false;
@@ -489,7 +497,8 @@ class WCV_Order_Controller {
         }
 
         if ( isset( $_POST['wcv_add_tracking_number_nonce'] ) ) {
-            if ( ! \WCV_Vendor_Dashboard::check_object_permission( 'order', absint( $_POST['_wcv_order_id'] ) ) ) {
+
+            if ( ! isset( $_POST['_wcv_order_id'] ) || ! \WCV_Vendor_Dashboard::check_object_permission( 'order', absint( $_POST['_wcv_order_id'] ) ) ) {
                 return false;
             }
 
@@ -501,36 +510,42 @@ class WCV_Order_Controller {
         // Process the date updates for the form.
         if ( isset( $_POST['wcv_order_date_update'] ) ) {
 
-            if ( ! wp_verify_nonce( $_POST['wcv_order_date_update'], 'wcv-order-date-update' ) ) {
+            if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['wcv_order_date_update'] ) ), 'wcv-order-date-update' ) ) {
                 return;
             }
 
-            $update_button = isset( $_POST['update_button'] ) ? $_POST['update_button'] : '';
+            $update_button = isset( $_POST['update_button'] ) ? sanitize_text_field( wp_unslash( $_POST['update_button'] ) ) : '';
 
             // Start Date.
-            if ( isset( $_POST['_wcv_order_start_date_input'] ) || '' === $_POST['_wcv_order_start_date_input'] ) {
-                WC()->session->set( 'wcv_order_start_date', strtotime( $_POST['_wcv_order_start_date_input'] ) );
+            if ( isset( $_POST['_wcv_order_start_date_input'] ) || '' === sanitize_text_field( wp_unslash( $_POST['_wcv_order_start_date_input'] ) ) ) {
+                WC()->session->set( 'wcv_order_start_date', strtotime( sanitize_text_field( wp_unslash( $_POST['_wcv_order_start_date_input'] ) ) ) );
             }
 
             // End Date.
-            if ( isset( $_POST['_wcv_order_end_date_input'] ) || '' === $_POST['_wcv_order_end_date_input'] ) {
-                WC()->session->set( 'wcv_order_end_date', strtotime( $_POST['_wcv_order_end_date_input'] ) );
+            if ( isset( $_POST['_wcv_order_end_date_input'] ) || '' === sanitize_text_field( wp_unslash( $_POST['_wcv_order_end_date_input'] ) ) ) {
+                WC()->session->set( 'wcv_order_end_date', strtotime( sanitize_text_field( wp_unslash( $_POST['_wcv_order_end_date_input'] ) ) ) );
             }
 
             // Order status.
-            if ( isset( $_POST['_wcv_order_status_input'] ) && '' !== $_POST['_wcv_order_status_input'] && '' !== $update_button ) {
-                WC()->session->set( 'wcv_order_filter_status', $_POST['_wcv_order_status_input'] );
+            if ( isset( $_POST['_wcv_order_status_input'] ) && ! empty( $_POST['_wcv_order_status_input'] ) && '' !== $update_button ) {
+                $order_status_input = wp_unslash( $_POST['_wcv_order_status_input'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+                if ( is_array( $order_status_input ) ) {
+                    $sanitized_statuses = array_map( 'sanitize_text_field', $order_status_input );
+                    WC()->session->set( 'wcv_order_filter_status', $sanitized_statuses );
+                } else {
+                    WC()->session->set( 'wcv_order_filter_status', sanitize_text_field( $order_status_input ) );
+                }
             } else {
                 WC()->session->set( 'wcv_order_filter_status', '' );
             }
 
-            if ( isset( $_POST['_wcv_shipping_status_input'] ) && '' !== $_POST['_wcv_shipping_status_input'] && '' !== $update_button ) {
-                WC()->session->set( 'wcv_order_shipping_status', $_POST['_wcv_shipping_status_input'] );
+            if ( isset( $_POST['_wcv_shipping_status_input'] ) && '' !== sanitize_text_field( wp_unslash( $_POST['_wcv_shipping_status_input'] ) ) && '' !== $update_button ) {
+                WC()->session->set( 'wcv_order_shipping_status', sanitize_text_field( wp_unslash( $_POST['_wcv_shipping_status_input'] ) ) );
             } else {
                 WC()->session->set( 'wcv_order_shipping_status', '' );
             }
         }
-        if ( isset( $_GET['order_status'] ) && '' !== $_GET['order_status'] && ! isset( $_POST['update_button'] ) ) {
+        if ( isset( $_GET['order_status'] ) && '' !== sanitize_text_field( wp_unslash( $_GET['order_status'] ) ) && ! isset( $_POST['update_button'] ) ) {
             WC()->session->set( 'wcv_order_filter_status', '' );
             WC()->session->set( 'wcv_order_shipping_status', '' );
         }
@@ -610,6 +625,7 @@ class WCV_Order_Controller {
      *
      * @since    2.5.2
      * @version  2.6.0 - Added hide_mark_shipped to the order row, move options check out of the foreach loop
+     * @version  2.6.4 - Fixed the order total calculation affect the refund total
      * @return   array  $new_rows   array of stdClass objects passed back to the filter.
      */
     public function table_rows() {
@@ -698,7 +714,7 @@ class WCV_Order_Controller {
                         $item_id        = $item->get_id();
                         $product        = $item->get_product();
                         $needs_shipping = $product_id ? $product->needs_shipping() : false;
-                        $order_total   += $vendor_order->get_item_total( $item, false, true );
+                        $order_total   += $vendor_order->get_line_total( $item, false, true );
                         $item_name      = sprintf( '%s x %s ', $item->get_quantity(), $item->get_name() );
 
                         if ( $refunded_count > 0 ) {
@@ -1545,7 +1561,7 @@ class WCV_Order_Controller {
      * @since   2.5.2
      */
     public function update_shipment_tracking() {
-        if ( ! isset( $_POST['wcv_add_tracking_number_nonce'] ) || ! wp_verify_nonce( $_POST['wcv_add_tracking_number_nonce'], 'wcv_add_tracking_number' ) ) {
+        if ( ! isset( $_POST['wcv_add_tracking_number_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['wcv_add_tracking_number_nonce'] ) ), 'wcv_add_tracking_number' ) ) {
             wc_add_notice(
                 __( 'Security check failed. Please refresh the page and try again.', 'wc-vendors' ),
                 'error'
@@ -1553,7 +1569,7 @@ class WCV_Order_Controller {
             return;
         }
 
-        $order_id = (int) absint( sanitize_text_field( $_POST['_wcv_order_id'] ) );
+        $order_id = isset( $_POST['_wcv_order_id'] ) ? (int) absint( sanitize_text_field( wp_unslash( $_POST['_wcv_order_id'] ) ) ) : 0;
         $order    = wc_get_order( $order_id );
 
         if ( ! $order ) {
@@ -1568,9 +1584,9 @@ class WCV_Order_Controller {
         $country_code      = $order->get_shipping_country();
 
         $vendor_tracking_details = array(
-            '_wcv_shipping_provider' => $_POST[ '_wcv_shipping_provider_' . $order_id ],
-            '_wcv_tracking_number'   => $_POST[ '_wcv_tracking_number_' . $order_id ],
-            '_wcv_date_shipped'      => $_POST[ '_wcv_date_shipped_' . $order_id ],
+            '_wcv_shipping_provider' => isset( $_POST[ '_wcv_shipping_provider_' . $order_id ] ) ? sanitize_text_field( wp_unslash( $_POST[ '_wcv_shipping_provider_' . $order_id ] ) ) : '',
+            '_wcv_tracking_number'   => isset( $_POST[ '_wcv_tracking_number_' . $order_id ] ) ? sanitize_text_field( wp_unslash( $_POST[ '_wcv_tracking_number_' . $order_id ] ) ) : '',
+            '_wcv_date_shipped'      => isset( $_POST[ '_wcv_date_shipped_' . $order_id ] ) ? sanitize_text_field( wp_unslash( $_POST[ '_wcv_date_shipped_' . $order_id ] ) ) : '',
         );
 
         $order_tracking_details[ $vendor_id ] = $vendor_tracking_details;

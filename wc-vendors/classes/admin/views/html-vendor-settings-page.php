@@ -1,3 +1,12 @@
+<?php
+/**
+ * HTML vendor settings page
+ *
+ * @version 2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+ */
+?>
 <div class="wrap">
     <h2>Shop Settings</h2>
     <form method="post">
@@ -186,10 +195,15 @@
                     <?php
 
                     if ( $global_html || $has_html ) {
-                        $old_post        = $GLOBALS['post'];
-                        $GLOBALS['post'] = 0; //phpcs:ignore
+                        // Create a temporary post object for wp_editor context.
+                        $temp_post = (object) array(
+                            'ID'         => 0,
+                            'post_title' => '',
+                            'post_type'  => 'page',
+                        );
+                        setup_postdata( $temp_post );
                         wp_editor( $seller_info, 'pv_seller_info' );
-                        $GLOBALS['post'] = $old_post; //phpcs:ignore
+                        wp_reset_postdata();
                     } else {
                         ?>
                         <textarea class="large-text" rows="10" id="pv_seller_info_unhtml" style="width:95%"
@@ -220,10 +234,15 @@
                         <?php
 
                         if ( $global_html || $has_html ) {
-                            $old_post        = $GLOBALS['post'];
-                            $GLOBALS['post'] = 0; //phpcs:ignore
+                            // Create a temporary post object for wp_editor context.
+                            $temp_post = (object) array(
+                                'ID'         => 0,
+                                'post_title' => '',
+                                'post_type'  => 'page',
+                            );
+                            setup_postdata( $temp_post );
                             wp_editor( $description, 'pv_shop_description' );
-                            $GLOBALS['post'] = $old_post; //phpcs:ignore
+                            wp_reset_postdata();
                         } else {
                             ?>
                             <textarea class="large-text" rows="10" id="pv_shop_description_unhtml" style="width:95%"

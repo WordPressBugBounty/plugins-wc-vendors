@@ -57,7 +57,6 @@ class WCVendors_Uninstall {
         self::delete_pages();
         self::delete_options();
         self::delete_table();
-        WCV_Cron::remove_cron_schedule();
     }
 
     /**
@@ -89,13 +88,14 @@ class WCVendors_Uninstall {
      *
      * @return void
      * @since 2.0.8
+     * @version  2.6.5 Fix security issues.
      */
     public static function delete_table() {
 
         global $wpdb;
-        $table_name = $wpdb->prefix . 'pv_commission';
-
-        $wpdb->query( "DROP TABLE $table_name" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        $table_name = esc_sql( $wpdb->prefix . 'pv_commission' );
+        $sql        = $wpdb->prepare( 'DROP TABLE %s', $table_name );
+        $wpdb->query( $sql ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
     }
 
     /**

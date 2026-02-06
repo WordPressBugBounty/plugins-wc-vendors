@@ -4,6 +4,10 @@
  *
  * This template can be overridden by copying it to yourtheme/wc-vendors/front/vendor-list-filter.php
  *
+ * @version 2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+ *
  * @author        Jamie Madden, WC Vendors
  * @package       WCVendors/Templates/Front
  * @version       2.4.2

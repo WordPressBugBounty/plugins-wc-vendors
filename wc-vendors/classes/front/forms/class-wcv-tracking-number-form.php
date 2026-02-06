@@ -1,4 +1,15 @@
 <?php
+
+/**
+ * The WCV Tracking Number Form Class
+ *
+ * This is the tracking number form class
+ *
+ * @version    2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable 	WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedNamespaceFound
+ * @phpcs:disable 	WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+ */
 namespace WC_Vendors\Classes\Front\Forms;
 
 use WC_Vendors\Classes\Front\WCV_Form_Helper;

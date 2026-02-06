@@ -141,7 +141,7 @@ class WCV_Orders {
             return __( 'No orders.', 'wc-vendors' );
         }
 
-        if ( ! wp_verify_nonce( isset( $_POST['export_orders_nonce'] ) ? $_POST['export_orders_nonce'] : '', 'export_orders' ) ) {
+        if ( ! wp_verify_nonce( isset( $_POST['export_orders_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['export_orders_nonce'] ) ) : '', 'export_orders' ) ) {
             return;
         }
 
@@ -430,7 +430,7 @@ class WCV_Orders {
                 if ( $is_full_refunded ) {
                     $refund_total = $item['line_total'];
                 }
-                if ( ( $refund_total > 0 ) && $item->get_product_id() === $product_id || $item->get_variation_id() === $product_id ) {
+                if ( ( $refund_total > 0 ) && ( $item->get_product_id() === $product_id || $item->get_variation_id() === $product_id ) ) {
                     $items[ $order_number ]['refund'] = array(
                         'total' => $refund_total,
                     );

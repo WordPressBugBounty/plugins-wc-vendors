@@ -5,6 +5,10 @@
  *
  * @author  Lindeni Mahlalela <https://lindeni.co.za>
  * @package WCVendors
+ *
+ * @version 2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
  */
 class WCV_Account_Links extends WCV_Vendor_Signup {
 

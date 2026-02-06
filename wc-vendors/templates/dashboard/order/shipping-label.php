@@ -4,21 +4,10 @@
  *
  * Override this template by copying it to yourtheme/wc-vendors/dashboard/order
  *
- * @package    WCVendors_Pro
- * @version    1.7.5
- * @since      1.0.4
+ * @package    WC_Vendors
+ * @version    2.6.5 - Fix security issues.
  *
- * The following variables are available in this template
- *
- *  $order
- *  $store_name
- *  $store_address1
- *  $store_address2
- *  $store_city
- *  $store_state
- *  $store_country
- *  $store_postcode
- *  $products
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
  */
 ?>
 

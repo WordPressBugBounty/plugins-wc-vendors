@@ -2,11 +2,15 @@
 /**
  * Handles commission CSV export.
  *
- * @version 2.1.20
+ * @version 2.6.5 - Fix security issues.
+ *
  * @since   2.0.0
  *
  * @package    WC_Vendors
  * @subpackage Classes/Admin
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

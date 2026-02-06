@@ -690,7 +690,7 @@ class Vendors_Settings {
     public function get_commission_due() {
         global $wpdb;
         $sql    = $wpdb->prepare( "SELECT SUM( total_due ) FROM `{$wpdb->prefix}pv_commission` WHERE vendor_id = %d AND status = 'due'", $this->vendor_id );
-        $result = $wpdb->get_var( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+        $result = $wpdb->get_var( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
         $result = ! empty( $result ) ? $result : 0;
         return array(
             'total'     => $result,
@@ -731,7 +731,7 @@ class Vendors_Settings {
      * @param string $field The field key.
      * @param string $value The field value.
      *
-     * @version 2.4.8
+     * @version 2.6.5 Fix security issues.
      * @since 2.4.8
      */
     public function change_shop_slug( $field, $value ) {
@@ -740,8 +740,8 @@ class Vendors_Settings {
 
             $check        = new WP_User_Query(
                 array(
-                    'meta_key'   => 'pv_shop_slug',
-                    'meta_value' => $shop_slug,
+                    'meta_key'   => 'pv_shop_slug', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+                    'meta_value' => $shop_slug, // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
                 )
             );
             $result       = $check->get_results();

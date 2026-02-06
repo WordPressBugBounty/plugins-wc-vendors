@@ -2,7 +2,10 @@
 /**
  * Order popup details template
  *
- * @package WC Vendors
+ * @version 2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+ * @package    WC_Vendors
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

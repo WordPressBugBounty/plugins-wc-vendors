@@ -3,6 +3,10 @@
  * Plugin Installer class.
  * Thanks to Advanced Coupons for WooCommerce for the code.
  *
+ * @version 2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+ *
  * @package WCVendors/Admin
  */
 
@@ -243,44 +247,56 @@ class WCV_Plugin_Installer {
             'woocommerce'                           => array(
                 'base_name' => 'woocommerce/woocommerce.php',
                 'name'      => __( 'WooCommerce', 'wc-vendors' ),
-                'logo'      => WCV_ASSETS_URL . 'images/extensions/woocommerce-logo.png',
+                'logo'      => self::get_wp_org_plugin_icon_url( 'woocommerce' ),
                 'desc'      => __( 'The most customizable eCommerce platform for building your online business.', 'wc-vendors' ),
             ),
             'advanced-coupons-for-woocommerce-free' => array(
                 'base_name' => 'advanced-coupons-for-woocommerce-free/advanced-coupons-for-woocommerce-free.php',
                 'name'      => __( 'Advanced Coupons for WooCommerce', 'wc-vendors' ),
-                'logo'      => WCV_ASSETS_URL . 'images/extensions/acf-logo.png',
+                'logo'      => self::get_wp_org_plugin_icon_url( 'advanced-coupons-for-woocommerce-free' ),
                 'desc'      => __( 'Create new coupon types in WooCommerce with Advanced Coupons. Limit coupons to certain user roles. Control cart conditions when coupons should and shouldn\'t apply. Auto apply coupons + more.', 'wc-vendors' ),
             ),
             'woocommerce-wholesale-prices'          => array(
                 'base_name' => 'woocommerce-wholesale-prices/woocommerce-wholesale-prices.bootstrap.php',
                 'name'      => __( 'WooCommerce Wholesale Prices', 'wc-vendors' ),
-                'logo'      => WCV_ASSETS_URL . 'images/extensions/wwp-logo.png',
+                'logo'      => self::get_wp_org_plugin_icon_url( 'woocommerce-wholesale-prices' ),
                 'desc'      => __( 'The #1 WooCommerce wholesale plugin for adding wholesale prices & managing B2B customers. Trusted by over 25k store owners for managing wholesale orders, pricing, visibility, user roles, and more.', 'wc-vendors' ),
             ),
             'woocommerce-store-toolkit'             => array(
                 'base_name' => 'woocommerce-store-toolkit/store-toolkit.php',
                 'name'      => __( 'Store Toolkit for WooCommerce', 'wc-vendors' ),
-                'logo'      => WCV_ASSETS_URL . 'images/extensions/stk.png',
+                'logo'      => self::get_wp_org_plugin_icon_url( 'woocommerce-store-toolkit' ),
                 'desc'      => __( 'A growing set of commonly-used WooCommerce admin tools such as deleting WooCommerce data in bulk, such as products, orders, coupons, and customers. It also adds extra small features, order filtering, and more.', 'wc-vendors' ),
             ),
             'woocommerce-exporter'                  => array(
                 'base_name' => 'woocommerce-exporter/exporter.php',
                 'name'      => __( 'Store Exporter for WooCommerce', 'wc-vendors' ),
-                'logo'      => WCV_ASSETS_URL . 'images/extensions/stk.png',
+                'logo'      => self::get_wp_org_plugin_icon_url( 'woocommerce-exporter' ),
                 'desc'      => __( 'Easily export Orders, Subscriptions, Coupons, Products, Categories, Tags to a variety of formats. The deluxe version also adds scheduled exporting for easy reporting and syncing with other systems.', 'wc-vendors' ),
             ),
             'invoice-gateway-for-woocommerce'       => array(
                 'base_name' => 'invoice-gateway-for-woocommerce/invoice-gateway-for-woocommerce.php',
                 'name'      => __( 'Invoice Gateway for WooCommerce', 'wc-vendors' ),
-                'logo'      => WCV_ASSETS_URL . 'images/extensions/wwp-logo.png',
+                'logo'      => self::get_wp_org_plugin_icon_url( 'invoice-gateway-for-woocommerce' ),
                 'desc'      => __( 'Accept orders via a special invoice payment gateway method which lets your customer enter their order without upfront payment. Then just issue an invoice from your accounting system and paste in the number.', 'wc-vendors' ),
             ),
             'storeagent-ai-for-woocommerce'         => array(
                 'base_name' => 'storeagent-ai-for-woocommerce/storeagent-ai-for-woocommerce.php',
                 'name'      => __( 'StoreAgent AI for WooCommerce', 'wc-vendors' ),
-                'logo'      => WCV_ASSETS_URL . 'images/extensions/storeagent-ai-logo.png',
-                'desc'      => __( 'StoreAgent is your WooCommerce AI tool kit, powered by the StoreAgent AI platform. It’s all your AI content tools, AI insights and AI chat rolled into one.', 'wc-vendors' ),
+                'logo'      => self::get_wp_org_plugin_icon_url( 'storeagent-ai-for-woocommerce' ),
+                'desc'      => __( 'StoreAgent is your WooCommerce AI tool kit, powered by the StoreAgent AI platform. It\'s all your AI content tools, AI insights and AI chat rolled into one.', 'wc-vendors' ),
+            ),
+            'woo-product-feed-pro'                  => array(
+                'base_name' => 'woo-product-feed-pro/woocommerce-sea.php',
+                'name'      => __( 'Product Feed PRO for WooCommerce', 'wc-vendors' ),
+                'logo'      => self::get_wp_org_plugin_icon_url( 'woo-product-feed-pro' ),
+                'desc'      => __( 'Most popular WooCommerce product feed plugin supporting Google shopping feed, meta/facebook feed, bing product feed and more.', 'wc-vendors' ),
+            ),
+            'saveto-wishlist-lite-for-woocommerce'  => array(
+                'base_name' => 'saveto-wishlist-lite-for-woocommerce/saveto-wishlist-lite-for-woocommerce.php',
+                'name'      => __( 'SaveTo Wishlist Lite for WooCommerce', 'wc-vendors' ),
+                'logo'      => self::get_wp_org_plugin_icon_url( 'saveto-wishlist-lite-for-woocommerce' ),
+                'desc'      => __( 'A simple, powerful WooCommerce wishlist plugin to help customers save products they love and buy later.', 'wc-vendors' ),
             ),
         );
 
@@ -441,5 +457,204 @@ class WCV_Plugin_Installer {
      */
     public function generate_box( $plugin_slug, $plugin_data ) { // phpcs:ignore
         include WCV_ABSPATH_ADMIN . 'views/plugin-box.php';
+    }
+
+
+    /**
+     * Get the WordPress.org plugin icon URL
+     *
+     * @param string $plugin_slug The plugin slug.
+     * @param int    $size        The icon size (default: 128).
+     *
+     * @since 2.6.4
+     * @access public
+     *
+     * @return string
+     */
+    public function get_wp_org_plugin_icon_url( $plugin_slug, $size = 128 ) {
+        // Check for cached icon URL.
+        $transient_key = 'wcv_plugin_icon_' . $plugin_slug . '_' . $size;
+        $cached_url    = get_transient( $transient_key );
+
+        if ( false !== $cached_url ) {
+            return $cached_url;
+        }
+
+        // Default fallback icon.
+        $default_icon = WCV_ASSETS_URL . 'images/extensions/icon-cart.png';
+
+        // If the plugin doesn't exist on WordPress.org, return the default icon.
+        if ( ! $this->plugin_exists_on_wporg( $plugin_slug ) ) {
+            // Cache the default icon as well to avoid repeated checks.
+            set_transient( $transient_key, $default_icon, DAY_IN_SECONDS );
+            return $default_icon;
+        }
+
+        // Known plugins with specific icon formats.
+        $icon_formats = array(
+            'invoice-gateway-for-woocommerce' => 'jpg',
+            'woocommerce-wholesale-prices'    => 'jpg',
+            // Add more as needed.
+        );
+
+        // Determine the file extension based on our known list or default to PNG.
+        $extension = isset( $icon_formats[ $plugin_slug ] ) ? $icon_formats[ $plugin_slug ] : 'png';
+
+        // Build the icon URL with dimensions.
+        $icon_url = sprintf(
+            'https://ps.w.org/%s/assets/icon-%dx%d.%s',
+            $plugin_slug,
+            $size,
+            $size,
+            $extension
+        );
+
+        $icon_url = apply_filters( 'wcv_plugin_icon_url', $icon_url, $plugin_slug, $size );
+
+        // Cache the icon URL for 24 hours.
+        set_transient( $transient_key, $icon_url, DAY_IN_SECONDS );
+
+        return $icon_url;
+    }
+
+    /**
+     * Get org plugins
+     *
+     * @since 2.6.4
+     */
+    public function get_org_plugins() {
+
+        $org_plugins = array(
+            'woocommerce',
+            'woocommerce-wholesale-prices',
+            'wc-vendors',
+            'storeagent-ai-for-woocommerce',
+            'invoice-gateway-for-woocommerce',
+            'woo-product-feed-pro',
+            'funnelkit-stripe-woo-payment-gateway',
+            'woocommerce-store-toolkit',
+            'woocommerce-exporter',
+            'advanced-coupons-for-woocommerce-free',
+            'saveto-wishlist-lite-for-woocommerce',
+        );
+
+        return apply_filters( 'wcvendors_get_org_plugins', $org_plugins );
+    }
+
+
+    /**
+     * Check if a plugin exists on WordPress.org
+     *
+     * @param string $plugin_slug The plugin slug.
+     *
+     * @since 2.6.4
+     * @access public
+     *
+     * @return bool
+     */
+    public function plugin_exists_on_wporg( $plugin_slug ) {
+        $known_plugins = $this->get_org_plugins();
+
+        // If it's a known plugin, return true.
+        if ( in_array( $plugin_slug, $known_plugins, true ) ) {
+            return true;
+        }
+
+        // For unknown plugins, we'll assume they don't exist.
+        return false;
+    }
+
+    /**
+     * Get promotion plugins
+     *
+     * @since 2.6.4
+     *
+     * @return array
+     */
+    public function get_promotion_plugins() {
+
+        $promotion_plugins = array(
+            array(
+                'name'        => 'Advanced Coupons for WooCommerce Free',
+                'slug'        => 'advanced-coupons-for-woocommerce-free',
+                'id'          => 'advanced-coupons-for-woocommerce-free',
+                'basename'    => 'advanced-coupons-for-woocommerce-free/advanced-coupons-for-woocommerce-free.php',
+                'description' => 'Enhance WooCommerce coupons with new coupon types, BOGO coupons, store credit, discount rules, url coupons, gift cards, loyalty program + more!',
+                'icon'        => $this->get_wp_org_plugin_icon_url( 'advanced-coupons-for-woocommerce-free' ),
+                'type'        => 'free',
+            ),
+            array(
+                'name'        => 'WooCommerce Wholesale Prices',
+                'slug'        => 'woocommerce-wholesale-prices',
+                'id'          => 'woocommerce-wholesale-prices',
+                'basename'    => 'woocommerce-wholesale-prices/woocommerce-wholesale-prices.bootstrap.php',
+                'description' => 'WooCommerce wholesale plugin for serving wholesale and B2B customers. Adds wholesale pricing, user roles, dynamic pricing and more.',
+                'icon'        => $this->get_wp_org_plugin_icon_url( 'woocommerce-wholesale-prices' ),
+                'type'        => 'free',
+            ),
+            array(
+                'name'        => 'Store Toolkit for WooCommerce',
+                'slug'        => 'woocommerce-store-toolkit',
+                'id'          => 'woocommerce-store-toolkit',
+                'basename'    => 'woocommerce-store-toolkit/store-toolkit.php',
+                'description' => 'A huge set of Quick Enhancements and Handy Tools for WooCommerce - the ultimate WooCommerce booster!',
+                'icon'        => $this->get_wp_org_plugin_icon_url( 'woocommerce-store-toolkit' ),
+                'type'        => 'free',
+            ),
+            array(
+                'name'        => 'Store Exporter for WooCommerce',
+                'slug'        => 'woocommerce-exporter',
+                'id'          => 'woocommerce-exporter',
+                'basename'    => 'woocommerce-exporter/exporter.php',
+                'description' => 'Export WooCommerce products, orders, customers, categories, tags, subscriptions and more into formatted files like CSV, XML, Excel 2007, XLS, XLSX.',
+                'icon'        => $this->get_wp_org_plugin_icon_url( 'woocommerce-exporter' ),
+                'type'        => 'free',
+            ),
+            array(
+                'name'        => 'Invoice Gateway For WooCommerce',
+                'slug'        => 'invoice-gateway-for-woocommerce',
+                'id'          => 'invoice-gateway-for-woocommerce',
+                'basename'    => 'invoice-gateway-for-woocommerce/invoice-gateway-for-woocommerce.php',
+                'description' => 'Add a WooCommerce invoice gateway to your store. An easy invoicing payment gateway solution for WooCommerce.',
+                'icon'        => $this->get_wp_org_plugin_icon_url( 'invoice-gateway-for-woocommerce' ),
+                'type'        => 'free',
+            ),
+            array(
+                'name'        => 'StoreAgent AI for WooCommerce',
+                'slug'        => 'storeagent-ai-for-woocommerce',
+                'id'          => 'storeagent-ai-for-woocommerce',
+                'basename'    => 'storeagent-ai-for-woocommerce/storeagent-ai-for-woocommerce.php',
+                'description' => 'AI Chatbot for WooCommerce stores with built-in AI content and SEO tools.',
+                'icon'        => $this->get_wp_org_plugin_icon_url( 'storeagent-ai-for-woocommerce' ),
+                'type'        => 'free',
+            ),
+            array(
+                'name'        => 'Product Feed PRO for WooCommerce',
+                'slug'        => 'woo-product-feed-pro',
+                'id'          => 'woo-product-feed-pro',
+                'basename'    => 'woo-product-feed-pro/woocommerce-sea.php',
+                'description' => 'Most popular WooCommerce product feed plugin supporting Google shopping feed, meta/facebook feed, bing product feed and more.',
+                'icon'        => $this->get_wp_org_plugin_icon_url( 'woo-product-feed-pro' ),
+                'type'        => 'free',
+            ),
+            array(
+                'name'        => 'SaveTo Wishlist Lite for WooCommerce',
+                'slug'        => 'saveto-wishlist-lite-for-woocommerce',
+                'id'          => 'saveto-wishlist-lite-for-woocommerce',
+                'basename'    => 'saveto-wishlist-lite-for-woocommerce/saveto-wishlist-lite-for-woocommerce.php',
+                'description' => 'A simple, powerful WooCommerce wishlist plugin to help customers save products they love and buy later.',
+                'icon'        => $this->get_wp_org_plugin_icon_url( 'saveto-wishlist-lite-for-woocommerce' ),
+                'type'        => 'free',
+            ),
+        );
+
+        foreach ( $promotion_plugins as $key => $plugin ) {
+            if ( isset( $plugin['basename'] ) ) {
+                $promotion_plugins[ $key ]['isInstalled'] = wcv_is_plugin_installed( $plugin['basename'] );
+                $promotion_plugins[ $key ]['isActive']    = is_plugin_active( $plugin['basename'] );
+            }
+        }
+
+        return apply_filters( 'wcvendors_get_promotion_plugins', $promotion_plugins );
     }
 }

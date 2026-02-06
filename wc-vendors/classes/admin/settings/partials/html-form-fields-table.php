@@ -8,6 +8,10 @@
  * @link       http://www.wcvendors.com
  * @since      1.5.0
  *
+ * @version 2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+ *
  * @package    WCVendors_Pro
  * @subpackage WCVendors_Pro/admin/settings/partials/
  */

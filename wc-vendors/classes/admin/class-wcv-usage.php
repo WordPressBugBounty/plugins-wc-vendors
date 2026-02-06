@@ -150,7 +150,7 @@ class Usage {
 
         $data['settings'] = array();
 
-        $results = $wpdb->get_results(
+        $results = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
             "SELECT option_name, option_value FROM {$wpdb->options}
             WHERE (`option_name` LIKE '%wcv%' OR `option_name` LIKE '%wcvendors%') 
             AND `option_name` NOT LIKE '%_license_manager%'
@@ -301,7 +301,7 @@ class Usage {
     private function _get_commission_data( $start_period, $end_period, $total_sales ) {
         global $wpdb;
 
-        $commissions = $wpdb->get_row(
+        $commissions = $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
             $wpdb->prepare(
                 "SELECT SUM( total_due ) AS commission, SUM( total_shipping ) as shipping, SUM( tax ) as tax FROM {$wpdb->prefix}pv_commission
                 WHERE `status` != 'reversed'
@@ -334,7 +334,7 @@ class Usage {
     private function _get_vendor_data( $start_period, $end_period ) {
         global $wpdb;
 
-        $vendors = $wpdb->get_row(
+        $vendors = $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
             $wpdb->prepare(
                 "SELECT 
                     COUNT(DISTINCT CASE 

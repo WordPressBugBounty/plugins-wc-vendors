@@ -8,6 +8,8 @@
  * @var       $page_label        The page label for the menu item
  * @package    WCVendors_Pro
  * @version    1.0.3
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
  */
 
 $admin_email = get_option( 'admin_email' );

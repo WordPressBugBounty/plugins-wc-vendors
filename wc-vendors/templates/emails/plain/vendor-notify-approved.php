@@ -7,14 +7,15 @@
  * @author         Jamie Madden, WC Vendors
  * @package        WCVendors/Templates/Emails/Plain
  * @version        2.0.0
+ * @version        2.6.5 Fix security issues.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
-	exit;
+    exit;
 }
 
-echo '= ' . $email_heading . " =\n\n";
+echo '= ' . esc_html( $email_heading ) . " =\n\n";
 
-echo $content . "\n\n";
+echo wp_kses_post( $content ) . "\n\n";
 
-echo apply_filters( 'woocommerce_email_footer_text', get_option( 'woocommerce_email_footer_text' ) );
+echo wp_kses_post( apply_filters( 'woocommerce_email_footer_text', get_option( 'woocommerce_email_footer_text' ) ) );

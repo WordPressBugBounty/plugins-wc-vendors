@@ -4,6 +4,10 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit; // Exit if accessed directly.
 }
 
+if ( ! class_exists( 'WC_Payment_Gateway' ) ) {
+    return false;
+}
+
 /**
  * WC Vendors TEST SANDBOX Payment Gateway
  *

@@ -4,14 +4,31 @@
  *
  * Override this template by copying it to yourtheme/wc-vendors/dashboard/report
  *
- * @package    WCVendors_Pro
+ * @package    WC_Vendors
  * @version    1.8.0
+ * @version    2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
  */
-$give_tax      = 'yes' === get_option( 'wcvendors_vendor_give_taxes', 'no' ) ? true : false;
-$give_shipping = 'yes' === get_option( 'wcvendors_vendor_give_shipping', 'no' ) ? true : false;
+$give_tax      = wc_string_to_bool( get_option( 'wcvendors_vendor_give_taxes', 'no' ) );
+$give_shipping = is_wcv_pro_active() && wc_string_to_bool( get_option( 'wcvendors_vendor_give_shipping', 'no' ) );
 
-$commission_due_total  = ( $give_tax ) ? $store_report->commission_due + $store_report->commission_shipping_due + $store_report->commission_tax_due : $store_report->commission_due + $store_report->commission_shipping_due;
-$commission_paid_total = ( $give_tax ) ? $store_report->commission_paid + $store_report->commission_shipping_paid + $store_report->commission_tax_paid : $store_report->commission_paid + $store_report->commission_shipping_paid;
+// Calculate commission totals based on what's given to vendors.
+$commission_due_total = $store_report->commission_due;
+if ( $give_shipping ) {
+    $commission_due_total += $store_report->commission_shipping_due;
+}
+if ( $give_tax ) {
+    $commission_due_total += $store_report->commission_tax_due;
+}
+
+$commission_paid_total = $store_report->commission_paid;
+if ( $give_shipping ) {
+    $commission_paid_total += $store_report->commission_shipping_paid;
+}
+if ( $give_tax ) {
+    $commission_paid_total += $store_report->commission_tax_paid;
+}
 
 ?>
 

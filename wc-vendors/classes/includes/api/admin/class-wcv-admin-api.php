@@ -61,6 +61,12 @@ class WCV_Admin_API extends WCV_API {
             'do_vendor_action',
             WP_REST_Server::EDITABLE
         );
+
+        $this->register_route(
+            '/vendors/details/(?P<id>\d+)',
+            'get_vendor_details',
+            WP_REST_Server::READABLE
+        );
     }
 
     /**
@@ -109,6 +115,7 @@ class WCV_Admin_API extends WCV_API {
             );
         }
         $vendor_settings = $vendor->get_settings();
+        $vendor_settings = apply_filters( 'wcvendors_vendor_settings_api_response', $vendor_settings, $vendor_id );
         $response        = new WP_REST_Response( $vendor_settings, 200 );
         return $response;
     }
@@ -178,7 +185,7 @@ class WCV_Admin_API extends WCV_API {
             WHERE umt1.meta_key = '_wcv_vendor_status' AND umt2.meta_key = '{$wpdb->prefix}capabilities'
         ";
 
-        return array_map( 'intval', (array) $wpdb->get_row( $count_user_sql ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+        return array_map( 'intval', (array) $wpdb->get_row( $count_user_sql ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
     }
 
     /**
@@ -212,18 +219,24 @@ class WCV_Admin_API extends WCV_API {
 
         // build the query based on the search parameter.
         if ( $search ) {
-            $search = sanitize_text_field( $search );
+            $search = sanitize_text_field( wp_unslash( $search ) );
             $search = stripslashes( $search );
-            // Escape the search term for use in REGEXP.
-            $regexsearch = str_replace( ' ', '|', $search );
-            $regexsearch = str_replace( "'", "\'", $regexsearch );
+            // Escape the search term for use in LIKE queries.
+            $escaped_search = '%' . $wpdb->esc_like( $search ) . '%';
 
             $concat_query = ", u.user_login, u.user_nicename, u.user_email,
-                GROUP_CONCAT( IF(um.meta_key REGEXP 'billing_|nickname|first_name|last_name|pv_shop_name', um.meta_key, null) ORDER BY um.meta_key DESC SEPARATOR ' ' ) AS meta_keys,
-                GROUP_CONCAT( IF(um.meta_key REGEXP 'billing_|nickname|first_name|last_name|pv_shop_name', IFNULL(um.meta_value, ''), null) ORDER BY um.meta_key DESC SEPARATOR ' ' ) AS meta_values
+                GROUP_CONCAT( IF(um.meta_key IN ('billing_first_name', 'billing_last_name', 'billing_company', 'billing_address_1', 'billing_address_2', 'billing_city', 'billing_state', 'billing_postcode', 'billing_country', 'billing_email', 'billing_phone', 'nickname', 'first_name', 'last_name', 'pv_shop_name'), um.meta_key, null) ORDER BY um.meta_key DESC SEPARATOR ' ' ) AS meta_keys,
+                GROUP_CONCAT( IF(um.meta_key IN ('billing_first_name', 'billing_last_name', 'billing_company', 'billing_address_1', 'billing_address_2', 'billing_city', 'billing_state', 'billing_postcode', 'billing_country', 'billing_email', 'billing_phone', 'nickname', 'first_name', 'last_name', 'pv_shop_name'), IFNULL(um.meta_value, ''), null) ORDER BY um.meta_key DESC SEPARATOR ' ' ) AS meta_values
             ";
             $inner_joins .= "INNER JOIN {$wpdb->usermeta} um ON (u.ID = um.user_id)";
-            $having_query = "HAVING (u.ID REGEXP '{$regexsearch}' OR meta_values REGEXP '{$regexsearch}' OR u.user_login REGEXP '{$regexsearch}' OR u.user_nicename REGEXP '{$regexsearch}' OR u.user_email REGEXP '{$regexsearch}')";
+            $having_query = $wpdb->prepare(
+                'HAVING (CAST(u.ID AS CHAR) LIKE %s OR meta_values LIKE %s OR u.user_login LIKE %s OR u.user_nicename LIKE %s OR u.user_email LIKE %s)',
+                $escaped_search,
+                $escaped_search,
+                $escaped_search,
+                $escaped_search,
+                $escaped_search
+            );
         }
 
         // build the query based on the status parameter.
@@ -238,7 +251,7 @@ class WCV_Admin_API extends WCV_API {
         }
 
         // phpcs:disable
-        $results = $wpdb->get_col(
+        $results = $wpdb->get_col( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
             "SELECT SQL_CALC_FOUND_ROWS DISTINCT u.ID
             {$concat_query}
             FROM {$wpdb->users} AS u
@@ -253,7 +266,7 @@ class WCV_Admin_API extends WCV_API {
 
         return array(
             array_map( 'absint', $results ), // SQL query results.
-            (int) $wpdb->get_var( 'SELECT FOUND_ROWS()' ), // Total results.
+            (int) $wpdb->get_var( 'SELECT FOUND_ROWS()' ), // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
         );
     }
 
@@ -329,8 +342,12 @@ class WCV_Admin_API extends WCV_API {
      * @return WP_Error|WP_REST_Response
      */
     public function do_vendor_action( $request ) {
-        $vendor_id = (int) $request->get_param( 'id' );
-        $action    = $request->get_param( 'action' );
+        $vendor_id      = (int) $request->get_param( 'id' );
+        $action         = $request->get_param( 'action' );
+        $custom_message = $request->get_json_params()['customMessage'] ?? '';
+        $use_custom_msg = $request->get_json_params()['useCustomMessage'] ?? false;
+
+        $custom_message = sanitize_textarea_field( wp_unslash( $custom_message ) );
 
         if ( ! $vendor_id ) {
             return new WP_REST_Response(
@@ -361,10 +378,10 @@ class WCV_Admin_API extends WCV_API {
                 $result = $this->set_vendor_inactive( $vendor_id );
                 break;
             case 'approve':
-                $result = $this->approve_vendor( $vendor_id );
+                $result = $this->approve_vendor( $vendor_id, $custom_message, $use_custom_msg );
                 break;
             case 'deny':
-                $result = $this->deny_vendor( $vendor_id );
+                $result = $this->deny_vendor( $vendor_id, $custom_message, $use_custom_msg );
                 break;
             default:
                 $result = array(
@@ -460,9 +477,14 @@ class WCV_Admin_API extends WCV_API {
     /**
      * Approve vendor.
      *
-     * @param int $vendor_id Vendor ID.
+     * @param int    $vendor_id         Vendor ID.
+     * @param string $custom_message    Custom message for the approval email.
+     * @param bool   $use_custom_msg    Whether to use the custom message.
+     *
+     * @version 2.6.4 - Added custom message and use custom message parameters.
+     * @return WP_REST_Response
      */
-    public function approve_vendor( $vendor_id ) {
+    public function approve_vendor( $vendor_id, $custom_message = '', $use_custom_msg = false ) {
         $vendor = new WP_User( $vendor_id );
         $roles  = $vendor->roles;
         if ( ! in_array( 'pending_vendor', $roles, true ) ) {
@@ -474,10 +496,13 @@ class WCV_Admin_API extends WCV_API {
                 200
             );
         }
+
         $vendor->remove_role( 'pending_vendor' );
         wcv_set_primary_vendor_role( $vendor );
         update_user_meta( $vendor_id, '_wcv_vendor_status', 'active' );
-        do_action( 'wcvendors_approve_vendor', $vendor );
+
+        do_action( 'wcvendors_approve_vendor', $vendor, $use_custom_msg, $custom_message );
+
         return new WP_REST_Response(
             array(
                 'success' => true,
@@ -490,9 +515,14 @@ class WCV_Admin_API extends WCV_API {
     /**
      * Deny vendor.
      *
-     * @param int $vendor_id Vendor ID.
+     * @param int    $vendor_id         Vendor ID.
+     * @param string $custom_message    Custom message for the denial email.
+     * @param bool   $use_custom_msg    Whether to use the custom message.
+     *
+     * @version 2.6.4 - Added custom message and use custom message parameters.
+     * @return WP_REST_Response
      */
-    public function deny_vendor( $vendor_id ) {
+    public function deny_vendor( $vendor_id, $custom_message = '', $use_custom_msg = false ) {
 
         $role   = apply_filters( 'wcvendors_denied_vendor_role', get_option( 'default_role', 'subscriber' ) );
         $vendor = new WP_User( $vendor_id );
@@ -512,7 +542,9 @@ class WCV_Admin_API extends WCV_API {
             $vendor->add_role( $role );
         }
         delete_user_meta( $vendor_id, '_wcv_vendor_status' );
-        do_action( 'wcvendors_deny_vendor', $vendor );
+
+        do_action( 'wcvendors_deny_vendor', $vendor, $use_custom_msg, $custom_message );
+
         return new WP_REST_Response(
             array(
                 'success' => true,
@@ -520,6 +552,77 @@ class WCV_Admin_API extends WCV_API {
             ),
             200
         );
+    }
+
+    /**
+     * Get vendor details for review.
+     *
+     * @param WP_REST_Request $request Full details about the request.
+     *
+     * @return WP_REST_Response
+     */
+    public function get_vendor_details( $request ) {
+        $vendor_id = (int) $request->get_param( 'id' );
+
+        if ( ! $vendor_id ) {
+            return new WP_REST_Response(
+                array(
+                    'error'   => 'no_vendor_id',
+                    'success' => false,
+                    'message' => __( 'No vendor ID provided.', 'wc-vendors' ),
+                ),
+                200
+            );
+        }
+
+        $user = get_userdata( $vendor_id );
+
+        if ( ! $user || ( ! WCV_Vendors::is_vendor( $vendor_id ) && ! WCV_Vendors::is_pending( $vendor_id ) ) ) {
+            return new WP_REST_Response(
+                array(
+                    'error'   => 'not_vendor',
+                    'success' => false,
+                    'message' => __( 'Not a vendor.', 'wc-vendors' ),
+                ),
+                200
+            );
+        }
+
+        // Get vendor basic info.
+        $vendor_data = array(
+            'id'              => $vendor_id,
+            'displayname'     => $user->display_name,
+            'first_name'      => $user->first_name,
+            'last_name'       => $user->last_name,
+            'shopname'        => get_user_meta( $vendor_id, 'pv_shop_name', true ),
+            'email'           => $user->user_email,
+            'registered_date' => date_i18n( get_option( 'date_format' ), strtotime( $user->user_registered ) ),
+            'website'         => get_user_meta( $vendor_id, '_wcv_company_url', true ),
+            'status'          => array(
+                'value'     => WCV_Vendors::is_pending( $vendor_id ) ? 'pending' : ( WCV_Vendors::is_vendor( $vendor_id ) ? 'active' : 'inactive' ),
+                'formatted' => WCV_Vendors::is_pending( $vendor_id ) ? __( 'Pending', 'wc-vendors' ) : ( WCV_Vendors::is_vendor( $vendor_id ) ? __( 'Active', 'wc-vendors' ) : __( 'Inactive', 'wc-vendors' ) ),
+            ),
+        );
+
+        // Get address information.
+        $address = array(
+            'address1' => get_user_meta( $vendor_id, '_wcv_store_address1', true ),
+            'address2' => get_user_meta( $vendor_id, '_wcv_store_address2', true ),
+            'city'     => get_user_meta( $vendor_id, '_wcv_store_city', true ),
+            'state'    => get_user_meta( $vendor_id, '_wcv_store_state', true ),
+            'country'  => get_user_meta( $vendor_id, '_wcv_store_country', true ),
+            'postcode' => get_user_meta( $vendor_id, '_wcv_store_postcode', true ),
+        );
+
+        $vendor_data['address'] = $address;
+
+        // Get description and seller info.
+        $vendor_data['description'] = get_user_meta( $vendor_id, 'pv_shop_description', true );
+        $vendor_data['seller_info'] = get_user_meta( $vendor_id, 'pv_seller_info', true );
+
+        $vendor_data = apply_filters( 'wcvendors_get_vendor_details', $vendor_data, $vendor_id );
+
+        return new WP_REST_Response( $vendor_data, 200 );
     }
 }
 new WCV_Admin_API();

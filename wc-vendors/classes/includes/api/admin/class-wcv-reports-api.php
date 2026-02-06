@@ -1,6 +1,12 @@
 <?php
 /**
  * Class Reports API for WC Vendors.
+ *
+ * @version 2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+ * @phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery
+ * @phpcs:disable WordPress.DB.DirectDatabaseQuery.NoCaching
  */
 class WCV_Reports_API extends WCV_API {
 
@@ -32,7 +38,7 @@ class WCV_Reports_API extends WCV_API {
                     'description'       => __( 'Period type for the report', 'wc-vendors' ),
                     'type'              => 'string',
                     'sanitize_callback' => 'sanitize_text_field',
-                    'enum'              => array( 'last_7_days', 'last_14_days', 'last_30_days', 'last_3_months', 'last_6_months', 'last_year', 'custom' ),
+                    'enum'              => array( 'this_month', 'last_7_days', 'last_14_days', 'last_30_days', 'last_3_months', 'last_6_months', 'last_year', 'custom' ),
                 ),
                 'start_date'  => array(
                     'description'       => __( 'Start date for the report', 'wc-vendors' ),
@@ -471,24 +477,27 @@ class WCV_Reports_API extends WCV_API {
      * Get start date based on period type.
      *
      * @param string $period_type Period type.
-     * @return string Start date.
+     * @return string Start date in Y-m-d format (UTC).
      */
     private function get_start_date( $period_type ) {
+
         switch ( $period_type ) {
             case 'last_7_days':
-                return gmdate( 'Y-m-d', strtotime( '-7 days' ) );
+                return wp_date( 'Y-m-d', strtotime( '-7 days' ) );
             case 'last_14_days':
-                return gmdate( 'Y-m-d', strtotime( '-14 days' ) );
+                return wp_date( 'Y-m-d', strtotime( '-14 days' ) );
             case 'last_30_days':
-                return gmdate( 'Y-m-d', strtotime( '-30 days' ) );
+                return wp_date( 'Y-m-d', strtotime( '-30 days' ) );
             case 'last_3_months':
-                return gmdate( 'Y-m-d', strtotime( '-3 months' ) );
+                return wp_date( 'Y-m-d', strtotime( '-3 months' ) );
             case 'last_6_months':
-                return gmdate( 'Y-m-d', strtotime( '-6 months' ) );
+                return wp_date( 'Y-m-d', strtotime( '-6 months' ) );
             case 'last_year':
-                return gmdate( 'Y-m-d', strtotime( '-1 year' ) );
+                return wp_date( 'Y-m-d', strtotime( '-1 year' ) );
+            case 'this_month':
+                return wp_date( 'Y-m-01' );
             default:
-                return gmdate( 'Y-m-d', strtotime( '-30 days' ) );
+                return wp_date( 'Y-m-01' );
         }
     }
 

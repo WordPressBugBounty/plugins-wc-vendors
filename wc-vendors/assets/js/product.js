@@ -162,7 +162,20 @@ jQuery(function($) {
         $('.show_if_downloadable')
           .find('input')
           .removeClass('is_hidden');
+
+        // For auction products, only show General tab when downloadable is checked
+        if (product_type === 'auction') {
+          $('.show_if_downloadable_auction')
+            .show()
+            .removeClass('hide-all');
+        }
+      } else if (product_type === 'auction') {
+        // Hide General tab for auction products when downloadable is not checked
+        $('.show_if_downloadable_auction')
+          .hide()
+          .addClass('hide-all');
       }
+
       if (is_virtual) {
         $('.show_if_virtual')
           .show()

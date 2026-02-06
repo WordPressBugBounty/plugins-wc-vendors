@@ -1,7 +1,16 @@
 <?php
+/**
+ * Form Helper Class
+ *
+ * Defines relevant static methods for generating form elements for public facing forms.
+ *
+ * @version 2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedNamespaceFound
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+ * @phpcs:disable WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_exclude
+ */
 namespace WC_Vendors\Classes\Front;
-
-use WC_Vendors;
 
 use function WC_Vendors\Classes\Includes\wcv_walk_category_dropdown_tree;
 use function WC_Vendors\Classes\Includes\wcv_walk_category_multilevel_dropdown_tree;

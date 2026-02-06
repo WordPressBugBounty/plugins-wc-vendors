@@ -6,21 +6,35 @@
  *
  * @author  Jamie Madden, WC Vendors
  * @package WCVendors/Templates/Emails
- * @version 2.0.0
+ * @since       2.0.0
+ * @version    2.6.5 Fix security issues.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
-	exit;
+    exit;
 }
 
 /**
+ * Output the email header.
+ *
  * @hooked WC_Emails::email_header() Output the email header
+ *
+ * @param string $email_heading The email heading.
+ * @param WC_Email $email The email object.
  */
 do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 
-	<p><?php echo $content; ?></p>
+    <p><?php echo wp_kses_post( $content ); ?></p>
 
-	<p><?php printf( __( 'Your username: %s', 'wc-vendors' ), $user->user_login ); ?></p>
+    <p><?php printf( /* translators: %s: username */ esc_html__( 'Your username: %s', 'wc-vendors' ), esc_html( $user->user_login ) ); ?></p>
 <?php
 
-do_action( 'woocommerce_email_footer', $email );
+/**
+ * Output the email footer.
+ *
+ * @hooked WC_Emails::email_footer() Output the email footer
+ *
+ * @param string $email_heading The email heading.
+ * @param WC_Email $email The email object.
+ */
+do_action( 'woocommerce_email_footer', $email_heading, $email );

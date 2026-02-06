@@ -1,5 +1,16 @@
 <?php
 
+/**
+ * WC Vendors Functions Class
+ *
+ * @version 2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound
+ * @phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+ */
+
 use Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController;
 use Automattic\WooCommerce\Utilities\OrderUtil;
 
@@ -38,6 +49,26 @@ if ( ! function_exists( 'wcv_get_user_role' ) ) {
         $role  = array_shift( $roles );
 
         return isset( $wp_roles->role_names[ $role ] ) ? $role : false;
+    }
+}
+
+if ( ! function_exists( 'wcv_get_select2_script_handle' ) ) {
+    /**
+     * Get the correct Select2 script handle based on WooCommerce version.
+     *
+     * WooCommerce 10.3.0+ deprecated the 'select2' handle in favor of 'wc-select2'.
+     * This function provides backward compatibility with older WooCommerce versions.
+     *
+     * @since 2.6.4
+     * @return string The Select2 script handle to use.
+     */
+    function wcv_get_select2_script_handle() {
+        // Check if WooCommerce is active and get version.
+        if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '10.3.0', '>=' ) ) {
+            return 'wc-select2';
+        }
+
+        return 'select2';
     }
 }
 
@@ -182,26 +213,34 @@ if ( ! function_exists( 'wcv_set_primary_vendor_role' ) ) {
      * @param WP_User|int $user The ID of the user or the user object.
      * @param string      $role The role to set, default 'vendor'.
      * @return void
-     * @version 2.4.7
+     * @version 2.6.3
      * @since   2.4.7 - Added default role and allow ID or WP_User object.
      */
     function wcv_set_primary_vendor_role( $user, $role = 'vendor' ) {
         if ( is_int( $user ) ) {
             $user = get_user_by( 'id', $user );
         }
-        // Get existing roles.
+
+        // Get existing roles before manipulation.
         $existing_roles = $user->roles;
-        // Remove all existing roles.
-        foreach ( $existing_roles as $existing_role ) {
-            $user->remove_role( $existing_role );
+
+        // Check if the user already has the desired role as primary.
+        if ( ! empty( $existing_roles ) && $existing_roles[0] === $role ) {
+            return; // Role is already primary, no need to change anything.
         }
-        // Add default role/vendor first.
-        $user->add_role( $role );
-        unset( $existing_roles[ $role ] ); // Remove assigned role from existing roles. Avoid adding it to the end if it's already there.
-        // Re-add all other roles.
+
+        // Use set_role to replace all roles with the primary role first.
+        // This method doesn't trigger add_user_role hook multiple times.
+        $user->set_role( $role );
+
+        // Re-add other roles (excluding the primary role we just set).
         foreach ( $existing_roles as $existing_role ) {
-            $user->add_role( $existing_role );
+            if ( $existing_role !== $role ) {
+                $user->add_role( $existing_role );
+            }
         }
+
+        do_action( 'wcvendors_set_primary_vendor_role', $user->ID, $role );
     }
 }
 
@@ -523,7 +562,7 @@ if ( ! function_exists( 'wcv_switch_to_classic_cart_checkout' ) ) {
             return;
         }
 
-        if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'switch_cc_blocks' ) ) {
+        if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'switch_cc_blocks' ) ) {
             return;
         }
 

@@ -4,7 +4,10 @@
  *
  * This template can be overridden by copying it to yourtheme/wc-vendors/dashboard/settings/commission-payout-method.php
  *
- * @version 2.4.9
+ * @package    WC_Vendors
+ * @version    2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
  */
 if ( ! defined( 'ABSPATH' ) ) {
     exit;

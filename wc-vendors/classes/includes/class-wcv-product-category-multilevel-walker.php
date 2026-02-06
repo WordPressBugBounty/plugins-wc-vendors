@@ -1,4 +1,12 @@
 <?php
+/**
+ * WCV_Product_Category_Multilevel_Walker class.
+ *
+ * @version 2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedNamespaceFound
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+ */
 namespace WC_Vendors\Classes\Includes;
 
 if ( ! defined( 'ABSPATH' ) ) {

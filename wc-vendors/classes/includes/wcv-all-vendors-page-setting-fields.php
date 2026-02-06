@@ -2,7 +2,10 @@
 /**
  * Define setting fields for all vendors page. This will be use for VueJS
  *
- * @package wc-vendors
+ * @version 2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
  */
 $currency_symbol   = html_entity_decode( get_woocommerce_currency_symbol() );
 $policy_html       = wc_string_to_bool( get_option( 'wcvendors_allow_settings_policy_html', 'no' ) );

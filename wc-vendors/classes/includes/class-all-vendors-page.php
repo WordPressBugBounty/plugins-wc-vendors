@@ -1,6 +1,10 @@
 <?php
 /**
  * All vendors page feature main class
+ *
+ * @version 2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
  */
 class WCV_All_Vendors_Page {
 

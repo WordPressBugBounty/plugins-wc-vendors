@@ -7,6 +7,9 @@
  *
  * @link       http://www.wcvendors.com
  * @since      1.9.0
+ * @version 2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
  *
  * @package    WCVendors
  * @subpackage WCVendors/classes/front/signup/views

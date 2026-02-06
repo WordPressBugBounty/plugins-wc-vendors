@@ -7,6 +7,8 @@
  *
  * @link       http://www.wcvendors.com
  * @since      2.5.2
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
  */
 
 ?>

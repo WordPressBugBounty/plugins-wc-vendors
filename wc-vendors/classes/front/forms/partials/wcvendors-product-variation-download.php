@@ -1,4 +1,15 @@
 <?php
+
+/**
+ * Product Variation Download
+ *
+ * This file is used to load the product variation download
+ *
+ * @link       http://www.wcvendors.com
+ * @version    2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable 	WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+ */
     $variation_key = ! is_null( get_post( $variation_id ) ) ? $variation_id : $loop;
 ?>
 <tr>

@@ -1,4 +1,17 @@
 <?php
+
+/**
+ * Order data synchronizer class.
+ *
+ * @version 2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable 	WordPress.DB.DirectDatabaseQuery.DirectQuery
+ * @phpcs:disable 	WordPress.DB.DirectDatabaseQuery.NoCaching
+ * @phpcs:disable 	WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+ * @phpcs:disable 	WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+ * @phpcs:disable 	WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+ */
+
 use Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController;
 use Automattic\WooCommerce\Internal\DataStores\Orders\DataSynchronizer;
 use Automattic\WooCommerce\Internal\DataStores\Orders\OrdersTableDataStore;
@@ -1250,7 +1263,7 @@ class WCV_Order_Data_Synchronizer {
 
         ?>
         <div id="message" class="notice is-dismissible wcv-dismiss-sync-notice">
-            <p><strong><?php esc_html_e( 'WC Vendors Marketplace is updating product data in the background' ); ?></strong></p>
+            <p><strong><?php esc_html_e( 'WC Vendors Marketplace is updating product data in the background', 'wc-vendors' ); ?></strong></p>
             <p><?php esc_html_e( 'This process will take some time. Order display and commission calculations may not be accurate until this finishes.', 'wc-vendors' ); ?></p>
             <p>
                 <a href="<?php echo esc_url_raw( $show_progress_url ); ?>" class="button button-primary">
@@ -1265,12 +1278,12 @@ class WCV_Order_Data_Synchronizer {
      * Display admin notice showing progress bar.
      *
      * @return void
-     * @version 2.4.9.2
+     * @version 2.6.5 - Fix security issues.
      * @since   2.4.9.2
      */
     public function data_sync_progress_notice() {
 
-        if ( ! isset( $_GET['show_update_progress_nonce'] ) || ! wp_verify_nonce( $_GET['show_update_progress_nonce'], 'wcv_show_update_progress' ) ) {
+        if ( ! isset( $_GET['show_update_progress_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['show_update_progress_nonce'] ) ), 'wcv_show_update_progress' ) ) {
             return;
         }
 

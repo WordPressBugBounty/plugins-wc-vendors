@@ -6,8 +6,11 @@
  *
  * @author        Jamie Madden, WC Vendors
  * @package       WCVendors/Templates/Emails/HTML
- * @version 2.4.8
- * @since   2.4.8 - Added HPOS compatibility.
+ * @version       2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+ *
+ * @since         2.4.8 - Added HPOS compatibility.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

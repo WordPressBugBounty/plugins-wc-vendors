@@ -3,6 +3,11 @@
  * The template for displaying the tracking number form this is displayed in the modal pop up.
  *
  * Override this template by copying it to yourtheme/wc-vendors/dashboard/order
+ *
+ * @package    WC_Vendors
+ * @version    2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
  */
 use WC_Vendors\Classes\Front\Forms\WCV_Tracking_Number_Form;
 // Change text to make UI a little cleaner.

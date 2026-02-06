@@ -1,6 +1,18 @@
 <?php
 /**
- * Display Product SEO form fields
+ * Product SEO form fields
+ *
+ * This file is used to display the product SEO form fields
+ *
+ * @link       http://www.wcvendors.com
+ * @since      2.5.2
+ * @version    2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable 	WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedNamespaceFound
+ * @phpcs:disable 	WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+ * @phpcs:disable 	WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+ * @phpcs:disable 	WordPress.DB.DirectDatabaseQuery.DirectQuery
+ * @phpcs:disable 	WordPress.DB.DirectDatabaseQuery.NoCaching
  */
 use WC_Vendors\Classes\Front\WCV_Form_Helper;
 ?>

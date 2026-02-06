@@ -1,4 +1,13 @@
 <?php
+/**
+ * Divi Theme Support Class.
+ *
+ * @since 2.5.2
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedNamespaceFound
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound
+ */
+
 namespace WC_Vendors\Classes\Font\Theme_Support;
 
 use function WC_Vendors\Classes\Includes\wcv_is_dashboard_page;
@@ -6,8 +15,6 @@ use function WC_Vendors\Classes\Includes\wcv_is_dashboard_page;
  * Add support for the Divi Theme.
  *
  * @see https://www.elegantthemes.com/gallery/divi/
- *
- * @since 2.5.2
  */
 class WCVendors_Theme_Support_Divi {
 

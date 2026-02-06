@@ -1,4 +1,11 @@
 <?php
+/**
+ * WC Vendors Vendor Shop Class
+ *
+ * @version 2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+ */
 use function WC_Vendors\Classes\Includes\wcv_strip_html;
 /**
  * WC Vendors Vendor Shop Class

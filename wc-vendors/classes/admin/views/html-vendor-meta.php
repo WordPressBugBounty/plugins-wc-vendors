@@ -1,3 +1,12 @@
+<?php
+/**
+ * HTML vendor meta
+ *
+ * @version 2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+ */
+?>
 <h3><?php esc_html_e( 'WC Vendors', 'wc-vendors' ); ?></h3>
 
 <table class="form-table">

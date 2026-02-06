@@ -1,5 +1,12 @@
 <?php
 
+/**
+ * WCV Vendor Order Page
+ *
+ * @version 2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound
+ */
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }

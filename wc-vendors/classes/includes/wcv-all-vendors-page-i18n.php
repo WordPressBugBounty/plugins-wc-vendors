@@ -1,6 +1,11 @@
 <?php
 /**
  * All Vendors page i18n
+ *
+ * @version 2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
  */
 $labels = array(
     'active'                             => __( 'Active', 'wc-vendors' ),
@@ -17,6 +22,7 @@ $labels = array(
     'status'                             => __( 'Status', 'wc-vendors' ),
     'actions'                            => __( 'Actions', 'wc-vendors' ),
     'edit'                               => __( 'Edit', 'wc-vendors' ),
+    'view'                               => __( 'View', 'wc-vendors' ),
     'viewProducts'                       => __( 'View Products', 'wc-vendors' ),
     'viewOrders'                         => __( 'View Orders', 'wc-vendors' ),
     'deactive'                           => __( 'Deactivate', 'wc-vendors' ),
@@ -112,6 +118,27 @@ $labels = array(
     'mapNotLoaded'                       => __( 'Please set Google Maps API Key', 'wc-vendors' ),
     'onlyPro'                            => __( 'Only available in Pro', 'wc-vendors' ),
     'setMapAPIKey'                       => __( 'Set Google Maps API Key', 'wc-vendors' ),
+    'review'                             => __( 'Review', 'wc-vendors' ),
+    'reviewVendor'                       => __( 'Review Vendor', 'wc-vendors' ),
+    'vendorDetails'                      => __( 'Vendor Details', 'wc-vendors' ),
+    'email'                              => __( 'Email', 'wc-vendors' ),
+    'address'                            => __( 'Address', 'wc-vendors' ),
+    'description'                        => __( 'Shop Description', 'wc-vendors' ),
+    'sellerInfo'                         => __( 'Seller Information', 'wc-vendors' ),
+    'close'                              => __( 'Close', 'wc-vendors' ),
+    'loading'                            => __( 'Loading', 'wc-vendors' ),
+    'firstName'                          => __( 'First Name', 'wc-vendors' ),
+    'lastName'                           => __( 'Last Name', 'wc-vendors' ),
+    'vendorApplication'                  => __( 'Vendor Application', 'wc-vendors' ),
+    'selectMessageType'                  => __( 'Please select the message type that will be sent to the user', 'wc-vendors' ),
+    'sendCustomMessage'                  => __( 'Send custom message', 'wc-vendors' ),
+    'sendDefaultMessage'                 => __( 'Send default message', 'wc-vendors' ),
+    'approvalMessagePlaceholder'         => __( 'Enter a custom approval message...', 'wc-vendors' ),
+    'denialMessagePlaceholder'           => __( 'Enter a custom denial message...', 'wc-vendors' ),
+    'pleaseEnterMessage'                 => __( 'Please enter a message', 'wc-vendors' ),
+    'confirm'                            => __( 'Confirm', 'wc-vendors' ),
+    'customMessage'                      => __( 'Custom Message', 'wc-vendors' ),
+    'website'                            => __( 'Website', 'wc-vendors' ),
 );
 
 return apply_filters(

@@ -8,6 +8,9 @@
  * @var       $page_label        The page label for the menu item
  * @package    WC_Vendors
  * @version    1.0.3
+ * @version    2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
  */
 $icon     = isset( $icon ) ? $icon : '';
 $icon_url = isset( $icon_url ) ? $icon_url : '';

@@ -7,7 +7,10 @@
  *
  * @link       http://www.wcvendors.com
  * @since      2.5.2
- * @version    2.5.2
+ * @version    2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
  */
 
 ?>

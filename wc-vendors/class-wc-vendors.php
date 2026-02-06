@@ -8,14 +8,15 @@
  * Author URI:           https://www.wcvendors.com
  * GitHub Plugin URI:    https://github.com/wcvendors/wcvendors
  *
- * Version:              2.6.2
- * Requires at least:    5.3.0
- * Tested up to:         6.8
+ * Version:              2.6.5
+ * Requires at least:    5.5.0
+ * Tested up to:         6.9
  * WC requires at least: 5.0
- * WC tested up to:      10.2
+ * WC tested up to:      10.4
  *
  * Text Domain:          wc-vendors
  * Domain Path:          /languages/
+ * License:              GPL2
  *
  * @category             Plugin
  * @copyright            Copyright © 2012 Matt Gates, Copyright © 2021 WC Vendors
@@ -35,6 +36,10 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with WC Vendors Marketplace. If not, see http://www.gnu.org/licenses/gpl-2.0.txt.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedFunctionFound
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
  */
 
 use Automattic\WooCommerce\Utilities\FeaturesUtil;
@@ -139,7 +144,7 @@ class WC_Vendors {
         }
 
         if ( ! defined( 'WCV_VERSION' ) ) {
-            define( 'WCV_VERSION', '2.6.2' );
+            define( 'WCV_VERSION', '2.6.5' );
         }
 
         if ( ! defined( 'WCV_TEMPLATE_BASE' ) ) {
@@ -212,30 +217,39 @@ class WC_Vendors {
  * Initialize the plugin
  *
  * @since 2.5.2
+ * @version 2.6.5
  */
-function run_wcvendors() { //phpcs:ignore
-    $GLOBALS['wc_vendors'] = new WC_Vendors();
+function wcvendors_run() { //phpcs:ignore
+
+    $wcvendors_is_wc_active = in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', get_option( 'active_plugins', array() ) ), true ) // phpcs:ignore
+        || ( is_multisite() && array_key_exists( 'woocommerce/woocommerce.php', get_site_option( 'active_sitewide_plugins', array() ) ) ); // phpcs:ignore
+
+    if ( ! $wcvendors_is_wc_active ) {
+        return;
+    }
+
+    $GLOBALS['wc_vendors'] = new WC_Vendors(); // phpcs:ignore
 }
 
-add_action( 'setup_theme', 'run_wcvendors', 20 );
+add_action( 'setup_theme', 'wcvendors_run', 20 );
 
 /**
  * Schedule the admin notice
  */
-function wcv_schedule_admin_notice() {
+function wcvendors_schedule_admin_notice() {
     wcvendors_schedule_display_notice( 'cart_and_checkout', 0 );
     wcvendors_schedule_display_notice( 'review_request', 14 );
 }
 
-add_action( 'admin_init', 'wcv_schedule_admin_notice' );
+add_action( 'admin_init', 'wcvendors_schedule_admin_notice' );
 
 
-add_action( 'init', 'check_wcv_version' );
+add_action( 'init', 'wcvendors_check_version' );
 
 /**
  * Since 2.5.6
  */
-function check_wcv_version() {
+function wcvendors_check_version() {
 
     if ( ! function_exists( 'get_plugin_data' ) ) {
         require_once ABSPATH . 'wp-admin/includes/plugin.php';

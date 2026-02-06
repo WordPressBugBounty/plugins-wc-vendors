@@ -3,6 +3,11 @@
  * The WCV Reports Controller class
  *
  * This is the reports controller class for all front end reports
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedNamespaceFound
  */
 
 namespace WC_Vendors\Classes\Front;
@@ -192,18 +197,18 @@ class WCV_Reports_Controller {
             return;
         }
 
-        if ( ! wp_verify_nonce( $_POST['wcv_dashboard_date_update'], 'wcv-dashboard-date-update' ) ) {
+        if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['wcv_dashboard_date_update'] ) ), 'wcv-dashboard-date-update' ) ) {
             return;
         }
 
         // Start Date.
-        if ( isset( $_POST['_wcv_dashboard_start_date_input'] ) || '' === $_POST['_wcv_dashboard_start_date_input'] ) {
-            WC()->session->set( 'wcv_dashboard_start_date', strtotime( $_POST['_wcv_dashboard_start_date_input'] ) );
+        if ( isset( $_POST['_wcv_dashboard_start_date_input'] ) && ! empty( sanitize_text_field( wp_unslash( $_POST['_wcv_dashboard_start_date_input'] ) ) ) ) {
+            WC()->session->set( 'wcv_dashboard_start_date', strtotime( sanitize_text_field( wp_unslash( $_POST['_wcv_dashboard_start_date_input'] ) ) ) );
         }
 
         // End Date.
-        if ( isset( $_POST['_wcv_dashboard_end_date_input'] ) || '' === $_POST['_wcv_dashboard_end_date_input'] ) {
-            WC()->session->set( 'wcv_dashboard_end_date', strtotime( $_POST['_wcv_dashboard_end_date_input'] ) );
+        if ( isset( $_POST['_wcv_dashboard_end_date_input'] ) && ! empty( sanitize_text_field( wp_unslash( $_POST['_wcv_dashboard_end_date_input'] ) ) ) ) {
+            WC()->session->set( 'wcv_dashboard_end_date', strtotime( sanitize_text_field( wp_unslash( $_POST['_wcv_dashboard_end_date_input'] ) ) ) );
         }
     }
 

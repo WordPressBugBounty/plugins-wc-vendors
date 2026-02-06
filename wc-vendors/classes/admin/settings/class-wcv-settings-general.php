@@ -105,12 +105,13 @@ if ( ! class_exists( 'WCVendors_Settings_General', false ) ) :
                         ),
                         array(
                             // translators: %s The name used to refer to a vendor.
-                            'title'   => sprintf( __( '%s Shipping', 'wc-vendors' ), wcv_get_vendor_name() ),
+                            'title'       => sprintf( __( '%s Shipping', 'wc-vendors' ), wcv_get_vendor_name() ),
                             // translators: %s The name used to refer to a vendor.
-                            'desc'    => sprintf( __( 'Give any shipping to the %s', 'wc-vendors' ), wcv_get_vendor_name( true, false ) ),
-                            'id'      => 'wcvendors_vendor_give_shipping',
-                            'default' => 'no',
-                            'type'    => 'checkbox',
+                            'desc'        => sprintf( __( 'Give any shipping to the %s', 'wc-vendors' ), wcv_get_vendor_name( true, false ) ),
+                            'id'          => 'wcvendors_vendor_give_shipping',
+                            'default'     => 'no',
+                            'type'        => 'checkbox',
+                            'should_hide' => ! is_wcv_pro_active(),
                         ),
                         array(
                             // translators: %s The name used to refer to a vendor.

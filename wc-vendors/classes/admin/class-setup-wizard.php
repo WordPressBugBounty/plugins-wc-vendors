@@ -84,7 +84,7 @@ class WCVendors_Admin_Setup_Wizard {
      */
     public function setup_wizard() {
 
-        if ( empty( $_GET['page'] ) || 'wcv-setup' !== $_GET['page'] || ! current_user_can( 'manage_woocommerce' ) ) {
+        if ( empty( $_GET['page'] ) || 'wcv-setup' !== sanitize_text_field( wp_unslash( $_GET['page'] ) ) || ! current_user_can( 'manage_woocommerce' ) ) {
             return;
         }
 
@@ -128,13 +128,20 @@ class WCVendors_Admin_Setup_Wizard {
 
         if ( ! empty( $_POST['save_step'] ) && isset( $this->steps[ $this->step ]['handler'] ) ) {
 
-            wp_verify_nonce( $_POST['wcv-setup'], 'wcv-setup' );
+            if ( ! isset( $_POST['wcv-setup'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['wcv-setup'] ) ), 'wcv-setup' ) ) {
+                wp_die( esc_html__( 'Security check failed. Please refresh the page and try again.', 'wc-vendors' ) );
+            }
+
             if ( is_callable( $this->steps[ $this->step ]['handler'] ) ) {
                 call_user_func( $this->steps[ $this->step ]['handler'], $this );
             }
         }
 
         if ( ! empty( $_POST['previous_step'] ) ) {
+            if ( ! isset( $_POST['wcv-setup'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['wcv-setup'] ) ), 'wcv-setup' ) ) {
+                wp_die( esc_html__( 'Security check failed. Please refresh the page and try again.', 'wc-vendors' ) );
+            }
+
             wp_safe_redirect( esc_url_raw( $this->get_previous_step_link() ) );
             exit;
         }
@@ -373,9 +380,9 @@ class WCVendors_Admin_Setup_Wizard {
 
         check_admin_referer( 'wcv-setup', 'wcv-setup' );
 
-        $commission_rate = sanitize_text_field( $_POST['wcv_vendor_commission_rate'] );
-        $payout_currency = sanitize_text_field( $_POST['wcvendors_paypal_web_currency'] );
-        $allow_tracking  = isset( $_POST['wcvendors_allow_tracking'] ) ? sanitize_text_field( $_POST['wcvendors_allow_tracking'] ) : '';
+        $commission_rate = isset( $_POST['wcv_vendor_commission_rate'] ) ? sanitize_text_field( wp_unslash( $_POST['wcv_vendor_commission_rate'] ) ) : '';
+        $payout_currency = isset( $_POST['wcvendors_paypal_web_currency'] ) ? sanitize_text_field( wp_unslash( $_POST['wcvendors_paypal_web_currency'] ) ) : '';
+        $allow_tracking  = isset( $_POST['wcvendors_allow_tracking'] ) ? sanitize_text_field( wp_unslash( $_POST['wcvendors_allow_tracking'] ) ) : '';
 
         update_option( 'wcvendors_vendor_commission_rate', $commission_rate );
         update_option( 'wcvendors_paypal_web_currency', $payout_currency );
@@ -629,14 +636,14 @@ class WCVendors_Admin_Setup_Wizard {
         do_action( 'wcvendors_setup_wizard_before_advanced_settings_save' );
         check_admin_referer( 'wcv-setup', 'wcv-setup' );
 
-        $terms_page_id      = isset( $_POST['wcvendors_vendor_terms_page_id'] ) ? sanitize_text_field( $_POST['wcvendors_vendor_terms_page_id'] ) : '';
-        $allow_registration = isset( $_POST['wcvendors_vendor_allow_registration'] ) ? sanitize_text_field( $_POST['wcvendors_vendor_allow_registration'] ) : 'yes';
-        $vendor_taxes       = isset( $_POST['wcvendors_vendor_give_taxes'] ) ? sanitize_text_field( $_POST['wcvendors_vendor_give_taxes'] ) : 'no';
-        $vendor_shipping    = isset( $_POST['wcvendors_vendor_give_shipping'] ) ? sanitize_text_field( $_POST['wcvendors_vendor_give_shipping'] ) : 'no';
-        $featured_products  = isset( $_POST['wcvendors_capability_product_featured'] ) ? sanitize_text_field( $_POST['wcvendors_capability_product_featured'] ) : 'yes';
-        $export_orders      = isset( $_POST['wcvendors_capability_orders_export'] ) ? sanitize_text_field( $_POST['wcvendors_capability_orders_export'] ) : 'no';
-        $vendors_store_url  = isset( $_POST['wcvendors_vendor_shop_permalink'] ) ? sanitize_text_field( $_POST['wcvendors_vendor_shop_permalink'] ) : 'vendors';
-        $manual_approval    = isset( $_POST['wcvendors_vendor_approve_registration'] ) ? sanitize_text_field( $_POST['wcvendors_vendor_approve_registration'] ) : 'no';
+        $terms_page_id      = isset( $_POST['wcvendors_vendor_terms_page_id'] ) ? sanitize_text_field( wp_unslash( $_POST['wcvendors_vendor_terms_page_id'] ) ) : '';
+        $allow_registration = isset( $_POST['wcvendors_vendor_allow_registration'] ) ? sanitize_text_field( wp_unslash( $_POST['wcvendors_vendor_allow_registration'] ) ) : 'yes';
+        $vendor_taxes       = isset( $_POST['wcvendors_vendor_give_taxes'] ) ? sanitize_text_field( wp_unslash( $_POST['wcvendors_vendor_give_taxes'] ) ) : 'no';
+        $vendor_shipping    = isset( $_POST['wcvendors_vendor_give_shipping'] ) ? sanitize_text_field( wp_unslash( $_POST['wcvendors_vendor_give_shipping'] ) ) : 'no';
+        $featured_products  = isset( $_POST['wcvendors_capability_product_featured'] ) ? sanitize_text_field( wp_unslash( $_POST['wcvendors_capability_product_featured'] ) ) : 'yes';
+        $export_orders      = isset( $_POST['wcvendors_capability_orders_export'] ) ? sanitize_text_field( wp_unslash( $_POST['wcvendors_capability_orders_export'] ) ) : 'no';
+        $vendors_store_url  = isset( $_POST['wcvendors_vendor_shop_permalink'] ) ? sanitize_text_field( wp_unslash( $_POST['wcvendors_vendor_shop_permalink'] ) ) : 'vendors';
+        $manual_approval    = isset( $_POST['wcvendors_vendor_approve_registration'] ) ? sanitize_text_field( wp_unslash( $_POST['wcvendors_vendor_approve_registration'] ) ) : 'no';
 
         update_option( 'wcvendors_vendor_terms_page_id', $terms_page_id );
         update_option( 'wcvendors_vendor_allow_registration', $allow_registration );

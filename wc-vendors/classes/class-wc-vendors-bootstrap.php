@@ -15,6 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @since   2.4.8 - Refactored from class-wc-vendors.php
  */
 class WC_Vendors_Bootstrap {
+ // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound
 
     /**
      * Plugin version
@@ -325,10 +326,9 @@ class WC_Vendors_Bootstrap {
      */
     public function load_il8n() {
         $locale = is_admin() && function_exists( 'get_user_locale' ) ? get_user_locale() : get_locale();
-        $locale = apply_filters( 'plugin_locale', $locale, 'wc-vendors' );
+        $locale = apply_filters( 'plugin_locale', $locale, 'wc-vendors' ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
         unload_textdomain( 'wc-vendors' );
         load_textdomain( 'wc-vendors', WP_LANG_DIR . '/wc-vendors/wc-vendors-' . $locale . '.mo' );
-        load_plugin_textdomain( 'wc-vendors', false, plugin_basename( dirname( WCV_PLUGIN_FILE ) ) . '/languages' );
     }
 
     /**
@@ -338,7 +338,6 @@ class WC_Vendors_Bootstrap {
 
         include_once WCV_PLUGIN_DIR . 'classes/class-queries.php';
         include_once WCV_PLUGIN_DIR . 'classes/class-vendors.php';
-        include_once WCV_PLUGIN_DIR . 'classes/class-cron.php';
         include_once WCV_PLUGIN_DIR . 'classes/class-commission.php';
         include_once WCV_PLUGIN_DIR . 'classes/class-shipping.php';
         include_once WCV_PLUGIN_DIR . 'classes/class-vendor-order.php';
@@ -433,7 +432,6 @@ class WC_Vendors_Bootstrap {
 
         new WCV_Vendor_Dashboard();
         new WCV_Shipping();
-        new WCV_Cron();
         new WCV_Commission();
         new WCV_Vendors();
         new WCV_Emails();
@@ -529,7 +527,6 @@ class WC_Vendors_Bootstrap {
      * Include payment gateways
      */
     public function include_gateways() {
-        require_once WCV_PLUGIN_DIR . 'classes/gateways/PayPal_AdvPayments/paypal_ap.php';
         require_once WCV_PLUGIN_DIR . 'classes/gateways/PayPal_Masspay/class-paypal-masspay.php';
         require_once WCV_PLUGIN_DIR . 'classes/gateways/WCV_Gateway_Test/class-wcv-gateway-test.php';
     }

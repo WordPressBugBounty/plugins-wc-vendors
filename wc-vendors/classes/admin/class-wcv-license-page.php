@@ -2,6 +2,11 @@
 /**
  * WC Vendors License Page
  *
+ * @version 2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound
+ *
  * @package  WC Vendors
  * @version 2.4.9
  * @since   2.4.9

@@ -614,7 +614,7 @@ class WCVendors_Admin_Menus {
         global $wpdb;
 
         // Query to get count of pending vendors.
-        $count = $wpdb->get_var(
+        $count = $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
             $wpdb->prepare(
                 "SELECT COUNT(*) FROM {$wpdb->prefix}users AS users
                 LEFT JOIN {$wpdb->prefix}usermeta AS meta ON users.ID = meta.user_id

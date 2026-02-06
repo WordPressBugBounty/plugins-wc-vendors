@@ -1,4 +1,12 @@
 <?php
+/**
+ * The WCV Public Assets class.
+ *
+ * This is the public assets class for all public assets.
+ *
+ * phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound, WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound, WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedNamespaceFound
+ */
+
 namespace WC_Vendors\Classes\Front;
 
 use WC_Vendors;
@@ -140,6 +148,7 @@ class WCV_Public_Assets {
         $tag_limit               = get_option( 'wcvendors_tag_limit', '' );
         $tag_separator           = get_option( 'wcvendors_tag_separator', '' );
         $shipping_method_enabled = wcv_is_vendors_shipping_enabled();
+        $select2_handle          = wcv_get_select2_script_handle();
 
         $is_dashboard_page = ( is_a( $post, 'WP_Post' ) && has_shortcode( $post->post_content, 'wcv_dashboard_nav' ) ) || ( is_a( $post, 'WP_Post' ) && has_shortcode( $post->post_content, 'wcv_vendor_dashboard' ) )
         || ( is_a( $post, 'WP_Post' ) && has_shortcode( $post->post_content, 'wcv_pro_dashboard_nav' ) ) || ( is_a( $post, 'WP_Post' ) && has_shortcode( $post->post_content, 'wcv_pro_dashboard' ) );
@@ -309,7 +318,7 @@ class WCV_Public_Assets {
             'is_demensions_required'         => wc_string_to_bool( get_option( 'wcvendors_required_product_shipping_dimensions', 'no' ) ),
         );
 
-        wcv_enqueue_script( 'wcv-frontend-product', self::$base_url . '/js/product' . self::$suffix . '.js', array( 'jquery-ui-core', 'select2' ), WCV_VERSION, true, array( 'wcv_frontend_product' => $product_params ), $is_dashboard_page );
+        wcv_enqueue_script( 'wcv-frontend-product', self::$base_url . '/js/product' . self::$suffix . '.js', array( 'jquery-ui-core', $select2_handle ), WCV_VERSION, true, array( 'wcv_frontend_product' => $product_params ), $is_dashboard_page );
         // Product Variation.
         $product_variation_params = array(
             'ajax_url'                            => admin_url( 'admin-ajax.php' ),
@@ -405,7 +414,7 @@ class WCV_Public_Assets {
                 'jquery',
                 'jquery-ui-core',
                 'accounting',
-                'select2',
+                $select2_handle,
             ),
             WCV_VERSION,
             true,
@@ -430,7 +439,7 @@ class WCV_Public_Assets {
             'wcv_json_unique_store_name_nonce' => wp_create_nonce( 'wcv-unique-store-name' ),
             'use_location_picker_text'         => apply_filters( 'wcv_use_location_picker_text', __( 'Show map', 'wc-vendors' ) ),
             'hide_location_picker_text'        => apply_filters( 'wcv_hide_location_picker_text', __( 'Hide map', 'wc-vendors' ) ),
-            'cannot_find_address_text'         => apply_filters( 'wcv_cannot_find_address_test', __( 'Cannot determine address at this location.', 'wcvenodrs-pro' ) ),
+            'cannot_find_address_text'         => apply_filters( 'wcv_cannot_find_address_test', __( 'Cannot determine address at this location.', 'wc-vendors' ) ),
             'map_zoom_level'                   => apply_filters( 'wcv_google_maps_zoom_level', get_option( 'wcvendors_pro_google_maps_zoom_level', '' ) ),
             'decimal_separator'                => $decimal_separator,
             'thousand_separator'               => $thousand_separator,
@@ -476,7 +485,7 @@ class WCV_Public_Assets {
         wcv_enqueue_script(
             'wcv-product-search',
             self::$base_url . '/js/select' . self::$suffix . '.js',
-            array( 'jquery', 'select2' ),
+            array( 'jquery', $select2_handle ),
             '3.5.2',
             true,
             array(
@@ -500,7 +509,7 @@ class WCV_Public_Assets {
         wcv_enqueue_script(
             'wcv-tag-search',
             self::$base_url . '/js/tags' . self::$suffix . '.js',
-            array( 'jquery', 'select2' ),
+            array( 'jquery', $select2_handle ),
             WCV_VERSION,
             true,
             array(
@@ -515,7 +524,7 @@ class WCV_Public_Assets {
             self::$base_url . '/js/general' . self::$suffix . '.js',
             array(
                 'jquery',
-                'select2',
+                $select2_handle,
             ),
             WCV_VERSION,
             true,
@@ -533,7 +542,7 @@ class WCV_Public_Assets {
             self::$base_url . 'js/forms' . self::$suffix . '.js',
             array(
                 'jquery',
-                'select2',
+                $select2_handle,
             ),
             WCV_VERSION,
             true,
@@ -552,7 +561,7 @@ class WCV_Public_Assets {
             self::$base_url . 'js/country-states' . self::$suffix . '.js',
             array(
                 'jquery',
-                'select2',
+                $select2_handle,
             ),
             WCV_VERSION,
             true,

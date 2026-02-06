@@ -1,8 +1,18 @@
 <?php
-namespace WC_Vendors\Classes\Front;
 
-use WC_Vendors;
-use WCV_Vendors;
+/**
+ * Dashboard Controller Class
+ *
+ * Defines relevant methods for generating a display table for public facing pages.
+ *
+ * @version 2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedNamespaceFound
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
+ * @phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery
+ * @phpcs:disable WordPress.DB.DirectDatabaseQuery.NoCaching
+ */
+namespace WC_Vendors\Classes\Front;
 
 use function WC_Vendors\Classes\Includes\wcv_get_default_product_template;
 use function WC_Vendors\Classes\Includes\wcv_get_order_details_display_options;
@@ -309,7 +319,7 @@ class WCV_Dashboard_Controller {
         $vendor_display_name = get_user_by( 'id', $this->vendor_id )->display_name;
         $welcome_message     = sprintf(
             '%s, %s!',
-            __( 'Welcome', 'wcvendors' ),
+            __( 'Welcome', 'wc-vendors' ),
             $vendor_display_name
         );
 
@@ -329,24 +339,24 @@ class WCV_Dashboard_Controller {
 
         $steps = array(
             'store'    => array(
-                'title'       => __( 'Customize your Store Front', 'wcvendors' ),
-                'description' => __( 'Fill in a store description, set images, and other important information for your customers to know.', 'wcvendors' ),
+                'title'       => __( 'Customize your Store Front', 'wc-vendors' ),
+                'description' => __( 'Fill in a store description, set images, and other important information for your customers to know.', 'wc-vendors' ),
                 'link'        => \WCV_Vendor_Dashboard::get_dashboard_page_url( 'settings' ),
                 'icon'        => 'wcv-icon-setup-store',
                 'is_complete' => $completed_steps['store'],
                 'id'          => 'store',
             ),
             'products' => array(
-                'title'       => __( 'Add Products', 'wcvendors' ),
-                'description' => __( 'Give your customers something to buy! Add products to your store to kick start sales.', 'wcvendors' ),
+                'title'       => __( 'Add Products', 'wc-vendors' ),
+                'description' => __( 'Give your customers something to buy! Add products to your store to kick start sales.', 'wc-vendors' ),
                 'link'        => ! $completed_steps['products'] ? \WCV_Vendor_Dashboard::get_dashboard_page_url( 'product/edit' ) : \WCV_Vendor_Dashboard::get_dashboard_page_url( 'product' ),
                 'icon'        => 'wcv-icon-setup-products',
                 'is_complete' => $completed_steps['products'],
                 'id'          => 'products',
             ),
             'payout'   => array(
-                'title'       => __( 'Connect Payout Method', 'wcvendors' ),
-                'description' => __( 'Select your preferred payout method to ensure you get commissions delivered.', 'wcvendors' ),
+                'title'       => __( 'Connect Payout Method', 'wc-vendors' ),
+                'description' => __( 'Select your preferred payout method to ensure you get commissions delivered.', 'wc-vendors' ),
                 'link'        => \WCV_Vendor_Dashboard::get_dashboard_page_url( 'settings#payment' ),
                 'icon'        => 'wcv-icon-setup-payout',
                 'is_complete' => $completed_steps['payout'],
@@ -356,8 +366,8 @@ class WCV_Dashboard_Controller {
 
         if ( self::$is_pro_active ) {
             $steps['social'] = array(
-                'title'       => __( 'Add your Socials', 'wcvendors' ),
-                'description' => __( 'Link your social media to engage customers. Keep them updated across all platforms.', 'wcvendors' ),
+                'title'       => __( 'Add your Socials', 'wc-vendors' ),
+                'description' => __( 'Link your social media to engage customers. Keep them updated across all platforms.', 'wc-vendors' ),
                 'link'        => \WCV_Vendor_Dashboard::get_dashboard_page_url( 'settings#social' ),
                 'icon'        => 'wcv-icon-setup-social',
                 'is_complete' => $completed_steps['social'],
@@ -390,7 +400,7 @@ class WCV_Dashboard_Controller {
         $should_show_ratings      = apply_filters( 'wcvendors_dashboard_should_show_ratings', false );
         $this->dashboard_quick_links();
 
-        wc_get_template(
+        $this->load_dashboard_template(
             'dashboard-tab-content.php',
             array(
                 'welcome_message'          => $welcome_message,
@@ -404,9 +414,7 @@ class WCV_Dashboard_Controller {
                 'is_dismissed'             => wc_string_to_bool( get_user_meta( $vendor_id, 'wcv_store_setup_dismissed_step', true ) ),
                 'should_show_ratings'      => $should_show_ratings,
                 'vendor_shipping_disabled' => $vendor_shipping_disabled,
-            ),
-            'wcvendors/dashboard/',
-            plugin_dir_path( WCV_PLUGIN_FILE ) . 'templates/dashboard/'
+            )
         );
     }
 
@@ -564,7 +572,7 @@ class WCV_Dashboard_Controller {
         $details_display_options = wcv_get_order_details_display_options();
 
         ob_start();
-        wc_get_template(
+        $this->load_dashboard_template(
             'order-popup-details.php',
             array(
                 'billing_details'          => $billing_details,
@@ -582,9 +590,7 @@ class WCV_Dashboard_Controller {
                 'order'                    => $order,
                 'details_display_options'  => $details_display_options,
                 'vendor_shipping_disabled' => wcv_is_vendor_shipping_disabled(),
-            ),
-            'wcvendors/dashboard/',
-            plugin_dir_path( WCV_PLUGIN_FILE ) . 'templates/dashboard/'
+            )
         );
         $html = ob_get_clean();
 
@@ -692,11 +698,9 @@ class WCV_Dashboard_Controller {
     public function genrate_star_rating( $rating ) {
         $stars = '';
         ob_start();
-            wc_get_template(
+            $this->load_dashboard_template(
                 'rating-stars.php',
-                array( 'rating' => $rating ),
-                'wcvendors/dashboard/',
-                plugin_dir_path( WCV_PLUGIN_FILE ) . 'templates/dashboard/'
+                array( 'rating' => $rating )
             );
         $stars = ob_get_clean();
         return $stars;
@@ -794,14 +798,49 @@ class WCV_Dashboard_Controller {
         $quick_links = $this->get_dashboard_quick_links();
         $stats       = apply_filters( 'wcv_dashboard_usage_stats', array() );
 
-        wc_get_template(
+        $this->load_dashboard_template(
             'quick-links.php',
             array(
                 'quick_links' => $quick_links,
                 'stats'       => $stats,
-            ),
-            'wc-vendors/dashboard/',
-            plugin_dir_path( WCV_PLUGIN_FILE ) . 'templates/dashboard/'
+            )
+        );
+    }
+
+    /**
+     * Load dashboard template with backwards compatibility
+     *
+     * Tries to load template from 'wc-vendors/dashboard/' first (correct path),
+     * then falls back to 'wcvendors/dashboard/' (legacy path) for backwards compatibility.
+     *
+     * @since 2.6.4 - Fix wrong template path for new dashboard.
+     *
+     * @param string $template_name Template name/file.
+     * @param array  $args          Arguments to pass to the template.
+     */
+    private function load_dashboard_template( $template_name, $args = array() ) {
+        $template_path = 'wc-vendors/dashboard/';
+        $legacy_path   = 'wcvendors/dashboard/';
+        $default_path  = plugin_dir_path( WCV_PLUGIN_FILE ) . 'templates/dashboard/';
+
+        // Check if template exists in theme with new path.
+        $template = locate_template( array( trailingslashit( $template_path ) . $template_name ) );
+
+        // Check if template exists in theme with legacy path for backwards compatibility.
+        if ( ! $template ) {
+            $legacy_template = locate_template( array( trailingslashit( $legacy_path ) . $template_name ) );
+            if ( $legacy_template ) {
+                $template      = $legacy_template;
+                $template_path = $legacy_path;
+            }
+        }
+
+        // Use WooCommerce template loader with appropriate path.
+        wc_get_template(
+            $template_name,
+            $args,
+            $template_path,
+            $default_path
         );
     }
 

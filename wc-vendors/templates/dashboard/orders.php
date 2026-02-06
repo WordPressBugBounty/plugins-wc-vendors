@@ -7,6 +7,11 @@
  * @author        Jamie Madden, WC Vendors
  * @package       WCVendors/Templates/dashboard/
  * @version       2.0.5
+ * @version       2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+ * @phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery
+ * @phpcs:disable WordPress.DB.DirectDatabaseQuery.NoCaching
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -82,7 +87,7 @@ if ( function_exists( 'wc_print_notices' ) ) {
             $items       = $vendor_order->get_items();
             $order_total = 0;
 
-            $order_products = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}pv_commission WHERE order_id = %d AND vendor_id = %d", $parent_order_id, $user_id ) );
+            $order_products = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$wpdb->prefix}pv_commission WHERE order_id = %d AND vendor_id = %d", $parent_order_id, $user_id ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 
             foreach ( $items as $item ) {
                 $valid_items[] = $item;

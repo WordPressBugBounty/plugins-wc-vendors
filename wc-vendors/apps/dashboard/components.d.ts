@@ -7,6 +7,7 @@ export {}
 
 declare module 'vue' {
   export interface GlobalComponents {
+    CrossPromo: typeof import('./src/components/CrossPromo.vue')['default']
     Dashboard: typeof import('./src/components/Dashboard.vue')['default']
     Filter: typeof import('./src/components/Filter.vue')['default']
     HelpFulLinks: typeof import('./src/components/HelpFulLinks.vue')['default']

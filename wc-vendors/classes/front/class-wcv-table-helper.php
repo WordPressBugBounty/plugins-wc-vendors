@@ -1,4 +1,15 @@
 <?php
+
+/**
+ * Table Helper Class
+ *
+ * Defines relevant methods for generating a display table for public facing pages.
+ *
+ * @version 2.6.5 - Fix security issues.
+ *
+ * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedNamespaceFound
+ * @phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+ */
 namespace WC_Vendors\Classes\Front;
 
 /**

@@ -34,7 +34,7 @@ class WCV_Activate {
         global $wpdb;
         // Check if the report cache is exists.
         $table_name   = $wpdb->prefix . 'wcv_reports_cache';
-        $table_exists = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table_name ) );
+        $table_exists = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table_name ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
         if ( $table_exists ) {
 
             // Check if the report cache is empty.
@@ -87,7 +87,7 @@ class WCV_Activate {
         $table_name = $wpdb->prefix . 'pv_commission';
 
         // Check if the table exists.
-        if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table_name ) ) === $table_name ) {
+        if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table_name ) ) === $table_name ) { // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
             // Get column definitions.
             $columns = $wpdb->get_results( $wpdb->prepare( 'SHOW COLUMNS FROM %i', $table_name ) );
 

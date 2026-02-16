@@ -424,4 +424,31 @@ jQuery(function($) {
       }
     })
     .trigger('change')
+
+  $(document).on('change', '.wcv-datepicker-dashboard-filter', function(e) {
+    const dateInputs = $('.wcv-datepicker-dashboard-filter')
+
+    if (dateInputs.length !== 2) {
+      return true
+    }
+
+    const firstDate = new Date(dateInputs.first().val())
+    const secondDate = new Date(dateInputs.last().val())
+
+    if (isNaN(firstDate.getTime()) || isNaN(secondDate.getTime())) {
+      return true
+    }
+
+    if (firstDate.getTime() > secondDate.getTime()) {
+      alert(wcv_frontend_general.date_range_error_msg)
+      $(this)
+        .closest('form')
+        .one('submit', function(e) {
+          e.preventDefault()
+        })
+      return false
+    }
+
+    return true
+  })
 })

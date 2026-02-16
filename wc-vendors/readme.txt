@@ -3,7 +3,7 @@ Contributors: jkohlbach, RymeraWebCo, Rymera01, smub
 Tags: multivendor, marketplace, multi vendor, product vendors, woocommerce commissions
 Requires at least: 5.5.0
 Tested up to: 6.9
-Stable tag: 2.6.5
+Stable tag: 2.6.6
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -299,6 +299,19 @@ You can report security bugs through the Patchstack Vulnerability Disclosure Pro
 
 == Changelog ==
 
+= Version 2.6.6 - 10th February 2026 =
+ * Feature: AI-powered product moderation and review system
+ * Bug Fix: Cannot close the new vendor setup wizard
+ * Bug Fix: Vendor shop name can be empty in backend, causing broken vendor link
+ * Bug Fix: Vendor product auto-published despite publish approval being disabled due to Trusted Vendor feature
+ * Bug Fix: Missing validation for date range on vendor reports page
+ * Bug Fix: Vendors can still edit products when allow vendors to add/edit products is disabled
+ * Bug Fix: SKU and taxes still show on variable product when Hide SKU & Taxes feature for vendors is enabled
+ * Bug Fix: Commission field does not accept decimal value when comma is used as decimal separator in WooCommerce
+ * Bug Fix: Adding tracking number does not override previous unshipped status message
+ * Bug Fix: Cross-sell and up-sell products not saving in vendor dashboard
+ * Bug Fix: Issues with vendor registration, approval, and denial emails
+
 = Version 2.6.5 - 17th December 2025 =
  * Feature: Introduce hooks for WC Vendors signup.
  * Improvement: Add a "This Month" filter option and set it as the default for the WC Vendors admin dashboard reports.
@@ -341,23 +354,6 @@ You can report security bugs through the Patchstack Vulnerability Disclosure Pro
  * Bug Fix: Create Missing Vendor Sub-orders Tool not working properly
  * Bug Fix: The Add your socials step appears in the onboarding setup progress
  * Bug Fix: Vendor Product Edit Button links to WP Admin instead of Vendor Dashboard
-
-= Version 2.6.1 - 26th August 2025 =
- * Improvement: Options to allow vendor to review or purchase their own products 
- * Improvement: Ensure vendor assignment is preserved during partial imports via woocommerce tool
- * Improvement: Add recommended plugins page to setup wizard
- * Improvement: Update all vendor page trusted, verified, and untrusted wording
- * Bug Fix: Google analytics features not applied to all vendor pages when enabled from vendor dashboard
- * Bug Fix: Extension items not showing on vendor dashboard
- * Bug Fix: Incorrect Pro label and field restriction for store website, phone, and address in vendor management
-
-= Version 2.6.0 - 29th July 2025 =
- * Bug Fix: Vendors should not be able to review their own products
- * Bug Fix: The Vendor should not be able to purchase their own products
- * Bug Fix: Hide the Mark Shipped button setting does not apply to order detail view
- * Bug Fix: Child vendor order date not syncing with parent order
- * Bug Fix: Vendor singular term not applied to My Account dashboard menu
- * Bug Fix: Total Discount Coupon displayed in the vendor's new order email instead of the amount per vendor coupon
 
 
 

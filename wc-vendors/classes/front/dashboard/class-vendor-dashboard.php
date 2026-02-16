@@ -154,8 +154,13 @@ class WCV_Vendor_Dashboard {
      * @param int    $post_id The post ID.
      *
      * @since 2.6.2 - Fix Storefront theme edit product link
+     * @since 2.6.6 - Add admin check to prevent edit post link from being filtered in admin.
      */
     public function vendor_edit_post_link( $link, $post_id ) {
+        if ( is_admin() ) {
+            return $link;
+        }
+
         $curent_user_id = get_current_user_id();
         $is_vendor      = WCV_Vendors::is_vendor( $curent_user_id );
         $can_edit       = wc_string_to_bool( get_option( 'wcvendors_capability_products_edit', 'no' ) );

@@ -22,6 +22,6 @@ echo sprintf( /* translators: %s: site name */ esc_html__( 'This is a notificati
 
 echo sprintf( /* translators: %s: product title */ esc_html__( 'Product title: %s', 'wc-vendors' ), esc_html( $product->get_title() ) ) . "\n\n";
 echo sprintf( /* translators: %s: vendor name */ esc_html__( 'Submitted by: %s', 'wc-vendors' ), esc_html( $vendor_name ) ) . "\n\n";
-echo sprintf( /* translators: %s: edit product URL */ esc_html__( 'Edit product: %s', 'wc-vendors' ), esc_html( admin_url( 'post.php?post=' . $post_id . '&action=edit' ) ) ) . "\n\n";
+echo sprintf( '<a href="%1$s">%2$s</a>', esc_url( admin_url( 'post.php?post=' . $post_id . '&action=edit' ) ), esc_html__( 'Edit product', 'wc-vendors' ) ) . "\n\n";
 
 echo wp_kses_post( apply_filters( 'woocommerce_email_footer_text', get_option( 'woocommerce_email_footer_text' ) ) );

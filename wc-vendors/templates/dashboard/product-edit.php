@@ -38,18 +38,10 @@ $post_status               = ( isset( $product ) && null !== $product ) ? $post_
 <!-- Product Edit Form -->
 <form method="post" action="" id="wcv-product-edit" class="wcv-form">
 
-    <div class="all-100">
-        <?php do_action( 'wcv_before_product_media', $object_id ); ?>
-        <!-- Media uploader -->
-        <div class="wcv-product-media wcv-gap-bottom">
-            <div class="wcv-flex wcv-product-media-wrapper" style="gap: 24px;">
-            <?php do_action( 'wcv_before_media', $object_id ); ?>
-            <?php WCV_Form_Helper::product_media_uploader( $object_id ); ?>
-            <?php do_action( 'wcv_after_media', $object_id ); ?>
-            </div>
-        </div>
-        <?php do_action( 'wcv_after_product_media', $object_id ); ?>
-    </div>
+    <!-- AI Review Suggestions -->
+    <?php if ( is_numeric( $object_id ) ) : ?>
+        <?php WCV_Product_Form::ai_review_suggestions( $object_id ); ?>
+    <?php endif; ?>
 
     <!-- Basic Product Details -->
     <div class="wcv-product-basic wcv-product">
@@ -60,6 +52,20 @@ $post_status               = ( isset( $product ) && null !== $product ) ? $post_
         <?php WCV_Product_Form::description( $object_id, $product_description ); ?>
         <!-- Product Short Description -->
         <?php WCV_Product_Form::short_description( $object_id, $product_short_description ); ?>
+        
+        <div class="all-100">
+            <?php do_action( 'wcv_before_product_media', $object_id ); ?>
+            <!-- Media uploader -->
+            <div class="wcv-product-media wcv-gap-bottom">
+                <div class="wcv-flex wcv-product-media-wrapper" style="gap: 24px;">
+                <?php do_action( 'wcv_before_media', $object_id ); ?>
+                <?php WCV_Form_Helper::product_media_uploader( $object_id ); ?>
+                <?php do_action( 'wcv_after_media', $object_id ); ?>
+                </div>
+            </div>
+            <?php do_action( 'wcv_after_product_media', $object_id ); ?>
+        </div>
+
         <div class="wcv-cols-group wcv-horizontal-gutters">
             <div class="all-50 small-100 tiny-100">
                 <!-- Product Categories -->

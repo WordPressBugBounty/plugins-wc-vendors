@@ -137,17 +137,28 @@ if ( ! class_exists( 'WCVendors_Vendor_Notify_Approved' ) ) :
     /**
      * Trigger the sending of this email.
      *
-     * @param WP_User $user_object        The user object.
-     * @param string  $status               Status of the application.
-     * @param bool    $use_custom_message   Whether to use the custom message.
-     * @param string  $custom_message       Custom message for the email.
+     * @param int    $user_id              The user ID.
+     * @param string $status               Status of the application.
+     * @param bool   $use_custom_message   Whether to use the custom message.
+     * @param string $custom_message       Custom message for the email.
      */
-    public function trigger( $user_object, $status = '', $use_custom_message = false, $custom_message = '' ) {
+    public function trigger( $user_id, $status = '', $use_custom_message = false, $custom_message = '' ) {
 
         $this->setup_locale();
+        if ( ! $user_id || ! is_numeric( $user_id ) || $user_id <= 0 ) {
+            $this->restore_locale();
+            return;
+        }
+
+        $user_object = get_user_by( 'id', $user_id );
+
+        if ( ! $user_object || ! is_a( $user_object, 'WP_User' ) || empty( $user_object->user_email ) ) {
+            $this->restore_locale();
+            return;
+        }
 
         $this->user               = $user_object;
-        $this->user_email         = $this->user->user_email;
+        $this->user_email         = $user_object->user_email;
         $this->custom_message     = sanitize_textarea_field( wp_unslash( $custom_message ) );
         $this->use_custom_message = (bool) $use_custom_message;
         $this->status             = $status;

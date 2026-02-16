@@ -95,13 +95,20 @@ if ( ! class_exists( 'WCVendors_Admin_Notify_Application' ) ) :
          * Trigger the sending of this email.
          *
          * @param int    $vendor_id The order ID.
-         * @param string $status    vendor role.
+         * @param string $status    The status of the application.
          */
         public function trigger( $vendor_id, $status ) {
 
             $this->setup_locale();
 
-            $this->user                        = get_userdata( $vendor_id );
+            $this->user = get_userdata( $vendor_id );
+
+            // Check if user exists before accessing properties.
+            if ( ! $this->user || ! is_a( $this->user, 'WP_User' ) ) {
+                $this->restore_locale();
+                return;
+            }
+
             $this->status                      = $status;
             $this->placeholders['{user_name}'] = $this->user->user_login;
 

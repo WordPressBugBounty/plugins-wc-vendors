@@ -54,7 +54,7 @@ class WCV_Vendor_Admin_Dashboard {
         add_menu_page(
             __( 'Shop Settings', 'wc-vendors' ),
             __( 'Shop Settings', 'wc-vendors' ),
-            'manage_product', // phpcs:ignore
+            'read_products', // phpcs:ignore
             'wcv-vendor-shopsettings',
             array(
                 $this,
@@ -64,7 +64,7 @@ class WCV_Vendor_Admin_Dashboard {
         $hook = add_menu_page(
             __( 'Orders', 'wc-vendors' ),
             __( 'Orders', 'wc-vendors' ),
-            'manage_product', // phpcs:ignore
+            'read_products', // phpcs:ignore
             'wcv-vendor-orders',
             array(
                 'WCV_Vendor_Admin_Dashboard',

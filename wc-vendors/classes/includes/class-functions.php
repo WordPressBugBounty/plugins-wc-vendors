@@ -200,10 +200,13 @@ if ( ! function_exists( 'wcv_vendor_drop_down_options' ) ) {
 /**
  * Set the primary role of the specified user to vendor while retaining all other roles after
  *
- * @param $user WP_User
+ * @param WP_User|int $user The ID of the user or the user object.
+ * @param string      $role The role to set, default 'vendor'.
+ * @param bool        $use_custom_msg Whether to use the custom message.
+ * @param string      $custom_message Custom message for the email.
  *
  * @since 2.1.10
- * @version 2.1.10
+ * @version 2.6.6 - Added use custom message and custom message parameters.
  */
 
 if ( ! function_exists( 'wcv_set_primary_vendor_role' ) ) {
@@ -212,11 +215,13 @@ if ( ! function_exists( 'wcv_set_primary_vendor_role' ) ) {
      *
      * @param WP_User|int $user The ID of the user or the user object.
      * @param string      $role The role to set, default 'vendor'.
+     * @param bool        $use_custom_msg Whether to use the custom message.
+     * @param string      $custom_message Custom message for the email.
      * @return void
-     * @version 2.6.3
+     * @version 2.6.6 - Added use custom message and custom message parameters.
      * @since   2.4.7 - Added default role and allow ID or WP_User object.
      */
-    function wcv_set_primary_vendor_role( $user, $role = 'vendor' ) {
+    function wcv_set_primary_vendor_role( $user, $role = 'vendor', $use_custom_msg = false, $custom_message = '' ) {
         if ( is_int( $user ) ) {
             $user = get_user_by( 'id', $user );
         }
@@ -240,7 +245,7 @@ if ( ! function_exists( 'wcv_set_primary_vendor_role' ) ) {
             }
         }
 
-        do_action( 'wcvendors_set_primary_vendor_role', $user->ID, $role );
+        do_action( 'wcvendors_set_primary_vendor_role', $user->ID, $role, $use_custom_msg, $custom_message );
     }
 }
 

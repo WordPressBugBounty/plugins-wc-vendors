@@ -262,3 +262,35 @@ function wcv_get_order_details_display_options() {
         'billing_address'  => wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_billing', 'no' ) ),
     );
 }
+
+
+/**
+ * Validate date range
+ *
+ * @param string $start_date_input Start date input string.
+ * @param string $end_date_input End date input string.
+ * @return array|\WP_Error Array with timestamps on success, \WP_Error on failure.
+ * @since 2.6.6
+ * @version 2.6.6
+ */
+function wcv_validate_date_range( $start_date_input, $end_date_input ) {
+    $start_timestamp = null;
+    $end_timestamp   = null;
+
+    if ( ! empty( $start_date_input ) && ! empty( $end_date_input ) ) {
+        $start_timestamp = strtotime( $start_date_input );
+        $end_timestamp   = strtotime( $end_date_input );
+
+        if ( $start_timestamp > $end_timestamp ) {
+            return new \WP_Error(
+                'invalid_date_range',
+                __( 'Start date cannot be after end date. Please select a valid date range.', 'wc-vendors' )
+            );
+        }
+    }
+
+    return array(
+        'start' => $start_timestamp,
+        'end'   => $end_timestamp,
+    );
+}

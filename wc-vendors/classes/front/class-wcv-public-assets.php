@@ -447,6 +447,7 @@ class WCV_Public_Assets {
             'invalid_number_format'            => __( 'This value should be a valid number.', 'wc-vendors' ),
             'invalid_price_format'             => __( 'This value should be a valid price.', 'wc-vendors' ),
             'required_file_msg'                => __( 'This field is required. Please upload or choose a file.', 'wc-vendors' ),
+            'date_range_error_msg'             => __( 'Start date cannot be after end date. Please select a valid date range.', 'wc-vendors' ),
         );
 
         $localize_search_args = array(

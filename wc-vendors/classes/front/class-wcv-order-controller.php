@@ -11,6 +11,7 @@ namespace WC_Vendors\Classes\Front;
 use WCV_Vendor_Dashboard;
 use function WC_Vendors\Classes\Includes\wcv_get_order_details_display_options;
 use function WC_Vendors\Classes\Includes\wcv_is_vendor_shipping_disabled;
+use function WC_Vendors\Classes\Includes\wcv_validate_date_range;
 
 /**
  * The WC Vendors order Controller class
@@ -516,14 +517,31 @@ class WCV_Order_Controller {
 
             $update_button = isset( $_POST['update_button'] ) ? sanitize_text_field( wp_unslash( $_POST['update_button'] ) ) : '';
 
+            $start_date_input = isset( $_POST['_wcv_order_start_date_input'] ) ? sanitize_text_field( wp_unslash( $_POST['_wcv_order_start_date_input'] ) ) : '';
+            $end_date_input   = isset( $_POST['_wcv_order_end_date_input'] ) ? sanitize_text_field( wp_unslash( $_POST['_wcv_order_end_date_input'] ) ) : '';
+
+            $valid_date_range = wcv_validate_date_range( $start_date_input, $end_date_input );
+
+            if ( is_wp_error( $valid_date_range ) ) {
+                wc_add_notice( $valid_date_range->get_error_message(), 'error' );
+                return;
+            }
+
+            $start_timestamp = $valid_date_range['start'];
+            $end_timestamp   = $valid_date_range['end'];
+
             // Start Date.
-            if ( isset( $_POST['_wcv_order_start_date_input'] ) || '' === sanitize_text_field( wp_unslash( $_POST['_wcv_order_start_date_input'] ) ) ) {
-                WC()->session->set( 'wcv_order_start_date', strtotime( sanitize_text_field( wp_unslash( $_POST['_wcv_order_start_date_input'] ) ) ) );
+            if ( ! is_null( $start_timestamp ) ) {
+                WC()->session->set( 'wcv_order_start_date', $start_timestamp );
+            } else {
+                WC()->session->__unset( 'wcv_order_start_date' );
             }
 
             // End Date.
-            if ( isset( $_POST['_wcv_order_end_date_input'] ) || '' === sanitize_text_field( wp_unslash( $_POST['_wcv_order_end_date_input'] ) ) ) {
-                WC()->session->set( 'wcv_order_end_date', strtotime( sanitize_text_field( wp_unslash( $_POST['_wcv_order_end_date_input'] ) ) ) );
+            if ( ! is_null( $end_timestamp ) ) {
+                WC()->session->set( 'wcv_order_end_date', $end_timestamp );
+            } else {
+                WC()->session->__unset( 'wcv_order_end_date' );
             }
 
             // Order status.
@@ -1636,6 +1654,9 @@ class WCV_Order_Controller {
         $order->save();
 
         $this->add_order_note( $order_id, $order_note );
+
+        // Clear any existing 'unshipped' notices before marking as shipped.
+        wc_clear_notices();
 
         // Mark as shipped as tracking information has been added.
         self::mark_shipped( $vendor_id, $order_id );

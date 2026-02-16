@@ -307,3 +307,174 @@ if ( ! function_exists( 'wcv_get_attachment_id' ) ) {
         return $attachment_id ? absint( $attachment_id ) : null;
     }
 }
+
+if ( ! function_exists( 'wcv_format_ai_review' ) ) {
+    /**
+     * Format AI review data for display.
+     *
+     * @since 2.6.6
+     *
+     * @param string|array $ai_review_raw      Raw AI review data (serialized or array).
+     * @param bool         $sanitize_html      Whether to allow HTML (true) or strip HTML (false). Default true.
+     * @param bool         $format_field_names Whether to format field names (replace underscores with spaces). Default false.
+     *
+     * @return array Formatted AI review data.
+     */
+    function wcv_format_ai_review( $ai_review_raw, $sanitize_html = true, $format_field_names = false ) {
+        if ( empty( $ai_review_raw ) ) {
+            return array();
+        }
+
+        // If it's a string, try to unserialize it.
+        if ( is_string( $ai_review_raw ) ) {
+            $ai_review_data = maybe_unserialize( $ai_review_raw );
+        } else {
+            $ai_review_data = $ai_review_raw;
+        }
+
+        // If unserialization failed or data is not an array, return empty.
+        if ( ! is_array( $ai_review_data ) || empty( $ai_review_data['completion'] ) ) {
+            return array();
+        }
+
+        $completion = $ai_review_data['completion'];
+
+        // Choose sanitization function based on context.
+        $text_sanitize = $sanitize_html ? 'wp_kses_post' : 'sanitize_textarea_field';
+
+        // Format the data for display.
+        $formatted = array(
+            'status'          => isset( $completion['status'] ) ? sanitize_text_field( $completion['status'] ) : '',
+            'risk_score'      => isset( $completion['risk_score'] ) ? absint( $completion['risk_score'] ) : 0,
+            'vendor_feedback' => isset( $completion['vendor_feedback'] ) ? call_user_func( $text_sanitize, $completion['vendor_feedback'] ) : '',
+            'admin_logic'     => isset( $completion['admin_logic'] ) ? call_user_func( $text_sanitize, $completion['admin_logic'] ) : '',
+            'audit_results'   => array(),
+            'suggestions'     => array(),
+        );
+
+        // Format audit results.
+        if ( ! empty( $completion['audit_results'] ) && is_array( $completion['audit_results'] ) ) {
+            $formatted['audit_results'] = array(
+                'content_safety'     => isset( $completion['audit_results']['content_safety'] ) ? sanitize_text_field( $completion['audit_results']['content_safety'] ) : '',
+                'pricing_integrity'  => isset( $completion['audit_results']['pricing_integrity'] ) ? sanitize_text_field( $completion['audit_results']['pricing_integrity'] ) : '',
+                'visual_consistency' => isset( $completion['audit_results']['visual_consistency'] ) ? sanitize_text_field( $completion['audit_results']['visual_consistency'] ) : '',
+            );
+        }
+
+        // Format auto-fix suggestions.
+        if ( ! empty( $completion['auto_fix_suggestions'] ) && is_array( $completion['auto_fix_suggestions'] ) ) {
+            foreach ( $completion['auto_fix_suggestions'] as $suggestion ) {
+                if ( ! empty( $suggestion['field'] ) && ! empty( $suggestion['suggestion'] ) ) {
+                    $field_name = sanitize_text_field( $suggestion['field'] );
+                    if ( $format_field_names ) {
+                        $field_name = str_replace( '_', ' ', $field_name );
+                    }
+
+                    $formatted['suggestions'][] = array(
+                        'field'      => $field_name,
+                        'suggestion' => wp_kses_post( $suggestion['suggestion'] ),
+                    );
+                }
+            }
+        }
+
+        return $formatted;
+    }
+}
+
+
+if ( ! function_exists( 'wcv_get_pro_user_meta' ) ) {
+
+    /**
+     * Get pro user meta
+     *
+     * @since 2.6.6
+     *
+     * @param int    $user_id The user ID.
+     * @param string $meta_key The meta key.
+     * @param string $default_value The default value.
+     * @return mixed The meta value or default value if not set.
+     */
+    function wcv_get_pro_user_meta( $user_id, $meta_key, $default_value = '' ) {
+
+        if ( ! is_wcv_pro_active() ) {
+            return $default_value;
+        }
+
+        $meta_value = get_user_meta( $user_id, $meta_key, true );
+
+        return ( '' !== $meta_value ) ? $meta_value : $default_value;
+    }
+}
+
+if ( ! function_exists( 'wcv_apply_vendor_trust_status' ) ) {
+
+    /**
+     * Apply vendor trust status to a capability value.
+     *
+     * Centralized function to handle trusted/untrusted vendor logic.
+     * Trusted vendors get the capability enabled, untrusted vendors get it disabled.
+     * This ensures consistent behavior across the plugin.
+     *
+     * @since 2.6.6
+     *
+     * @param bool $capability_value The current capability value to modify.
+     * @param int  $user_id          Optional. The user ID. Default is current user.
+     * @return bool The modified capability value based on vendor trust status.
+     */
+    function wcv_apply_vendor_trust_status( $capability_value, $user_id = 0 ) {
+        if ( 0 === $user_id ) {
+            $user_id = get_current_user_id();
+        }
+
+        $trusted_vendor   = 'yes' === wcv_get_pro_user_meta( $user_id, '_wcv_trusted_vendor', 'no' );
+        $untrusted_vendor = 'yes' === wcv_get_pro_user_meta( $user_id, '_wcv_untrusted_vendor', 'no' );
+
+        if ( $trusted_vendor ) {
+            return true;
+        }
+
+        if ( $untrusted_vendor ) {
+            return false;
+        }
+
+        return $capability_value;
+    }
+}
+
+if ( ! function_exists( 'wcv_get_vendor_post_status' ) ) {
+
+    /**
+     * Get the post status based on vendor trust status.
+     *
+     * Centralized function to determine post status based on trusted/untrusted vendor status.
+     * Trusted vendors can publish directly, untrusted vendors always get pending status.
+     *
+     * @since 2.6.6
+     *
+     * @param string $default_status The default post status if vendor has no special trust status.
+     * @param int    $user_id        Optional. The user ID. Default is current user.
+     * @param bool   $is_draft       Optional. Whether this is a draft submission. Default is false.
+     * @return string The post status ('publish', 'pending', or the default status).
+     */
+    function wcv_get_vendor_post_status( $default_status, $user_id = 0, $is_draft = false ) {
+        if ( 0 === $user_id ) {
+            $user_id = get_current_user_id();
+        }
+
+        $trusted_vendor   = 'yes' === wcv_get_pro_user_meta( $user_id, '_wcv_trusted_vendor', 'no' );
+        $untrusted_vendor = 'yes' === wcv_get_pro_user_meta( $user_id, '_wcv_untrusted_vendor', 'no' );
+
+        // Untrusted vendors always get pending status.
+        if ( $untrusted_vendor ) {
+            return 'pending';
+        }
+
+        // Trusted vendors can publish (unless it's a draft).
+        if ( $trusted_vendor && ! $is_draft ) {
+            return 'publish';
+        }
+
+        return $default_status;
+    }
+}

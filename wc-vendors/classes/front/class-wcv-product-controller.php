@@ -134,10 +134,14 @@ class WCV_Product_Controller {
      *
      * @since   2.5.2
      * @since   2.5.2 - Added extra permission checks
+     * @since   2.6.6 - Added AI Moderate feature.
+     * @version  2.6.6 - Fix vendor still being able to edit products when the submit capability is disabled.
      */
     public function process_submit() {
 
-        if ( ! \WCV_Vendors::is_vendor( get_current_user_id() ) ) {
+        $current_user_id = get_current_user_id();
+
+        if ( ! \WCV_Vendors::is_vendor( $current_user_id ) ) {
             return;
         }
 
@@ -146,18 +150,10 @@ class WCV_Product_Controller {
         }
 
         $can_submit_live     = wc_string_to_bool( get_option( 'wcvendors_capability_products_live', 'no' ) );
+        $can_submit_live     = wcv_apply_vendor_trust_status( $can_submit_live, $current_user_id );
         $current_post_status = isset( $_POST['post_status'] ) ? sanitize_text_field( wp_unslash( $_POST['post_status'] ) ) : '';
         $can_edit_approved   = wc_string_to_bool( get_option( 'wcvendors_capability_products_approved', 'no' ) );
-        $trusted_vendor      = 'yes' === get_user_meta( get_current_user_id(), '_wcv_trusted_vendor', true ) ? true : false;
-        $untrusted_vendor    = 'yes' === get_user_meta( get_current_user_id(), '_wcv_untrusted_vendor', true ) ? true : false;
-        $product_redirect    = get_option( 'wcvendors_save_product_redirect', 'empty' );
-
-        if ( $trusted_vendor ) {
-            $can_submit_live = true;
-        }
-        if ( $untrusted_vendor ) {
-            $can_submit_live = false;
-        }
+        $product_redirect    = wcv_get_pro_option( 'wcvendors_save_product_redirect', 'edit' );
 
         $text = array(
             'notice' => '',
@@ -509,6 +505,7 @@ class WCV_Product_Controller {
      *
      * @since       2.5.2
      * @since     1.5.9
+     * @version  2.6.6 - Fix vendor still being able to edit products when the submit capability is disabled.
      *
      * @param     int $post_id The post ID of the product to save.
      *
@@ -523,6 +520,7 @@ class WCV_Product_Controller {
         $can_edit_live       = wc_string_to_bool( get_option( 'wcvendors_capability_products_edit', 'no' ) );
         $can_edit_approved   = wc_string_to_bool( get_option( 'wcvendors_capability_products_approved', 'no' ) );
         $post_status         = '';
+        $old_post_status     = '';
         $current_post_status = isset( $_POST['post_status'] ) ? sanitize_text_field( wp_unslash( $_POST['post_status'] ) ) : '';
 
         if ( isset( $_POST['draft_button'] ) ) {
@@ -544,17 +542,10 @@ class WCV_Product_Controller {
                 }
             }
         }
-
+        $current_user_id = get_current_user_id();
         // Bypass globals for live product submissions.
-        $trusted_vendor   = 'yes' === get_user_meta( get_current_user_id(), '_wcv_trusted_vendor', true ) ? true : false;
-        $untrusted_vendor = 'yes' === get_user_meta( get_current_user_id(), '_wcv_untrusted_vendor', true ) ? true : false;
-
-        if ( $trusted_vendor && ! isset( $_POST['draft_button'] ) ) {
-            $post_status = 'publish';
-        }
-        if ( $untrusted_vendor ) {
-            $post_status = 'pending';
-        }
+        $is_draft    = isset( $_POST['draft_button'] );
+        $post_status = wcv_get_vendor_post_status( $post_status, $current_user_id, $is_draft );
 
         $product_type = empty( $_POST['product-type'] ) ? 'simple' : sanitize_title( stripslashes( sanitize_text_field( wp_unslash( $_POST['product-type'] ) ) ) );
         $categories   = isset( $_POST['product_cat'] ) ? wc_clean( $_POST['product_cat'] ) : get_option( 'default_product_cat' ); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
@@ -577,6 +568,8 @@ class WCV_Product_Controller {
         do_action( 'wcvendors_before_product_save', $post_id );
 
         if ( 0 !== $post_id ) {
+            $old_post_status = get_post_status( $post_id );
+
             $_product['ID'] = $post_id;
             if ( $this->allow_markup ) {
                 kses_remove_filters();
@@ -731,6 +724,20 @@ class WCV_Product_Controller {
         }
 
         $this->check_coupons();
+
+        // Clear AI suggestions meta key and change request message when vendor saves the product.
+        $product_obj = wc_get_product( $product_id );
+        if ( $product_obj ) {
+            $product_obj->delete_meta_data( '_wcv_show_ai_suggestions' );
+            $product_obj->delete_meta_data( 'wcv_change_request_message' );
+            $product_obj->delete_meta_data( '_saai_vendors_product_moderation_result' );
+            $product_obj->save_meta_data();
+        }
+
+        // Fire hook when product status changes to pending (not if already pending).
+        if ( 'pending' === $post_status && 'pending' !== $old_post_status ) {
+            do_action( 'wcvendors_product_saved_to_pending', $product_id, $old_post_status, $post_status );
+        }
 
         do_action( 'wcv_save_product', $product_id );
 
@@ -1236,18 +1243,20 @@ class WCV_Product_Controller {
             }
         }
 
-        // Upsells.
-        if ( isset( $_POST['upsell_ids'] ) && ! empty( $_POST['upsell_ids'] ) ) {
-            update_post_meta( $post_id, '_upsell_ids', sanitize_text_field( wp_unslash( $_POST['upsell_ids'] ) ) );
-        } else {
-            update_post_meta( $post_id, '_upsell_ids', '' );
-        }
+        $linked_products = array(
+            'upsell_ids'    => '_upsell_ids',
+            'crosssell_ids' => '_crosssell_ids',
+        );
 
-        // Cross sells.
-        if ( isset( $_POST['crosssell_ids'] ) && ! empty( $_POST['crosssell_ids'] ) ) {
-            update_post_meta( $post_id, '_crosssell_ids', sanitize_text_field( wp_unslash( $_POST['crosssell_ids'] ) ) );
-        } else {
-            update_post_meta( $post_id, '_crosssell_ids', '' );
+        foreach ( $linked_products as $post_key => $meta_key ) {
+            if ( isset( $_POST[ $post_key ] ) && is_array( $_POST[ $post_key ] ) && ! empty( $_POST[ $post_key ] ) ) {
+                // Unslash and sanitize the input as an array of absolute integers.
+                $product_ids = array_filter( array_map( 'absint', (array) wp_unslash( $_POST[ $post_key ] ) ) );
+                update_post_meta( $post_id, $meta_key, $product_ids );
+            } else {
+                // Use an empty array for consistency with WooCommerce.
+                update_post_meta( $post_id, $meta_key, array() );
+            }
         }
 
         // Product template page.
@@ -1958,24 +1967,17 @@ class WCV_Product_Controller {
 
         $this->max_num_pages = $result_object->max_num_pages;
 
+        $current_user_id    = get_current_user_id();
         $can_edit           = wc_string_to_bool( get_option( 'wcvendors_capability_products_edit', 'no' ) );
+        $can_edit           = wcv_apply_vendor_trust_status( $can_edit, $current_user_id );
         $can_edit_approved  = wc_string_to_bool( get_option( 'wcvendors_capability_products_approved', 'no' ) );
         $disable_delete     = wc_string_to_bool( get_option( 'wcvendors_capability_product_delete', 'no' ) );
         $allow_duplicate    = wc_string_to_bool( get_option( 'wcvendors_capability_product_duplicate', 'no' ) );
-        $trusted_vendor     = ( get_user_meta( get_current_user_id(), '_wcv_trusted_vendor', true ) === 'yes' ) ? true : false;
-        $untrusted_vendor   = ( get_user_meta( get_current_user_id(), '_wcv_untrusted_vendor', true ) === 'yes' ) ? true : false;
-        $lock_edit_products = ( get_user_meta( get_current_user_id(), '_wcv_lock_edit_products_vendor', true ) === 'yes' ) ? true : false;
+        $lock_edit_products = 'yes' === wcv_get_pro_user_meta( $current_user_id, '_wcv_lock_edit_products_vendor', 'no' ) ? true : false;
         $can_submit         = wc_string_to_bool( get_option( 'wcvendors_capability_products_enabled', 'no' ) );
 
-        if ( $trusted_vendor ) {
-            $can_edit = true;
-        }
-        if ( $untrusted_vendor ) {
-            $can_edit = false;
-        }
-
         // get the page product listing page number and pass that value with edit link.
-        $page_no = ( 1 < $result_object->query['paged'] && 'list' === get_option( 'wcvendors_save_product_redirect', 'empty' ) ) ? '?wcv_paged_id=' . $result_object->query['paged'] : '';
+        $page_no = ( 1 < $result_object->query['paged'] && 'list' === wcv_get_pro_option( 'wcvendors_save_product_redirect', 'edit' ) ) ? '?wcv_paged_id=' . $result_object->query['paged'] : '';
 
         foreach ( $rows as $row ) {
 
@@ -2001,7 +2003,7 @@ class WCV_Product_Controller {
                             'label'  => __( 'View', 'wc-vendors' ),
                             'class'  => '',
                             'url'    => get_permalink( $product->get_id() ),
-                            'target' => wc_string_to_bool( get_option( 'wcvendors_dashboard_view_product_new_window', 'yes' ) ) ? '_blank' : '_self',
+                            'target' => wc_string_to_bool( wcv_get_pro_option( 'wcvendors_dashboard_view_product_new_window', 'yes' ) ) ? '_blank' : '_self',
                             'icon'   => 'wcv-icon-view',
                         )
                     ),
@@ -2122,10 +2124,10 @@ class WCV_Product_Controller {
             return;
         }
 
-        $lock_new_products   = apply_filters( 'wcv_product_table_lock_new_products', ( 'yes' === get_user_meta( get_current_user_id(), '_wcv_lock_new_products_vendor', true ) ) ? true : false );
-        $can_submit_products = get_option( 'wcvendors_can_submit_products', '' );
-		$search              = isset( $_POST['wcv-search'] ) ? $_POST['wcv-search'] : ''; // phpcs:ignore
-        $can_submit          = wc_string_to_bool( get_option( 'wcvendors_capability_products_enabled', 'no' ) );
+        $current_user_id   = get_current_user_id();
+        $lock_new_products = apply_filters( 'wcv_product_table_lock_new_products', ( 'yes' === wcv_get_pro_user_meta( $current_user_id, '_wcv_lock_new_products_vendor', 'no' ) ) ? true : false );
+        $search            = isset( $_POST['wcv-search'] ) ? sanitize_text_field( wp_unslash( $_POST['wcv-search'] ) ) : '';
+        $can_submit        = wc_string_to_bool( get_option( 'wcvendors_capability_products_enabled', 'no' ) );
 
         $pagination_wrapper = apply_filters(
             'wcv_product_paginate_wrapper',
@@ -2257,7 +2259,7 @@ class WCV_Product_Controller {
                 $attribute_taxonomy->attribute_type = 'select';
             }
 
-        $attribute_terms_allowed = wc_string_to_bool( get_option( 'wcvendors_allow_vendor_attribute_terms', 'no' ) ) && is_wcv_pro_active();
+        $attribute_terms_allowed = wc_string_to_bool( wcv_get_pro_option( 'wcvendors_allow_vendor_attribute_terms', 'no' ) );
 
         include wcv_deprecated_filter( 'wcvendors_pro_product_attribute_path', '2.5.2', 'wcvendors_product_attribute_path', 'forms/partials/wcvendors-product-attribute.php' );
 
@@ -2271,7 +2273,7 @@ class WCV_Product_Controller {
      */
     public static function json_add_new_attribute() {
 
-        $attribute_terms_allowed = wc_string_to_bool( get_option( 'wcvendors_allow_vendor_attribute_terms', 'no' ) ) && is_wcv_pro_active();
+        $attribute_terms_allowed = wc_string_to_bool( wcv_get_pro_option( 'wcvendors_allow_vendor_attribute_terms', 'no' ) );
 
         ob_start();
 
@@ -3220,7 +3222,7 @@ class WCV_Product_Controller {
             $row_data['published_date'] = $product->get_date_created()->date( $this->date_format );
         }
         $row_data['status'] = array(
-            'class' => 'draft' === $product->get_status() ? 'draft' : 'hidden',
+            'class' => sanitize_html_class( $product->get_status() ),
             'label' => self::product_status( $product->get_status() ),
         );
 

@@ -52,7 +52,7 @@ $completed_steps = count( $completed_steps );
             <div class="wcv-store-setup-steps-header wcv-flex">
                 <h3 class="wcv-heading"><?php esc_html_e( 'Complete your setup', 'wc-vendors' ); ?></h3>
                 <a href="#" class="wcv-store-setup-dismiss" title="<?php esc_attr_e( 'Dismiss', 'wc-vendors' ); ?>">
-                    <?php echo wp_kses_post( wcv_get_icon( 'wcv-icon wcv-icon-md', 'wcv-icon-times' ) ); ?>
+                    <?php echo wp_kses( wcv_get_icon( 'wcv-icon wcv-icon-md', 'wcv-icon-times' ), wcv_allowed_html_tags() ); ?>
                 </a>
             </div>
             <div class="wcv-store-setup-content-wrapper">
@@ -74,7 +74,7 @@ $completed_steps = count( $completed_steps );
                                     <p class="wcv-store-setup-step-description"><?php echo esc_html( $step['description'] ); ?></p>
                                     <?php if ( ! $step['is_complete'] ) : ?>
                                         <p class="wcv-store-setup-step-proceed  <?php echo esc_attr( $step['id'] === $current_step ? 'current' : '' ); ?>">
-                                            <?php echo wp_kses_post( wcv_get_icon( 'wcv-icon wcv-icon-20 wcv-icon-middle', 'wcv-arrow-right-outline' ) ); ?>
+                                            <?php echo wp_kses( wcv_get_icon( 'wcv-icon wcv-icon-20 wcv-icon-middle', 'wcv-arrow-right-outline' ), wcv_allowed_html_tags() ); ?>
                                         </p>
                                     <?php endif; ?>
                                 </a>

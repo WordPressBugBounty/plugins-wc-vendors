@@ -12,6 +12,7 @@
 
 namespace WC_Vendors\Classes\Front;
 
+use function WC_Vendors\Classes\Includes\wcv_validate_date_range;
 /**
  * WCV Reports Controller class
  *
@@ -185,6 +186,7 @@ class WCV_Reports_Controller {
      *  Process the date range form submission from the front end.
      *
      * @since    2.5.2
+     * @version  2.6.6 - Added date range validation.
      */
     public function process_submit() {
 
@@ -201,14 +203,31 @@ class WCV_Reports_Controller {
             return;
         }
 
+        $start_date_input = isset( $_POST['_wcv_dashboard_start_date_input'] ) ? sanitize_text_field( wp_unslash( $_POST['_wcv_dashboard_start_date_input'] ) ) : '';
+        $end_date_input   = isset( $_POST['_wcv_dashboard_end_date_input'] ) ? sanitize_text_field( wp_unslash( $_POST['_wcv_dashboard_end_date_input'] ) ) : '';
+
+        $valid_date_range = wcv_validate_date_range( $start_date_input, $end_date_input );
+
+        if ( is_wp_error( $valid_date_range ) ) {
+            wc_add_notice( $valid_date_range->get_error_message(), 'error' );
+            return;
+        }
+
+        $start_timestamp = $valid_date_range['start'];
+        $end_timestamp   = $valid_date_range['end'];
+
         // Start Date.
-        if ( isset( $_POST['_wcv_dashboard_start_date_input'] ) && ! empty( sanitize_text_field( wp_unslash( $_POST['_wcv_dashboard_start_date_input'] ) ) ) ) {
-            WC()->session->set( 'wcv_dashboard_start_date', strtotime( sanitize_text_field( wp_unslash( $_POST['_wcv_dashboard_start_date_input'] ) ) ) );
+        if ( ! is_null( $start_timestamp ) ) {
+            WC()->session->set( 'wcv_dashboard_start_date', $start_timestamp );
+        } else {
+            WC()->session->__unset( 'wcv_dashboard_start_date' );
         }
 
         // End Date.
-        if ( isset( $_POST['_wcv_dashboard_end_date_input'] ) && ! empty( sanitize_text_field( wp_unslash( $_POST['_wcv_dashboard_end_date_input'] ) ) ) ) {
-            WC()->session->set( 'wcv_dashboard_end_date', strtotime( sanitize_text_field( wp_unslash( $_POST['_wcv_dashboard_end_date_input'] ) ) ) );
+        if ( ! is_null( $end_timestamp ) ) {
+            WC()->session->set( 'wcv_dashboard_end_date', $end_timestamp );
+        } else {
+            WC()->session->__unset( 'wcv_dashboard_end_date' );
         }
     }
 

@@ -1,5 +1,19 @@
 Changelog for WC Vendors Marketplace
 
+Version 2.6.6 - 10th February 2026
+
+ * Feature: AI-powered product moderation and review system
+ * Bug Fix: Cannot close the new vendor setup wizard
+ * Bug Fix: Vendor shop name can be empty in backend, causing broken vendor link
+ * Bug Fix: Vendor product auto-published despite publish approval being disabled due to Trusted Vendor feature
+ * Bug Fix: Missing validation for date range on vendor reports page
+ * Bug Fix: Vendors can still edit products when allow vendors to add/edit products is disabled
+ * Bug Fix: SKU and taxes still show on variable product when Hide SKU & Taxes feature for vendors is enabled
+ * Bug Fix: Commission field does not accept decimal value when comma is used as decimal separator in WooCommerce
+ * Bug Fix: Adding tracking number does not override previous unshipped status message
+ * Bug Fix: Cross-sell and up-sell products not saving in vendor dashboard
+ * Bug Fix: Issues with vendor registration, approval, and denial emails
+
 Version 2.6.5 - 17th December 2025
 
  * Feature: Introduce hooks for WC Vendors signup.

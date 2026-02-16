@@ -284,13 +284,15 @@ class WCV_Product_Form {
      *  Output save button
      *
      * @since    2.5.2
+     * @version  2.6.6 - Fix vendor still being able to edit products when the submit capability is disabled.
      *
      * @param    string $button_text text for the button.
      */
     public static function save_button( $button_text ) {
-
+        $current_user_id = get_current_user_id();
         $can_edit        = wc_string_to_bool( get_option( 'wcvendors_capability_products_edit', 'no' ) );
         $can_submit_live = wc_string_to_bool( get_option( 'wcvendors_capability_products_live', 'no' ) );
+        $can_submit_live = wcv_apply_vendor_trust_status( $can_submit_live, $current_user_id );
 
         if ( ! $can_submit_live && ! $can_edit ) {
             $button_text = __( 'Save Pending', 'wc-vendors' );
@@ -2205,5 +2207,95 @@ class WCV_Product_Form {
                 )
             );
         }
+    }
+
+    /**
+     * Format AI review data for display.
+     *
+     * @param string|array $ai_review_raw Raw AI review data (serialized or array).
+     *
+     * @return array Formatted AI review data.
+     */
+    public static function format_ai_review( $ai_review_raw ) {
+        // Use shared helper function with HTML sanitization enabled (for frontend display).
+        return wcv_format_ai_review( $ai_review_raw, true, false );
+    }
+
+    /**
+     * Display AI review suggestions.
+     *
+     * @param int $product_id Product ID.
+     *
+     * @return void
+     */
+    public static function ai_review_suggestions( $product_id ) {
+        if ( ! $product_id ) {
+            return;
+        }
+
+        $product = wc_get_product( $product_id );
+        if ( ! $product ) {
+            return;
+        }
+
+        // Only show suggestions if admin has requested changes with suggestions.
+        $show_suggestions = $product->get_meta( '_wcv_show_ai_suggestions' );
+        if ( 'yes' !== $show_suggestions ) {
+            return;
+        }
+
+        // Get AI review from product meta.
+        $ai_review_raw = $product->get_meta( '_saai_vendors_product_moderation_result' );
+        if ( empty( $ai_review_raw ) ) {
+            return;
+        }
+
+        $ai_review = self::format_ai_review( $ai_review_raw );
+
+        // Get vendor feedback from AI review.
+        $vendor_feedback = ! empty( $ai_review['vendor_feedback'] ) ? $ai_review['vendor_feedback'] : '';
+
+        // Only show if there are suggestions or vendor feedback.
+        $has_suggestions = ! empty( $ai_review['suggestions'] ) && is_array( $ai_review['suggestions'] );
+        if ( ! $has_suggestions && empty( $vendor_feedback ) ) {
+            return;
+        }
+
+        ?>
+        <div class="wcv-ai-review-suggestions wcv-gap-bottom">
+            <div class="control-group no-margin">
+                <label class="wcv-ai-review-suggestions-title" onclick="jQuery(this).next('.wcv-ai-review-suggestions-content').slideToggle(); jQuery(this).find('.wcv-ai-review-toggle-icon').toggleClass('wcv-collapsed');">
+                    <?php esc_html_e( 'Review Suggestions', 'wc-vendors' ); ?>
+                    <span class="wcv-ai-review-toggle-icon wcv-collapsed">
+                        <?php echo wp_kses( wcv_get_icon( 'wcv-icon wcv-icon-24', 'wcv-icon-caret-down' ), wcv_allowed_html_tags() ); ?>
+                    </span>
+                </label>
+                <div class="wcv-ai-review-suggestions-content" style="display: none;">
+                    <?php if ( ! empty( $vendor_feedback ) ) : ?>
+                        <div class="wcv-ai-review-vendor-feedback">
+                            <div class="wcv-ai-review-note-text">
+                                <?php echo wp_kses_post( $vendor_feedback ); ?>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if ( $has_suggestions ) : ?>
+                        <div class="wcv-ai-review-suggestions-list">
+                            <?php foreach ( $ai_review['suggestions'] as $index => $suggestion ) : ?>
+                                <div class="wcv-ai-review-suggestion-item">
+                                    <div class="wcv-ai-review-suggestion-field">
+                                        <strong><?php echo esc_html( str_replace( '_', ' ', $suggestion['field'] ) ); ?></strong>
+                                    </div>
+                                    <div class="wcv-ai-review-suggestion-text">
+                                        <?php echo wp_kses_post( $suggestion['suggestion'] ); ?>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+        <?php
     }
 }

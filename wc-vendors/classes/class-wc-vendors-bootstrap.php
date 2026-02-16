@@ -396,7 +396,8 @@ class WC_Vendors_Bootstrap {
             include_once WCV_PLUGIN_DIR . 'classes/admin/class-wcv-plugin-installer.php';
             include_once WCV_PLUGIN_DIR . 'classes/admin/class-wcv-license-page.php';
             include_once WCV_PLUGIN_DIR . 'classes/admin/class-wcv-admin-acfwf-promo-page.php';
-            include_once WCV_PLUGIN_DIR . 'classes/admin/pro-admin-functions.php';
+            include_once WCV_PLUGIN_DIR . 'classes/admin/class-admin-vendor-product.php';
+            include_once WCV_PLUGIN_DIR . 'classes/admin/wcv-admin-functions.php';
 
             new WCV_Admin_Lite_Bar();
             new WCV_Vendor_Applicants();

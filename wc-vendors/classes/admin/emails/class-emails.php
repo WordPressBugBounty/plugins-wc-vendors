@@ -40,7 +40,7 @@ class WCV_Emails {
         add_filter( 'woocommerce_order_needs_shipping_address', array( $this, 'add_customer_shipping_address' ), 10, 1 );
 
         // Trigger application emails as required.
-        add_action( 'wcvendors_approve_vendor', array( $this, 'vendor_application' ), 10, 3 );
+        add_action( 'wcvendors_set_primary_vendor_role', array( $this, 'send_application_emails' ), 10, 4 );
         add_action( 'wcvendors_deny_vendor', array( $this, 'deny_application' ), 10, 3 );
 
         // WooCommerce Product Enquiry Compatibility.
@@ -274,30 +274,40 @@ class WCV_Emails {
     }
 
     /**
-     * Trigger the vendor application emails
+     * Send application emails when vendor submits application
      *
-     * @since 2.0.0
-     * @version 2.1.7
+     * @since 2.6.6
+     * @version 2.6.6
      *
-     * @param WP_User $user_object        The user object.
-     * @param bool    $use_custom_msg Whether to use the custom message.
-     * @param string  $custom_message The custom message.
+     * @param int    $user_id The user ID.
+     * @param string $role    The role.
+     * @param bool   $use_custom_msg Whether to use the custom message.
+     * @param string $custom_message Custom message for the email.
      */
-    public function vendor_application( $user_object, $use_custom_msg = false, $custom_message = '' ) {
+    public function send_application_emails( $user_id, $role = '', $use_custom_msg = false, $custom_message = '' ) {
+        if ( ! $user_id || ! is_numeric( $user_id ) || $user_id <= 0 ) {
+            return;
+        }
 
-        $user_id = $user_object->ID;
-        $roles   = $user_object->roles;
+        $user_object = get_userdata( $user_id );
 
-        /**
-         * If the user has the pending_vendor role, send the application email
-         */
-        if ( in_array( 'pending_vendor', $roles, true ) ) {
+        if ( ! $user_object || ! is_a( $user_object, 'WP_User' ) || empty( $user_object->user_email ) ) {
+            return;
+        }
+
+        $roles = $user_object->roles;
+
+        if ( 'pending_vendor' === $role && in_array( 'pending_vendor', $roles, true ) ) {
+
             $status = 'pending';
             WC()->mailer()->emails['WCVendors_Vendor_Notify_Application']->trigger( $user_id, $status );
             WC()->mailer()->emails['WCVendors_Admin_Notify_Application']->trigger( $user_id, $status );
-        } elseif ( in_array( 'vendor', $roles, true ) ) {
+        }
+
+        if ( 'vendor' === $role && in_array( 'vendor', $roles, true ) ) {
+
             $status = 'approved';
-            WC()->mailer()->emails['WCVendors_Vendor_Notify_Approved']->trigger( $user_object, $status, $use_custom_msg, $custom_message );
+            WC()->mailer()->emails['WCVendors_Vendor_Notify_Approved']->trigger( $user_id, $status, $use_custom_msg, $custom_message );
             WC()->mailer()->emails['WCVendors_Admin_Notify_Approved']->trigger( $user_id, $status );
         }
     }

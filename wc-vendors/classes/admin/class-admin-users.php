@@ -24,6 +24,7 @@ class WCV_Admin_Users {
 
         add_action( 'edit_user_profile', array( $this, 'show_extra_profile_fields' ) );
         add_action( 'edit_user_profile_update', array( $this, 'save_extra_profile_fields' ) );
+        add_action( 'user_profile_update_errors', array( $this, 'validate_shop_name' ), 10, 3 );
         add_action( 'profile_update', array( $this, 'keep_vendor_roles_after_update' ), 10, 2 );
 
         add_filter( 'add_menu_classes', array( $this, 'show_pending_number' ) );
@@ -48,6 +49,7 @@ class WCV_Admin_Users {
             // WC > Product page fixes.
             add_action( 'load-post-new.php', array( $this, 'confirm_access_to_add' ) );
             add_action( 'load-edit.php', array( $this, 'edit_nonvendors' ) );
+            add_action( 'load-post.php', array( $this, 'confirm_access_to_edit' ) );
             add_filter( 'views_edit-product', array( $this, 'hide_nonvendor_links' ) );
 
             // Filter user attachments so they only see their own attachements.
@@ -73,6 +75,77 @@ class WCV_Admin_Users {
         // Add vendor status meta key after new user is created.
         add_action( 'user_register', array( $this, 'add_vendor_status_meta' ) );
         add_action( 'set_user_role', array( $this, 'update_vendor_status_meta' ), 10, 3 );
+    }
+
+    /**
+     * Validate shop name is not empty to prevent 404 errors with shop slug.
+     *
+     * @since 2.6.6
+     * @version 2.6.6 - Validate shop name is not empty to prevent 404 errors with shop slug.
+     *
+     * @param object $errors The errors object.
+     * @param bool   $update Whether the user is being updated.
+     * @param object $user The user object.
+     */
+    public function validate_shop_name( $errors, $update, $user ) {
+
+        if ( ! $update ) {
+            return;
+        }
+
+        $user_id = $user->ID;
+
+        if ( ! WCV_Vendors::is_vendor( $user_id ) ) {
+            return;
+        }
+
+        $action_nonce = "update-user_{$user_id}";
+
+		if ( ! isset( $_POST[ '_wpnonce' ] ) || ! wp_verify_nonce( $_POST[ '_wpnonce' ], $action_nonce ) ) { // phpcs:ignore
+            return;
+        }
+
+        $shop_name = isset( $_POST['pv_shop_name'] ) ? sanitize_text_field( wp_unslash( $_POST['pv_shop_name'] ) ) : '';
+
+        if ( empty( $shop_name ) ) {
+            $errors->add( 'shop_name_empty', __( 'Shop name cannot be empty', 'wc-vendors' ) );
+        }
+    }
+
+    /**
+     * Confirm access to edit product
+     *
+     * @since 2.6.6
+     * @version 2.6.6 - Fix vendor still being able to edit products when the submit capability is disabled.
+     *
+     * @return void
+     */
+    public function confirm_access_to_edit() {
+
+        if ( ! WCV_Vendors::is_vendor( get_current_user_id() ) ) {
+            return;
+        }
+
+        // We use load-post.php hook, which is a WordPress core admin load action where nonces aren't typically used. so do not need nonce verification.
+        $post_id = isset( $_GET['post'] ) ? absint( $_GET['post'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+        if ( empty( $post_id ) || 'product' !== get_post_type( $post_id ) ) {
+            return;
+        }
+
+        $can_submit = wc_string_to_bool( get_option( 'wcvendors_capability_products_enabled', 'no' ) );
+        $can_edit   = wc_string_to_bool( get_option( 'wcvendors_capability_products_edit', 'no' ) );
+
+        if ( ! $can_submit || ! $can_edit ) {
+            wp_die(
+                sprintf(
+                    '%1$s <a href="%2$s">%3$s</a>',
+                    esc_html__( 'You are not allowed to edit products.', 'wc-vendors' ),
+                    esc_url( admin_url( 'edit.php?post_type=product' ) ),
+                    esc_html__( 'Go Back', 'wc-vendors' )
+                )
+            );
+        }
     }
 
     /**
@@ -398,6 +471,7 @@ class WCV_Admin_Users {
      * @param int $vendor_id Vendor ID.
      *
      * @version 2.4.8 - add nonce check.
+     * @version 2.6.6 - Validate shop name is not empty to prevent 404 errors with shop slug.
      *
      * @return bool
      */
@@ -417,6 +491,14 @@ class WCV_Admin_Users {
             return;
         }
 
+        // Validate shop name is not empty to prevent 404 errors with shop slug.
+        if ( isset( $_POST['pv_shop_name'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+            $shop_name_trimmed = trim( sanitize_text_field( wp_unslash( $_POST['pv_shop_name'] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+            if ( empty( $shop_name_trimmed ) ) {
+                return;
+            }
+        }
+
         $users = get_users(
             array(
                 'meta_key'   => 'pv_shop_slug', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
@@ -426,6 +508,12 @@ class WCV_Admin_Users {
 		if ( empty( $users ) || $users[0]->ID == $vendor_id ) { // phpcs:ignore
             $shop_name = isset( $_POST['pv_shop_name'] ) ? sanitize_text_field( wp_unslash( $_POST['pv_shop_name'] ) ) : '';
             $shop_slug = isset( $_POST['pv_shop_name'] ) ? sanitize_title( wp_unslash( $_POST['pv_shop_name'] ) ) : '';
+
+            // If sanitization results in an empty slug, use vendor ID as fallback.
+            if ( empty( $shop_slug ) ) {
+                $shop_slug = 'vendor-' . $vendor_id;
+            }
+
             update_user_meta( $vendor_id, 'pv_shop_name', $shop_name );
             update_user_meta( $vendor_id, 'pv_shop_slug', $shop_slug );
         }

@@ -29,7 +29,7 @@ do_action( 'woocommerce_email_header', $email_heading, $email );
 <p>
     <?php printf( /* translators: %s: product title */ esc_html__( 'Product title: %s', 'wc-vendors' ), esc_html( $product_name ) ); ?><br/>
     <?php printf( /* translators: %s: vendor name */ esc_html__( 'Submitted by: %s', 'wc-vendors' ), esc_html( $vendor_name ) ); ?><br/>
-    <?php printf( /* translators: %s: edit product URL */ esc_html__( 'Edit product: %s', 'wc-vendors' ), esc_html( admin_url( 'post.php?post=' . $post_id . '&action=edit' ) ) ); ?>
+    <?php printf( '<a href="%1$s">%2$s</a>', esc_url( admin_url( 'post.php?post=' . $post_id . '&action=edit' ) ), esc_html__( 'Edit product', 'wc-vendors' ) ); ?>
     <br/>
 </p>
 

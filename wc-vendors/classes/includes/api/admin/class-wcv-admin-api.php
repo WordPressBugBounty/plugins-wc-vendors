@@ -67,6 +67,66 @@ class WCV_Admin_API extends WCV_API {
             'get_vendor_details',
             WP_REST_Server::READABLE
         );
+
+        $this->register_route(
+            '/products',
+            'get_products',
+            WP_REST_Server::READABLE,
+            array(
+                'status'    => array(
+                    'description'       => __( 'Product status (published, pending, or all).', 'wc-vendors' ),
+                    'type'              => 'string',
+                    'default'           => 'all',
+                    'sanitize_callback' => 'sanitize_text_field',
+                ),
+                'search'    => array(
+                    'description'       => __( 'Search products by name.', 'wc-vendors' ),
+                    'type'              => 'string',
+                    'sanitize_callback' => 'sanitize_text_field',
+                ),
+                'vendor_id' => array(
+                    'description'       => __( 'Filter by vendor ID.', 'wc-vendors' ),
+                    'type'              => 'integer',
+                    'sanitize_callback' => 'absint',
+                ),
+                'page'      => array(
+                    'description'       => __( 'Page number for pagination.', 'wc-vendors' ),
+                    'type'              => 'integer',
+                    'default'           => 1,
+                    'sanitize_callback' => 'absint',
+                ),
+                'per_page'  => array(
+                    'description'       => __( 'Number of items per page.', 'wc-vendors' ),
+                    'type'              => 'integer',
+                    'default'           => 10,
+                    'sanitize_callback' => 'absint',
+                ),
+            )
+        );
+
+        $this->register_route(
+            '/products/(?P<id>\d+)/approve',
+            'approve_product',
+            WP_REST_Server::EDITABLE
+        );
+
+        $this->register_route(
+            '/products/(?P<id>\d+)/request-change',
+            'request_product_change',
+            WP_REST_Server::EDITABLE
+        );
+
+        $this->register_route(
+            '/products/(?P<id>\d+)/unpublish',
+            'unpublish_product',
+            WP_REST_Server::EDITABLE
+        );
+
+        $this->register_route(
+            '/products/vendors',
+            'get_vendors_list',
+            WP_REST_Server::READABLE
+        );
     }
 
     /**
@@ -125,6 +185,7 @@ class WCV_Admin_API extends WCV_API {
      *
      * @param WP_REST_Request $request Full details about the request.
      *
+     * @version 2.6.6 -  Prevent saving settings for empty shop name.
      * @return WP_Error|WP_REST_Response
      */
     public function save_settings( $request ) {
@@ -145,14 +206,22 @@ class WCV_Admin_API extends WCV_API {
         }
 
         $vendor_settings = new Vendors_Settings( $vendor_id );
+
         foreach ( $changes as $key => $value ) {
             $vendor_settings->{$key} = $value;
         }
+
         $result = $vendor_settings->save();
-        if ( $result ) {
+
+        if ( ! is_wp_error( $result ) ) {
             $response_result = array(
                 'success' => true,
                 'message' => __( 'Settings saved.', 'wc-vendors' ),
+            );
+        } else {
+            $response_result = array(
+                'success' => false,
+                'message' => $result->get_error_message(),
             );
         }
         return new WP_REST_Response( $response_result, 200 );
@@ -414,8 +483,9 @@ class WCV_Admin_API extends WCV_API {
         }
         $vendor->set_prop( 'vendor_status', 'inactive' );
         $result = $vendor->save();
-        do_action( 'wcvendors_set_vendor_inactive', $vendor_id );
-        if ( $result ) {
+
+        if ( ! is_wp_error( $result ) ) {
+            do_action( 'wcvendors_set_vendor_inactive', $vendor_id );
             return new WP_REST_Response(
                 array(
                     'success' => true,
@@ -427,7 +497,7 @@ class WCV_Admin_API extends WCV_API {
             return new WP_REST_Response(
                 array(
                     'success' => false,
-                    'message' => __( 'An error occurred while deactivating the vendor.', 'wc-vendors' ),
+                    'message' => $result->get_error_message(),
                 ),
                 200
             );
@@ -454,8 +524,8 @@ class WCV_Admin_API extends WCV_API {
         }
         $vendor->set_prop( 'vendor_status', 'active' );
         $result = $vendor->save();
-        do_action( 'wcvendors_set_vendor_active', $vendor_id );
-        if ( $result ) {
+        if ( ! is_wp_error( $result ) ) {
+            do_action( 'wcvendors_set_vendor_active', $vendor_id );
             return new WP_REST_Response(
                 array(
                     'success' => true,
@@ -498,10 +568,10 @@ class WCV_Admin_API extends WCV_API {
         }
 
         $vendor->remove_role( 'pending_vendor' );
-        wcv_set_primary_vendor_role( $vendor );
+        wcv_set_primary_vendor_role( $vendor_id, 'vendor', $use_custom_msg, $custom_message );
         update_user_meta( $vendor_id, '_wcv_vendor_status', 'active' );
 
-        do_action( 'wcvendors_approve_vendor', $vendor, $use_custom_msg, $custom_message );
+        do_action( 'wcvendors_approve_vendor', $vendor );
 
         return new WP_REST_Response(
             array(
@@ -623,6 +693,679 @@ class WCV_Admin_API extends WCV_API {
         $vendor_data = apply_filters( 'wcvendors_get_vendor_details', $vendor_data, $vendor_id );
 
         return new WP_REST_Response( $vendor_data, 200 );
+    }
+
+    /**
+     * Get products.
+     *
+     * @param WP_REST_Request $request Full details about the request.
+     *
+     * @return WP_REST_Response
+     */
+    public function get_products( $request ) {
+        if ( ! current_user_can( 'manage_woocommerce' ) ) {
+            return new WP_REST_Response(
+                array(
+                    'success' => false,
+                    'message' => __( 'You do not have permission to view products.', 'wc-vendors' ),
+                ),
+                403
+            );
+        }
+
+        $status    = $request->get_param( 'status' );
+        $search    = $request->get_param( 'search' );
+        $vendor_id = $request->get_param( 'vendor_id' );
+        $page      = $request->get_param( 'page' ) ? absint( $request->get_param( 'page' ) ) : 1;
+        $per_page  = $request->get_param( 'per_page' ) ? absint( $request->get_param( 'per_page' ) ) : 10;
+
+        // Limit per_page to a reasonable maximum.
+        $per_page = min( $per_page, 100 );
+
+        $args = array(
+            'post_type'      => 'product',
+            'posts_per_page' => $per_page,
+            'paged'          => $page,
+            'orderby'        => 'date',
+            'order'          => 'DESC',
+        );
+
+        // Set post status.
+        if ( 'published' === $status ) {
+            $args['post_status'] = 'publish';
+        } elseif ( 'pending' === $status ) {
+            $args['post_status'] = 'pending';
+        } elseif ( 'draft' === $status ) {
+            $args['post_status'] = 'draft';
+        } else {
+            $args['post_status'] = array( 'publish', 'pending' );
+        }
+
+        // Add search.
+        if ( ! empty( $search ) ) {
+            $args['s'] = $search;
+        }
+
+        // Add vendor filter.
+        if ( ! empty( $vendor_id ) ) {
+            $args['author'] = $vendor_id;
+        }
+
+        $products_query = new WP_Query( $args );
+        $products       = array();
+
+        foreach ( $products_query->posts as $post ) {
+            $product = wc_get_product( $post->ID );
+            if ( ! $product ) {
+                continue;
+            }
+
+            $product_vendor_id = get_post_field( 'post_author', $post->ID );
+            $vendor            = get_userdata( $product_vendor_id );
+
+            // Get AI review from product meta.
+            $ai_review_raw = $product->get_meta( '_saai_vendors_product_moderation_result' );
+            $ai_review     = $this->format_ai_review( $ai_review_raw );
+
+            // Get image reviews from product meta.
+            $image_reviews_raw = $product->get_meta( '_saai_vendors_product_image_review' );
+            if ( ! empty( $image_reviews_raw ) ) {
+                $image_reviews = $this->format_image_reviews( $image_reviews_raw );
+                if ( ! empty( $image_reviews ) ) {
+                    $ai_review['image_reviews'] = $image_reviews;
+                }
+            }
+
+            // Get vendor shop name (falls back to display name if shop name not set).
+            $shop_name   = WCV_Vendors::get_vendor_sold_by( $product_vendor_id );
+            $vendor_name = ! empty( $shop_name ) ? $shop_name : ( $vendor ? $vendor->display_name : __( 'Unknown', 'wc-vendors' ) );
+
+            $products[] = array(
+                'id'          => $post->ID,
+                'name'        => $product->get_name(),
+                'vendor_id'   => $product_vendor_id,
+                'vendor_name' => $vendor_name,
+                'ai_review'   => $ai_review,
+                'date'        => $post->post_date,
+                'status'      => $post->post_status,
+                'permalink'   => get_permalink( $post->ID ),
+            );
+        }
+
+        $total       = $products_query->found_posts;
+        $total_pages = ceil( $total / $per_page );
+
+        return new WP_REST_Response(
+            array(
+                'success'    => true,
+                'data'       => $products,
+                'pagination' => array(
+                    'current_page' => $page,
+                    'per_page'     => $per_page,
+                    'total'        => $total,
+                    'total_pages'  => $total_pages,
+                ),
+            ),
+            200
+        );
+    }
+
+    /**
+     * Approve product.
+     *
+     * @param WP_REST_Request $request Full details about the request.
+     *
+     * @return WP_REST_Response
+     */
+    public function approve_product( $request ) {
+        if ( ! current_user_can( 'manage_woocommerce' ) ) {
+            return new WP_REST_Response(
+                array(
+                    'success' => false,
+                    'message' => __( 'You do not have permission to approve products.', 'wc-vendors' ),
+                ),
+                403
+            );
+        }
+
+        $product_id = (int) $request->get_param( 'id' );
+        if ( ! $product_id ) {
+            return new WP_REST_Response(
+                array(
+                    'success' => false,
+                    'message' => __( 'Product ID is required.', 'wc-vendors' ),
+                ),
+                400
+            );
+        }
+
+        $product = wc_get_product( $product_id );
+        if ( ! $product ) {
+            return new WP_REST_Response(
+                array(
+                    'success' => false,
+                    'message' => __( 'Product not found.', 'wc-vendors' ),
+                ),
+                404
+            );
+        }
+
+        $post = get_post( $product_id );
+        if ( 'pending' !== $post->post_status ) {
+            return new WP_REST_Response(
+                array(
+                    'success' => false,
+                    'message' => __( 'Product is not pending approval.', 'wc-vendors' ),
+                ),
+                400
+            );
+        }
+
+        $result = wp_update_post(
+            array(
+                'ID'          => $product_id,
+                'post_status' => 'publish',
+            )
+        );
+
+        if ( is_wp_error( $result ) ) {
+            return new WP_REST_Response(
+                array(
+                    'success' => false,
+                    'message' => $result->get_error_message(),
+                ),
+                500
+            );
+        }
+
+        do_action( 'wcvendors_approve_product', $product_id );
+
+        return new WP_REST_Response(
+            array(
+                'success' => true,
+                'message' => __( 'Product approved successfully.', 'wc-vendors' ),
+            ),
+            200
+        );
+    }
+
+    /**
+     * Unpublish product.
+     *
+     * @param WP_REST_Request $request Full details about the request.
+     *
+     * @return WP_REST_Response
+     */
+    public function unpublish_product( $request ) {
+        if ( ! current_user_can( 'manage_woocommerce' ) ) {
+            return new WP_REST_Response(
+                array(
+                    'success' => false,
+                    'message' => __( 'You do not have permission to unpublish products.', 'wc-vendors' ),
+                ),
+                403
+            );
+        }
+
+        $product_id = (int) $request->get_param( 'id' );
+        if ( ! $product_id ) {
+            return new WP_REST_Response(
+                array(
+                    'success' => false,
+                    'message' => __( 'Product ID is required.', 'wc-vendors' ),
+                ),
+                400
+            );
+        }
+
+        $product = wc_get_product( $product_id );
+        if ( ! $product ) {
+            return new WP_REST_Response(
+                array(
+                    'success' => false,
+                    'message' => __( 'Product not found.', 'wc-vendors' ),
+                ),
+                404
+            );
+        }
+
+        $post = get_post( $product_id );
+        if ( 'publish' !== $post->post_status ) {
+            return new WP_REST_Response(
+                array(
+                    'success' => false,
+                    'message' => __( 'Product is not published.', 'wc-vendors' ),
+                ),
+                400
+            );
+        }
+
+        $result = wp_update_post(
+            array(
+                'ID'          => $product_id,
+                'post_status' => 'draft',
+            )
+        );
+
+        if ( is_wp_error( $result ) ) {
+            return new WP_REST_Response(
+                array(
+                    'success' => false,
+                    'message' => $result->get_error_message(),
+                ),
+                500
+            );
+        }
+
+        do_action( 'wcvendors_unpublish_product', $product_id );
+
+        return new WP_REST_Response(
+            array(
+                'success' => true,
+                'message' => __( 'Product unpublished successfully.', 'wc-vendors' ),
+            ),
+            200
+        );
+    }
+
+    /**
+     * Format AI review data for API response.
+     *
+     * @param string|array $ai_review_raw Raw AI review data (serialized or array).
+     *
+     * @return array Formatted AI review data.
+     */
+    private function format_ai_review( $ai_review_raw ) {
+        // Use shared helper function with plain text sanitization (for API) and formatted field names.
+        return wcv_format_ai_review( $ai_review_raw, false, true );
+    }
+
+    /**
+     * Format image reviews data for API response.
+     *
+     * @param mixed $image_reviews_raw Raw image reviews data from meta.
+     * @return array Formatted image reviews data.
+     */
+    private function format_image_reviews( $image_reviews_raw ) {
+        if ( empty( $image_reviews_raw ) ) {
+            return array();
+        }
+
+        // If it's a string, try to unserialize it.
+        if ( is_string( $image_reviews_raw ) ) {
+            $image_reviews_data = maybe_unserialize( $image_reviews_raw );
+        } else {
+            $image_reviews_data = $image_reviews_raw;
+        }
+
+        // If unserialization failed or data is not an array, return empty.
+        if ( ! is_array( $image_reviews_data ) || empty( $image_reviews_data ) ) {
+            return array();
+        }
+
+        $formatted_reviews = array();
+
+        foreach ( $image_reviews_data as $image_review ) {
+            if ( ! is_array( $image_review ) || empty( $image_review['image_id'] ) ) {
+                continue;
+            }
+
+            $image_id = absint( $image_review['image_id'] );
+            $review   = isset( $image_review['review'] ) && is_array( $image_review['review'] ) ? $image_review['review'] : array();
+            $reviewed = isset( $image_review['reviewed'] ) ? (bool) $image_review['reviewed'] : false;
+
+            // Get image URL.
+            $image_url = wp_get_attachment_image_url( $image_id, 'medium' );
+            if ( ! $image_url ) {
+                $image_url = wp_get_attachment_image_url( $image_id, 'full' );
+            }
+
+            $formatted_review = array(
+                'image_id'  => $image_id,
+                'image_url' => $image_url ? esc_url( $image_url ) : '',
+                'reviewed'  => $reviewed,
+            );
+
+            // Format completion data if available.
+            if ( ! empty( $review['completion'] ) && is_array( $review['completion'] ) ) {
+                $completion = $review['completion'];
+
+                $formatted_review['completion'] = array(
+                    'status'         => isset( $completion['status'] ) ? sanitize_text_field( $completion['status'] ) : '',
+                    'is_appropriate' => isset( $completion['is_appropriate'] ) ? (bool) $completion['is_appropriate'] : false,
+                    'risk_score'     => isset( $completion['risk_score'] ) ? absint( $completion['risk_score'] ) : 0,
+                    'analysis'       => array(),
+                    'review_summary' => isset( $completion['review_summary'] ) ? wp_kses_post( $completion['review_summary'] ) : '',
+                );
+
+                // Format analysis data.
+                if ( ! empty( $completion['analysis'] ) && is_array( $completion['analysis'] ) ) {
+                    $formatted_review['completion']['analysis'] = array(
+                        'appropriateness' => isset( $completion['analysis']['appropriateness'] ) ? sanitize_text_field( $completion['analysis']['appropriateness'] ) : '',
+                        'quality'         => isset( $completion['analysis']['quality'] ) ? sanitize_text_field( $completion['analysis']['quality'] ) : '',
+                        'compliance'      => isset( $completion['analysis']['compliance'] ) ? sanitize_text_field( $completion['analysis']['compliance'] ) : '',
+                        'product_match'   => isset( $completion['analysis']['product_match'] ) ? sanitize_text_field( $completion['analysis']['product_match'] ) : '',
+                    );
+                }
+            }
+
+            $formatted_reviews[] = $formatted_review;
+        }
+
+        return $formatted_reviews;
+    }
+
+    /**
+     * Get vendors list for dropdown.
+     *
+     * @param WP_REST_Request $request Full details about the request.
+     *
+     * @return WP_REST_Response
+     */
+    public function get_vendors_list( $request ) {
+        if ( ! current_user_can( 'manage_woocommerce' ) ) {
+            return new WP_REST_Response(
+                array(
+                    'success' => false,
+                    'message' => __( 'You do not have permission to view vendors.', 'wc-vendors' ),
+                ),
+                403
+            );
+        }
+
+        $user_args = array(
+            'fields'   => array( 'ID', 'display_name' ),
+            'role__in' => array( 'vendor', 'administrator' ),
+            'number'   => -1,
+        );
+
+        $users   = get_users( $user_args );
+        $vendors = array();
+
+        foreach ( $users as $user ) {
+            $shop_name    = WCV_Vendors::get_vendor_sold_by( $user->ID );
+            $display_name = ! empty( $shop_name ) ? $shop_name : $user->display_name;
+
+            $vendors[] = array(
+                'id'   => $user->ID,
+                'name' => $display_name,
+            );
+        }
+
+        return new WP_REST_Response(
+            array(
+                'success' => true,
+                'data'    => $vendors,
+            ),
+            200
+        );
+    }
+
+    /**
+     * Request product change.
+     *
+     * @param WP_REST_Request $request Full details about the request.
+     *
+     * @return WP_REST_Response
+     */
+    public function request_product_change( $request ) {
+        if ( ! current_user_can( 'manage_woocommerce' ) ) {
+            return new WP_REST_Response(
+                array(
+                    'success' => false,
+                    'message' => __( 'You do not have permission to request product changes.', 'wc-vendors' ),
+                ),
+                403
+            );
+        }
+
+        $product_id          = (int) $request->get_param( 'id' );
+        $message             = $request->get_param( 'message' );
+        $include_suggestions = (bool) $request->get_param( 'include_suggestions' );
+
+        if ( ! $product_id ) {
+            return new WP_REST_Response(
+                array(
+                    'success' => false,
+                    'message' => __( 'Product ID is required.', 'wc-vendors' ),
+                ),
+                400
+            );
+        }
+
+        $product = wc_get_product( $product_id );
+        if ( ! $product ) {
+            return new WP_REST_Response(
+                array(
+                    'success' => false,
+                    'message' => __( 'Product not found.', 'wc-vendors' ),
+                ),
+                404
+            );
+        }
+
+        $post = get_post( $product_id );
+        if ( 'pending' !== $post->post_status ) {
+            return new WP_REST_Response(
+                array(
+                    'success' => false,
+                    'message' => __( 'Product is not pending.', 'wc-vendors' ),
+                ),
+                400
+            );
+        }
+
+        $vendor_id = get_post_field( 'post_author', $product_id );
+        $vendor    = get_userdata( $vendor_id );
+
+        if ( ! $vendor ) {
+            return new WP_REST_Response(
+                array(
+                    'success' => false,
+                    'message' => __( 'Vendor not found.', 'wc-vendors' ),
+                ),
+                404
+            );
+        }
+
+        // Save change request message to product meta.
+        if ( ! empty( $message ) ) {
+            $product->update_meta_data( 'wcv_change_request_message', sanitize_textarea_field( $message ) );
+            $product->save_meta_data();
+        }
+
+        // Get AI review and extract suggestions only if requested.
+        $suggestions = array();
+        if ( $include_suggestions ) {
+            $ai_review_raw = $product->get_meta( '_saai_vendors_product_moderation_result' );
+            $ai_review     = $this->format_ai_review( $ai_review_raw );
+            $suggestions   = ! empty( $ai_review['suggestions'] ) && is_array( $ai_review['suggestions'] ) ? $ai_review['suggestions'] : array();
+
+            // Set meta key to indicate suggestions should be shown to vendor.
+            if ( ! empty( $suggestions ) ) {
+                $product->update_meta_data( '_wcv_show_ai_suggestions', 'yes' );
+                $product->save_meta_data();
+            }
+        }
+
+        // Set product status to draft so vendor can make changes.
+        $result = wp_update_post(
+            array(
+                'ID'          => $product_id,
+                'post_status' => 'draft',
+            )
+        );
+
+        if ( is_wp_error( $result ) ) {
+            return new WP_REST_Response(
+                array(
+                    'success' => false,
+                    'message' => $result->get_error_message(),
+                ),
+                500
+            );
+        }
+
+        // Send email to vendor.
+        $this->send_change_request_email( $vendor, $product, $message, $suggestions );
+
+        do_action( 'wcvendors_request_product_change', $product_id, $vendor_id, $message, $suggestions );
+
+        return new WP_REST_Response(
+            array(
+                'success' => true,
+                'message' => __( 'Change request sent successfully.', 'wc-vendors' ),
+            ),
+            200
+        );
+    }
+
+    /**
+     * Send change request email to vendor.
+     *
+     * @param WP_User    $vendor      Vendor user object.
+     * @param WC_Product $product     Product object.
+     * @param string     $message     Change request message.
+     * @param array      $suggestions Array of suggestions with 'field' and 'suggestion' keys.
+     *
+     * @return void
+     */
+    private function send_change_request_email( $vendor, $product, $message, $suggestions = array() ) {
+        if ( ! $vendor || ! $product ) {
+            return;
+        }
+
+        $vendor_email = $vendor->user_email;
+        $product_name = $product->get_name();
+        $product_id   = $product->get_id();
+        $product_url  = esc_url( \WCV_Vendor_Dashboard::get_dashboard_page_url( 'product/edit/' . $product_id ) );
+
+        $subject = sprintf(
+            /* translators: %s: product name */
+            __( 'Change Request for Product: %s', 'wc-vendors' ),
+            $product_name
+        );
+
+        $email_heading = __( 'Product Change Request', 'wc-vendors' );
+
+        // Build email content.
+        ob_start();
+        ?>
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 16px; line-height: 1.6; color: #333333; background-color: #f5f5f5;">
+            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f5f5f5; padding: 20px 0;">
+                <tr>
+                    <td align="center">
+                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="max-width: 600px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                            <!-- Header -->
+                            <tr>
+                                <td style="padding: 30px 30px 20px 30px; border-bottom: 2px solid #e8e8e8;">
+                                    <h1 style="margin: 0; font-size: 24px; font-weight: 600; color: #1a1a1a; line-height: 1.3;">
+                                        <?php echo esc_html( $email_heading ); ?>
+                                    </h1>
+                                </td>
+                            </tr>
+                            
+                            <!-- Content -->
+                            <tr>
+                                <td style="padding: 30px;">
+                                    <!-- Greeting -->
+                                    <p style="margin: 0 0 20px 0; font-size: 16px; color: #333333;">
+                                        <?php
+                                        /* translators: %s: vendor display name */
+                                        printf( esc_html__( 'Hello %s,', 'wc-vendors' ), '<strong style="color: #1a1a1a;">' . esc_html( $vendor->display_name ) . '</strong>' );
+                                        ?>
+                                    </p>
+                                    
+                                    <!-- Introduction -->
+                                    <p style="margin: 0 0 30px 0; font-size: 16px; color: #333333;">
+                                        <?php
+                                        /* translators: %s: product name */
+                                        printf( esc_html__( 'We need some changes to your product "%s".', 'wc-vendors' ), '<strong style="color: #1677ff;">' . esc_html( $product_name ) . '</strong>' );
+                                        ?>
+                                    </p>
+                                    
+                                    <!-- Requested Changes Section -->
+                                    <?php if ( ! empty( $message ) ) : ?>
+                                        <div style="margin: 0 0 25px 0; padding: 20px; background-color: #fff7e6; border-left: 4px solid #faad14; border-radius: 4px;">
+                                            <h2 style="margin: 0 0 12px 0; font-size: 18px; font-weight: 600; color: #1a1a1a;">
+                                                <?php esc_html_e( 'Requested Changes', 'wc-vendors' ); ?>
+                                            </h2>
+                                            <div style="margin: 0; font-size: 15px; color: #333333; line-height: 1.6;">
+                                                <?php echo wp_kses_post( nl2br( $message ) ); ?>
+                                            </div>
+                                        </div>
+                                    <?php endif; ?>
+                                    
+                                    <!-- Suggested Fixes Section -->
+                                    <?php if ( ! empty( $suggestions ) && is_array( $suggestions ) ) : ?>
+                                        <div style="margin: 0 0 25px 0; padding: 20px; background-color: #e6f7ff; border-left: 4px solid #1677ff; border-radius: 4px;">
+                                            <h2 style="margin: 0 0 15px 0; font-size: 18px; font-weight: 600; color: #1a1a1a;">
+                                                <?php esc_html_e( 'Suggested Fixes', 'wc-vendors' ); ?>
+                                            </h2>
+                                            <div style="margin: 0;">
+                                                <?php foreach ( $suggestions as $index => $suggestion ) : ?>
+                                                    <?php if ( ! empty( $suggestion['field'] ) && ! empty( $suggestion['suggestion'] ) ) : ?>
+                                                        <div style="margin: <?php echo $index > 0 ? '15px' : '0'; ?> 0 0 0; padding: 0;">
+                                                            <div style="margin: 0 0 5px 0; font-weight: 600; font-size: 15px; color: #1a1a1a; text-transform: capitalize;">
+                                                                <?php echo esc_html( $suggestion['field'] ); ?>
+                                                            </div>
+                                                            <div style="margin: 0; font-size: 15px; color: #333333; line-height: 1.6; padding-left: 0;">
+                                                                <?php echo wp_kses_post( $suggestion['suggestion'] ); ?>
+                                                            </div>
+                                                        </div>
+                                                    <?php endif; ?>
+                                                <?php endforeach; ?>
+                                            </div>
+                                        </div>
+                                    <?php endif; ?>
+                                    
+                                    <!-- Call to Action Button -->
+                                    <div style="margin: 30px 0; text-align: center;">
+                                        <a href="<?php echo esc_url( $product_url ); ?>" style="display: inline-block; background-color: #1677ff; color: #ffffff !important; padding: 14px 32px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 16px; box-shadow: 0 2px 4px rgba(22, 119, 255, 0.3); transition: background-color 0.2s;">
+                                            <?php esc_html_e( 'Edit Product', 'wc-vendors' ); ?>
+                                        </a>
+                                    </div>
+                                    
+                                    <!-- Closing -->
+                                    <p style="margin: 30px 0 0 0; font-size: 15px; color: #666666; text-align: center;">
+                                        <?php esc_html_e( 'Thank you for your cooperation.', 'wc-vendors' ); ?>
+                                    </p>
+                                </td>
+                            </tr>
+                            
+                            <!-- Footer -->
+                            <tr>
+                                <td style="padding: 20px 30px; background-color: #fafafa; border-top: 1px solid #e8e8e8; border-radius: 0 0 8px 8px;">
+                                    <p style="margin: 0; font-size: 13px; color: #999999; text-align: center;">
+                                        <?php echo esc_html( get_option( 'blogname' ) ); ?>
+                                    </p>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </body>
+        </html>
+        <?php
+        $email_content = ob_get_clean();
+
+        // Set email headers.
+        $headers = array( 'Content-Type: text/html; charset=UTF-8' );
+
+        // Send email.
+        wp_mail(
+            $vendor_email,
+            $subject,
+            $email_content,
+            $headers
+        );
     }
 }
 new WCV_Admin_API();

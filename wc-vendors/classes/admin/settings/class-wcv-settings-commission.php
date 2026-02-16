@@ -28,6 +28,30 @@ if ( ! class_exists( 'WCVendors_Settings_Commission', false ) ) :
             $this->label = __( 'Commission', 'wc-vendors' );
 
             parent::__construct();
+            add_filter( 'option_wcvendors_vendor_commission_rate', array( $this, 'format_commission_rate' ), 10, 1 );
+        }
+
+        /**
+         * Format commission rate value from decimal to WooCommerce decimal separator.
+         *
+         * This filter ensures the commission rate is displayed with the correct
+         * decimal separator matching WooCommerce settings when retrieved from options.
+         *
+         * @since 2.6.6
+         * @param mixed $value  The commission rate value from the database.
+         * @return string The formatted commission rate with WC decimal separator.
+         */
+        public function format_commission_rate( $value ) {
+            if ( empty( $value ) || ! is_numeric( $value ) ) {
+                return $value;
+            }
+
+            $wc_separator = wc_get_price_decimal_separator();
+            if ( '.' !== $wc_separator && false !== strpos( $value, $wc_separator ) ) {
+                return $value;
+            }
+
+            return WC_Vendors\Classes\Admin\wcv_format_commission_rate_from_decimal_to_wc_sep( $value );
         }
 
         /**
@@ -54,10 +78,7 @@ if ( ! class_exists( 'WCVendors_Settings_Commission', false ) ) :
          */
         public function get_settings( $current_section = '' ) {
 
-            $settings               = array();
-            $wc_decimal             = wc_get_price_decimal_separator();
-            $the_number_of_decimals = wc_get_price_decimals();
-            $pattern                = '^(?:[0-9]|[1-9][0-9]|100)(?:[' . $wc_decimal . '][0-9]{1,' . $the_number_of_decimals . '})?$';
+            $settings = array();
 
             if ( 'paypal' === $current_section ) {
                 $settings = apply_filters(
@@ -111,7 +132,11 @@ if ( ! class_exists( 'WCVendors_Settings_Commission', false ) ) :
                     )
                 );
             } else {
-                $settings = apply_filters(
+
+            $wc_decimal             = wc_get_price_decimal_separator();
+            $the_number_of_decimals = wc_get_price_decimals();
+            $pattern                = '^(?:[0-9]|[1-9][0-9]|100)(?:[' . $wc_decimal . '][0-9]{1,' . $the_number_of_decimals . '})?$';
+                $settings           = apply_filters(
                     'wcvendors_settings_comission',
                     array(
 
@@ -136,11 +161,14 @@ if ( ! class_exists( 'WCVendors_Settings_Commission', false ) ) :
                             'css'               => 'width:65px;',
                             'default'           => '50',
                             'type'              => 'text',
+                            'class'             => 'wcv-commission-rate-input wcvendors_vendor_commission_rate',
                             'custom_attributes' => array(
-                                'pattern'              => $pattern,
-                                'data-parsley-pattern' => $pattern,
-                                'data-parsley-message' => __( 'Please enter a valid commission rate between 0 and 100', 'wc-vendors' ),
-                                'data-parsley-trigger' => 'change focusout',
+                                'pattern' => $pattern,
+                                'title'   => sprintf(
+                                    /* translators: %s: WooCommerce decimal separator */
+                                    __( 'Enter a valid commission rate (0-100) following the WooCommerce decimal separator: %s', 'wc-vendors' ),
+                                    $wc_decimal
+                                ),
                             ),
                         ),
                         array(

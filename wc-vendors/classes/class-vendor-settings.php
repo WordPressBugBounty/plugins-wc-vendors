@@ -193,7 +193,7 @@ class Vendors_Settings {
             }
         } else {
             // Set error message but don't throw exception.
-            $this->error        = esc_html__( 'Invalid vendor ID', 'wc-vendors' );
+            $this->error        = new WP_Error( 'invalid_vendor_id', esc_html__( 'Invalid vendor ID', 'wc-vendors' ) );
             $this->valid_vendor = false;
         }
     }
@@ -449,16 +449,25 @@ class Vendors_Settings {
      * Save settings
      *
      * @access public
-     * @return array|bool The settings that have changed, false if no changes.
+     * @return bool|WP_Error The settings that have changed, WP_Error if there is an error.
      *
      * @since 2.4.8
      * @version 2.4.8
+     * @version 2.6.6 - Return WP_Error instead of false.
      */
     public function save() {
 
         $changes = $this->get_changes();
         if ( empty( $changes ) ) {
-            return false;
+            return new WP_Error( 'no_changes', esc_html__( 'No changes to save', 'wc-vendors' ) );
+        }
+
+        // Validate shop name is not empty to prevent 404 errors with shop slug.
+        if ( isset( $changes['shop_name'] ) ) {
+            $shop_name_trimmed = trim( $changes['shop_name'] );
+            if ( empty( $shop_name_trimmed ) ) {
+                return new WP_Error( 'shop_name_empty', esc_html__( 'Shop name cannot be empty', 'wc-vendors' ) );
+            }
         }
 
         $media_fields       = $this->get_media_fields();
@@ -733,10 +742,22 @@ class Vendors_Settings {
      *
      * @version 2.6.5 Fix security issues.
      * @since 2.4.8
+     * @version 2.6.6 - Return WP_Error if shop name is empty.
      */
     public function change_shop_slug( $field, $value ) {
         if ( 'shop_name' === $field ) {
+            // Ensure shop name is not empty before generating slug.
+            $value = trim( $value );
+            if ( empty( $value ) ) {
+                return new WP_Error( 'shop_name_empty', esc_html__( 'Shop name cannot be empty', 'wc-vendors' ) );
+            }
+
             $shop_slug = sanitize_title( $value );
+
+            // If sanitization results in an empty slug, use vendor ID as fallback.
+            if ( empty( $shop_slug ) ) {
+                $shop_slug = 'vendor-' . $this->vendor_id;
+            }
 
             $check        = new WP_User_Query(
                 array(

@@ -110,6 +110,7 @@ class WCV_Product_Meta {
      * @return string
      * @version 2.2.2
      * @since   2.2.2
+     * @since   2.6.6 - Hide tax class field in variations.
      */
     public function get_inline_style() {
         $product_misc = self::get_product_capabilities();
@@ -118,6 +119,14 @@ class WCV_Product_Meta {
         // Filter taxes.
         if ( ! empty( $product_misc['taxes'] ) ) {
             $css .= '.form-field._tax_status_field, .form-field._tax_class_field{display:none !important;}';
+            // Hide tax class field in variations.
+            $css .= '.woocommerce_variation .form-row select[name^="variable_tax_class"]{display:none !important;}';
+            $css .= '.woocommerce_variation .form-row label[for^="variable_tax_class"]{display:none !important;}';
+        }
+        // Filter SKU field in variations.
+        if ( ! empty( $product_misc['sku'] ) ) {
+            $css .= '.woocommerce_variation .form-row input[name^="variable_sku"]{display:none !important;}';
+            $css .= '.woocommerce_variation .form-row label[for^="variable_sku"]{display:none !important;}';
         }
         // Filter the rest of the fields.
         foreach ( $product_misc as $key => $value ) {
@@ -321,14 +330,15 @@ class WCV_Product_Meta {
         }
 
         if ( isset( $_POST['pv_commission_rate'] ) ) {
-            $commission_rate = is_numeric( sanitize_text_field( wp_unslash( $_POST['pv_commission_rate'] ) ) )
-                ? (float) sanitize_text_field( wp_unslash( $_POST['pv_commission_rate'] ) )
-                : false;
-            update_post_meta(
-                $post_id,
-                'pv_commission_rate',
-                $commission_rate
-            );
+            $commission_rate = sanitize_text_field( wp_unslash( $_POST['pv_commission_rate'] ) );
+            $commission_rate = str_replace( wc_get_price_decimal_separator(), '.', $commission_rate );
+            $commission_rate = (float) $commission_rate;
+
+            if ( is_numeric( $commission_rate ) && $commission_rate >= 0 && $commission_rate <= 100 ) {
+                update_post_meta( $post_id, 'pv_commission_rate', $commission_rate );
+            } else {
+                delete_post_meta( $post_id, 'pv_commission_rate' );
+            }
         }
     }
 
@@ -374,6 +384,8 @@ class WCV_Product_Meta {
 
         global $post;
         wp_nonce_field( 'wcv-save-product-meta', 'wcv-product-meta-nonce' );
+        $commission_rate = get_post_meta( $post->ID, 'pv_commission_rate', true );
+        $commission_rate = is_numeric( $commission_rate ) && $commission_rate >= 0 && $commission_rate <= 100 ? WC_Vendors\Classes\Admin\wcv_format_commission_rate_from_decimal_to_wc_sep( $commission_rate ) : '0';
         ?>
 
         <div id="commission" class="panel woocommerce_options_panel">
@@ -382,15 +394,12 @@ class WCV_Product_Meta {
                 <p class='form-field commission_rate_field'>
                     <label for='pv_commission_rate'><?php esc_attr_e( 'Commission', 'wc-vendors' ); ?> (%)</label>
                     <input
-                        type='number'
+                        type='text'
                         id='pv_commission_rate'
                         name='pv_commission_rate'
-                        class='short'
-                        max="100"
-                        min="0"
-                        step='any'
+                        class='short wcv-commission-rate-input wcvendors_vendor_commission_rate'
                         placeholder='<?php esc_attr_e( 'Leave blank for default', 'wc-vendors' ); ?>'
-                        value="<?php echo esc_attr( get_post_meta( $post->ID, 'pv_commission_rate', true ) ); ?>"
+                        value="<?php echo esc_attr( $commission_rate ); ?>"
                     />
                 </p>
 

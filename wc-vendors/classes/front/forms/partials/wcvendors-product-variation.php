@@ -537,7 +537,7 @@ if ( $decimal_number > 0 ) {
                                 <?php
                                 if ( $_downloadable_files ) {
 
-                                    $file_display_type = get_option( 'wcvendors_file_display', '' );
+                                    $file_display_type = wcv_get_pro_option( 'wcvendors_file_display', '' );
                                     $input_type        = array(
                                         'file_url'  => 'hidden',
                                         'file_name' => 'text',

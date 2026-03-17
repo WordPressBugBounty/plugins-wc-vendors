@@ -8,9 +8,9 @@
  * Author URI:           https://www.wcvendors.com
  * GitHub Plugin URI:    https://github.com/wcvendors/wcvendors
  *
- * Version:              2.6.6
+ * Version:              2.6.7
  * Requires at least:    5.5.0
- * Tested up to:         6.9
+ * Tested up to:         7.0
  * WC requires at least: 5.0
  * WC tested up to:      10.5
  *
@@ -62,12 +62,13 @@ add_action(
  * Declare Cart and Checkout Blocks Compatibility.
  *
  * @since 2.4.8
+ * @version 2.6.7 - Updated to true after implementing blocks integration.
  */
 add_action(
     'before_woocommerce_init',
     function () {
         if ( class_exists( FeaturesUtil::class ) ) {
-            FeaturesUtil::declare_compatibility( 'cart_checkout_blocks', __FILE__, false );
+            FeaturesUtil::declare_compatibility( 'cart_checkout_blocks', __FILE__, true );
         }
     }
 );
@@ -144,7 +145,7 @@ class WC_Vendors {
         }
 
         if ( ! defined( 'WCV_VERSION' ) ) {
-            define( 'WCV_VERSION', '2.6.6' );
+            define( 'WCV_VERSION', '2.6.7' );
         }
 
         if ( ! defined( 'WCV_TEMPLATE_BASE' ) ) {
@@ -195,19 +196,19 @@ class WC_Vendors {
       $caller = ( isset( $trace[1]['class'] ) ) ? $trace[1]['class'] : basename( $trace[1]['file'] );
 
       if ( is_array( $data ) || is_object( $data ) ) {
-        if ( $prefix ) {
-          error_log( '===========================' );
-          error_log( $prefix );
-          error_log( '===========================' );
-        }
-        error_log( $caller . ' : ' . print_r( $data, true ) );
+			if ( $prefix ) {
+			  error_log( '===========================' );
+			  error_log( $prefix );
+			  error_log( '===========================' );
+				}
+			error_log( $caller . ' : ' . print_r( $data, true ) );
       } else {
-        if ( $prefix ) {
-          error_log( '===========================' );
-          error_log( $prefix );
-          error_log( '===========================' );
-        }
-        error_log( $caller . ' : ' . $data );
+			if ( $prefix ) {
+			  error_log( '===========================' );
+			  error_log( $prefix );
+			  error_log( '===========================' );
+				}
+			error_log( $caller . ' : ' . $data );
       }
       // phpcs:enable
     }
@@ -237,7 +238,6 @@ add_action( 'setup_theme', 'wcvendors_run', 20 );
  * Schedule the admin notice
  */
 function wcvendors_schedule_admin_notice() {
-    wcvendors_schedule_display_notice( 'cart_and_checkout', 0 );
     wcvendors_schedule_display_notice( 'review_request', 14 );
 }
 

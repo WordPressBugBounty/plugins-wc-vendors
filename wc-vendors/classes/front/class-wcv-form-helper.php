@@ -1216,13 +1216,13 @@ class WCV_Form_Helper {
             $walker = $r['walker'];
         }
 
+        $hide_empty = isset( $r['hide_empty'] ) ? (bool) $r['hide_empty'] : true;
+
         $taxonomy = $r['taxonomy'];
 
         $descendants_and_self = (int) $r['descendants_and_self'];
 
         $args = array( 'taxonomy' => $taxonomy );
-
-        $tax = get_taxonomy( $taxonomy );
 
         $args['list_only'] = ! empty( $r['list_only'] );
 
@@ -1234,12 +1234,14 @@ class WCV_Form_Helper {
             $args['selected_cats'] = array();
         }
 
+        $categories = array();
+
         if ( $descendants_and_self ) {
             $categories = (array) get_terms(
                 array(
                     'child_of'     => $descendants_and_self,
                     'hierarchical' => 0,
-                    'hide_empty'   => 0,
+                    'hide_empty'   => $hide_empty,
                     'exclude'      => $r['exclude'],
                     'taxonomy'     => $taxonomy,
                 )
@@ -1249,8 +1251,9 @@ class WCV_Form_Helper {
         } else {
             $categories = (array) get_terms(
                 array(
-                    'exclude'  => $r['exclude'],
-                    'taxonomy' => $taxonomy,
+                    'exclude'    => $r['exclude'],
+                    'taxonomy'   => $taxonomy,
+                    'hide_empty' => $hide_empty,
                 )
             );
         }

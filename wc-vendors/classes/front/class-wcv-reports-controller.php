@@ -171,8 +171,8 @@ class WCV_Reports_Controller {
     public function report_init() {
 
         $date_range = array(
-            'before' => gmdate( 'Y-m-d', $this->get_end_date() ),
-            'after'  => gmdate( 'Y-m-d', $this->get_start_date() ),
+            'before' => $this->get_end_date(),
+            'after'  => $this->get_start_date(),
         );
 
         $this->orders = WCV_Vendor_Controller::get_orders2( get_current_user_id(), $date_range );
@@ -435,8 +435,8 @@ class WCV_Reports_Controller {
      */
     public function date_range_form() {
 
-        $default_end_date   = gmdate( $this->date_format, strtotime( 'now' ) );
-        $default_start_date = gmdate( $this->date_format, strtotime( $this->default_start ) );
+        $default_end_date   = wp_date( $this->date_format, strtotime( 'now' ) );
+        $default_start_date = wp_date( $this->date_format, strtotime( $this->default_start ) );
 
         // Start Date.
         WCV_Form_Helper::input(
@@ -446,7 +446,7 @@ class WCV_Reports_Controller {
                     'id'                  => '_wcv_dashboard_start_date_input',
                     'label'               => __( 'Start date', 'wc-vendors' ),
                     'class'               => 'wcv-datepicker-dashboard-filter wcv-datepicker wcv-init-picker',
-                    'value'               => gmdate( $this->date_format, $this->get_start_date() ),
+                    'value'               => wp_date( $this->date_format, $this->get_start_date() ),
                     'placeholder'         => 'YYYY-MM-DD',
                     'wrapper_start'       => '<div class="wcv-cols-group wcv-horizontal-gutters wcv-cols-group-narrow"><div class="all-35 tiny-50 small-50 medium-50">',
                     'wrapper_end'         => '</div>',
@@ -469,7 +469,7 @@ class WCV_Reports_Controller {
                     'id'                  => '_wcv_dashboard_end_date_input',
                     'label'               => __( 'End date', 'wc-vendors' ),
                     'class'               => 'wcv-datepicker-dashboard-filter wcv-datepicker wcv-init-picker',
-                    'value'               => gmdate( $this->date_format, $this->get_end_date() ),
+                    'value'               => wp_date( $this->date_format, $this->get_end_date() ),
                     'placeholder'         => 'YYYY-MM-DD',
                     'wrapper_start'       => '<div class="all-35 tiny-50 small-50 medium-50">',
                     'wrapper_end'         => '</div>',

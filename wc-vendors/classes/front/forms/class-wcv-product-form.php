@@ -446,8 +446,9 @@ class WCV_Product_Form {
             }
 
             $args = array(
-                'taxonomy' => 'product_cat',
-                'exclude'  => $exclude,
+                'taxonomy'   => 'product_cat',
+                'exclude'    => $exclude,
+                'hide_empty' => false,
             );
 
             $field = array(

@@ -17,15 +17,26 @@
  * @since   2.4.8 - HPOS Compatibility
  */
 class WCV_Vendors {
+
     /**
      * Constructor
      *
+     * @since 2.6.7 Added comments for better clarity on hook purposes.
      * @since 2.4.8 Added hook to create child orders via API.
      */
     public function __construct() {
+        // Classic checkout (shortcode-based).
         add_action( 'woocommerce_checkout_order_processed', array( __CLASS__, 'create_child_orders' ), 10, 1 );
+
+        // Admin-created orders (manual order creation).
         add_action( 'woocommerce_new_order', array( __CLASS__, 'admin_create_child_orders' ), 10, 1 );
+
+        // Cart and Checkout Blocks (Store API).
+        add_action( 'woocommerce_store_api_checkout_order_processed', array( __CLASS__, 'create_child_orders' ), 10, 1 );
+
+        // REST API orders.
         add_action( 'woocommerce_rest_insert_shop_order_object', array( __CLASS__, 'create_child_orders_api' ), 10, 1 );
+
         add_filter( 'woocommerce_order_data_store_cpt_get_orders_query', array( $this, 'cpt_order_query_vars' ), 10, 2 );
         add_filter( 'init', array( $this, 'add_rewrite_rules' ), 0 );
 
@@ -750,17 +761,21 @@ class WCV_Vendors {
      *
      * @since 1.0.0
      *
-     * @param int|WC_Order $order The order ID, or WC_Order object.
+     * @param int|WC_Order $order_object_or_id The order ID, or WC_Order object.
      *
      * @return WC_Order_Vendor[] $vendor_orders Array of vendor orders.
      */
-    public static function create_child_orders( $order ) {
+    public static function create_child_orders( $order_object_or_id ) {
 
-        if ( ! is_a( $order, 'WC_Order' ) ) {
-            $order = wc_get_order( $order );
+        $order = null;
+
+        if ( is_numeric( $order_object_or_id ) ) {
+            $order = wc_get_order( $order_object_or_id );
+        } elseif ( is_a( $order_object_or_id, 'WC_Order' ) ) {
+            $order = $order_object_or_id;
         }
 
-        if ( ! is_a( $order, 'WC_Order' ) ) {
+        if ( ! $order ) {
             return array();
         }
 
@@ -1442,15 +1457,17 @@ class WCV_Vendors {
     }
 
     /**
-     * Admin create child orders
+     * Create child orders when order is created via admin
      *
+     * @param int $order_id The order ID.
+     * @return array|null Returns array from create_child_orders() or null if conditions not met.
      * @since 2.5.1.1
-     *
-     * @param int $order_id The order object.
+     * @since 2.6.7 Added check for _created_via to prevent duplicate calls.
      */
     public static function admin_create_child_orders( $order_id ) {
 
-        if ( ! is_admin() ) {
+        // Only run for manually created orders in admin.
+        if ( ! is_admin() || ! current_user_can( 'manage_woocommerce' ) ) {
             return;
         }
 
@@ -1460,7 +1477,20 @@ class WCV_Vendors {
             return;
         }
 
-        return self::create_child_orders( $order_id );
+        // Get order object.
+        $order = wc_get_order( $order_id );
+
+        if ( ! $order ) {
+            return;
+        }
+
+        $created_via = $order->get_created_via();
+
+        if ( 'admin' !== $created_via ) {
+            return;
+        }
+
+        return self::create_child_orders( $order );
     }
 
 

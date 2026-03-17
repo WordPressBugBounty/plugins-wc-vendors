@@ -35,6 +35,12 @@ class WC_Gateway_WCV_Gateway_Test extends WC_Payment_Gateway {
         $this->method_title       = __( 'WC Vendors Test Gateway', 'wc-vendors' );
         $this->method_description = __( 'This gateway will set orders to processing upon receipt allowing you to test transactions in your store.  Some WooCommerce included gateways have problems with this - you should use this gateway for all of your non-PayPal testing.', 'wc-vendors' );
 
+        // Define gateway features support.
+        // @since 2.6.7 - Added support for products.
+        $this->supports = array(
+            'products',
+        );
+
         // Load the settings.
         $this->init_form_fields();
         $this->init_settings();

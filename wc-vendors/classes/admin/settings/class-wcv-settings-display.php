@@ -90,7 +90,20 @@ if ( ! class_exists( 'WCVendors_Settings_Display', false ) ) :
                             'id'      => 'wcvendors_redirect_wp_registration_to_woocommerce_myaccount',
                             'desc'    => __( 'This will redirect the WordPress registration to WooCommerce my-account page for registration.', 'wc-vendors' ),
                         ),
-
+                        array(
+                            'title'   => __( 'Sticky Menu Bar', 'wc-vendors' ),
+                            'desc'    => __( 'Keep the dashboard navigation menu visible as vendors scroll down the page.', 'wc-vendors' ),
+                            'id'      => 'wcvendors_dashboard_sticky_menu',
+                            'default' => 'no',
+                            'type'    => 'checkbox',
+                        ),
+                        array(
+                            'title'   => __( 'Scroll to Top Button', 'wc-vendors' ),
+                            'desc'    => __( 'Show a button in the bottom-right corner of the dashboard to quickly scroll back to the top of the page.', 'wc-vendors' ),
+                            'id'      => 'wcvendors_dashboard_scroll_to_top',
+                            'default' => 'no',
+                            'type'    => 'checkbox',
+                        ),
                         array(
                             'type' => 'sectionend',
                             'id'   => 'advanced_options',

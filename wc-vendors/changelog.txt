@@ -1,5 +1,16 @@
 Changelog for WC Vendors Marketplace
 
+Version 2.6.7 - 10th March 2026
+
+* Feature: Scheduled automated emails to vendors when a product is out of stock
+* Improvement: Remove cart and checkout blocks notice
+* Improvement: Make the menu bar sticky and add a scroll to top button
+* Improvement: WC cart/checkout blocks compatibility
+* Bug Fix: Vendors cannot create new tags
+* Bug Fix: Allow HTML in vendor shop description, stripping HTML content
+* Bug Fix: Empty categories do not appear in product add/edit form for checklist category display
+* Bug Fix: Date filter timezone mismatch on vendor dashboard
+
 Version 2.6.6 - 10th February 2026
 
  * Feature: AI-powered product moderation and review system

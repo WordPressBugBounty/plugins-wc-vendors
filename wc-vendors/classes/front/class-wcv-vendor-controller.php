@@ -164,7 +164,19 @@ class WCV_Vendor_Controller {
             $args['limit'] = self::$orders_per_page;
         }
 
+        $date_after  = gmdate( 'Y-m-d', strtotime( '-1 month' ) );
+        $date_before = gmdate( 'Y-m-d' );
+
         if ( $date_range ) {
+            if ( is_numeric( $date_range['before'] ) ) {
+                $date_range['before'] = $date_range['before'] + DAY_IN_SECONDS;
+                $date_before          = gmdate( 'Y-m-d', $date_range['before'] );
+            }
+
+            if ( is_numeric( $date_range['after'] ) ) {
+                $date_after = gmdate( 'Y-m-d', $date_range['after'] );
+            }
+
             $args['date_created'] = "{$date_range['after']}...{$date_range['before']}";
         }
 
@@ -188,11 +200,11 @@ class WCV_Vendor_Controller {
             AND orders.$status_column IN ('$statuses_str')
             AND (DATE(orders.$date_column) BETWEEN %s AND %s)",
             $vendor_id,
-            $date_range['after'],
-            $date_range['before'],
+            $date_after,
+            $date_before,
             'shop_order',
-            $date_range['after'],
-            $date_range['before']
+            $date_after,
+            $date_before
         );
         // phpcs:enable
 
@@ -439,8 +451,8 @@ class WCV_Vendor_Controller {
         $store_name        = isset( $_POST['_wcv_store_name'] ) ? trim( sanitize_text_field( wp_unslash( $_POST['_wcv_store_name'] ) ) ) : '';
         $store_phone       = isset( $_POST['_wcv_store_phone'] ) ? trim( sanitize_text_field( wp_unslash( $_POST['_wcv_store_phone'] ) ) ) : '';
         $store_phone_code  = isset( $_POST['_wcv_store_phone_code'] ) ? trim( sanitize_text_field( wp_unslash( $_POST['_wcv_store_phone_code'] ) ) ) : '';
-        $seller_info       = isset( $_POST['pv_seller_info'] ) ? trim( sanitize_textarea_field( wp_unslash( $_POST['pv_seller_info'] ) ) ) : '';
-        $store_description = isset( $_POST['pv_shop_description'] ) ? trim( sanitize_textarea_field( wp_unslash( $_POST['pv_shop_description'] ) ) ) : '';
+        $seller_info       = isset( $_POST['pv_seller_info'] ) ? trim( wp_kses_post( wp_unslash( $_POST['pv_seller_info'] ) ) ) : '';
+        $store_description = isset( $_POST['pv_shop_description'] ) ? trim( wp_kses_post( wp_unslash( $_POST['pv_shop_description'] ) ) ) : '';
         $address1          = isset( $_POST['_wcv_store_address1'] ) ? sanitize_text_field( wp_unslash( $_POST['_wcv_store_address1'] ) ) : '';
         $address2          = isset( $_POST['_wcv_store_address2'] ) ? sanitize_text_field( wp_unslash( $_POST['_wcv_store_address2'] ) ) : '';
         $city              = isset( $_POST['_wcv_store_city'] ) ? sanitize_text_field( wp_unslash( $_POST['_wcv_store_city'] ) ) : '';

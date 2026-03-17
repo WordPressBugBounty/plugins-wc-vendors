@@ -140,13 +140,15 @@ class WCV_Public_Assets {
 
     /**
      * Enqueue scripts
+     *
+     * @since 2.6.7 - Changed from get_option to wcv_get_pro_option.
      */
     public static function enqueue_scripts() {
         global $post;
-        $file_display            = get_option( 'wcvendors_file_display', '' );
-        $category_limit          = get_option( 'wcvendors_category_limit', '' );
-        $tag_limit               = get_option( 'wcvendors_tag_limit', '' );
-        $tag_separator           = get_option( 'wcvendors_tag_separator', '' );
+        $file_display            = wcv_get_pro_option( 'wcvendors_file_display', '' );
+        $category_limit          = wcv_get_pro_option( 'wcvendors_category_limit', '' );
+        $tag_limit               = wcv_get_pro_option( 'wcvendors_tag_limit', '' );
+        $tag_separator           = wcv_get_pro_option( 'wcvendors_tag_separator', '' );
         $shipping_method_enabled = wcv_is_vendors_shipping_enabled();
         $select2_handle          = wcv_get_select2_script_handle();
 

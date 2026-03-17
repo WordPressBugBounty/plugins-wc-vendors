@@ -314,8 +314,7 @@ class WCVendors_Commissions_Page extends WP_List_Table {
         }
 
         if ( 'top' === $which ) {
-            echo '<div class="alignleft actions" style="width: 80%;">';
-
+            echo '<div class="alignleft actions" id="wcv-commission-filters" style="width: 80%;">';
             // Date range fields.
             $this->date_range_fields( 'commission' );
 
@@ -335,12 +334,13 @@ class WCVendors_Commissions_Page extends WP_List_Table {
                     'name' => 'do-filter',
                 )
             );
+
             submit_button( __( 'Clear', 'wc-vendors' ), 'secondary', 'reset', false, array( 'type' => 'reset' ) );
 
-            echo '<a class="button wcv-action export_commissions" style="width: 110px; float: left;" href="' . esc_url_raw( wp_nonce_url( admin_url( 'admin.php?page=wcv-commissions&action=export_commissions' . $args_url ), 'export_commissions', 'nonce' ) ) . '">' . esc_html__( 'Export to CSV', 'wc-vendors' ) . '</a>';
-            echo '<a class="button wcv-action export_commission_totals" style="width: 150px; float: left;" href="' . esc_url_raw( wp_nonce_url( admin_url( 'admin.php?page=wcv-commissions&action=export_commission_totals' . $args_url ), 'export_commission_totals', 'nonce' ) ) . '">' . esc_html__( 'Export Totals to CSV', 'wc-vendors' ) . '</a>';
-            echo '<a class="button wcv-action export_paypal_masspay" style="width: 150px; float: left;" href="' . esc_url_raw( wp_nonce_url( admin_url( 'admin.php?page=wcv-commissions&action=export_paypal_masspay' . $args_url ), 'export_paypal_masspay', 'nonce' ) ) . '">' . esc_html__( 'PayPal Masspay CSV', 'wc-vendors' ) . '</a>';
-            echo '<a class="button wcv-action mark_all_commissions_paid" id="mark_all_paid" style="width: 100px; float: left;" href="' . esc_url_raw( wp_nonce_url( admin_url( 'admin.php?page=wcv-commissions&action=mark_all_paid' . $args_url ), 'mark_all_paid', 'nonce' ) ) . '">' . esc_html__( 'Mark all paid', 'wc-vendors' ) . '</a>';
+            echo '<a class="button wcv-action export_commissions" href="' . esc_url_raw( wp_nonce_url( admin_url( 'admin.php?page=wcv-commissions&action=export_commissions' . $args_url ), 'export_commissions', 'nonce' ) ) . '">' . esc_html__( 'Export to CSV', 'wc-vendors' ) . '</a>';
+            echo '<a class="button wcv-action export_commission_totals" href="' . esc_url_raw( wp_nonce_url( admin_url( 'admin.php?page=wcv-commissions&action=export_commission_totals' . $args_url ), 'export_commission_totals', 'nonce' ) ) . '">' . esc_html__( 'Export Totals to CSV', 'wc-vendors' ) . '</a>';
+            echo '<a class="button wcv-action export_paypal_masspay" href="' . esc_url_raw( wp_nonce_url( admin_url( 'admin.php?page=wcv-commissions&action=export_paypal_masspay' . $args_url ), 'export_paypal_masspay', 'nonce' ) ) . '">' . esc_html__( 'PayPal Masspay CSV', 'wc-vendors' ) . '</a>';
+            echo '<a class="button wcv-action mark_all_commissions_paid" id="mark_all_paid" href="' . esc_url_raw( wp_nonce_url( admin_url( 'admin.php?page=wcv-commissions&action=mark_all_paid' . $args_url ), 'mark_all_paid', 'nonce' ) ) . '">' . esc_html__( 'Mark all paid', 'wc-vendors' ) . '</a>';
             echo '</div>';
         }
     }
@@ -367,7 +367,7 @@ class WCVendors_Commissions_Page extends WP_List_Table {
         ?>
 
         <label for="from_date">
-            <?php esc_html_e( 'From:', 'wc-vendors' ); ?>
+            <span><?php esc_html_e( 'From:', 'wc-vendors' ); ?></span>
             <input
                 type="text"
                 size="9"
@@ -382,7 +382,7 @@ class WCVendors_Commissions_Page extends WP_List_Table {
         </label>
 
         <label for="from_date">
-            <?php esc_html_e( 'To:', 'wc-vendors' ); ?>
+            <span><?php esc_html_e( 'To:', 'wc-vendors' ); ?></span>
             <input
                 type="text"
                 size="9"
@@ -410,7 +410,7 @@ class WCVendors_Commissions_Page extends WP_List_Table {
 
         $com_status = isset( $_GET['com_status'] ) ? sanitize_text_field( wp_unslash( $_GET['com_status'] ) ) : '';
         ?>
-        <select id="com_status_dropdown" name="com_status" class="wc-enhanced-select">
+        <select id="com_status_dropdown" name="com_status">
             <option <?php selected( $com_status, '' ); ?> value=''><?php esc_attr_e( 'Show all Statuses', 'wc-vendors' ); ?></option>
             <option <?php selected( $com_status, 'due' ); ?> value="due"><?php esc_attr_e( 'Due', 'wc-vendors' ); ?></option>
             <option <?php selected( $com_status, 'paid' ); ?> value="paid"><?php esc_attr_e( 'Paid', 'wc-vendors' ); ?></option>

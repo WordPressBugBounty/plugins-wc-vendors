@@ -296,6 +296,67 @@
         form.attr('action', href);
       }
     });
+
+    // Sticky nav
+    const stickyNav = $('#wcv-navigation.wcv-sticky');
+    if (stickyNav.length) {
+      const navOffset = stickyNav.offset().top;
+      const spacer = $('<div class="wcv-sticky-spacer"></div>').css({
+        height: stickyNav.outerHeight(),
+        display: 'none'
+      });
+      stickyNav.after(spacer);
+
+      let scrollTicking = false;
+      let resizeTicking = false;
+
+      $(window).on('scroll.wcvStickyNav', function() {
+        if (!scrollTicking) {
+          window.requestAnimationFrame(function() {
+            if ($(window).scrollTop() >= navOffset) {
+              if (!stickyNav.hasClass('is-stuck')) {
+                const navWidth = stickyNav.outerWidth();
+                spacer.show();
+                stickyNav.addClass('is-stuck').css('width', navWidth);
+              }
+            } else {
+              stickyNav.removeClass('is-stuck').css('width', '');
+              spacer.hide();
+            }
+            scrollTicking = false;
+          });
+          scrollTicking = true;
+        }
+      });
+
+      $(window).on('resize.wcvStickyNav', function() {
+        if (!resizeTicking) {
+          window.requestAnimationFrame(function() {
+            if (stickyNav.hasClass('is-stuck')) {
+              stickyNav.css('width', spacer.outerWidth());
+            }
+            resizeTicking = false;
+          });
+          resizeTicking = true;
+        }
+      });
+    }
+
+    // Scroll to top button
+    const scrollToTopBtn = $('.wcv-scroll-to-top');
+    if (scrollToTopBtn.length) {
+      $(window).on('scroll.wcvScrollTop', function() {
+        if ($(this).scrollTop() > 300) {
+          scrollToTopBtn.addClass('visible');
+        } else {
+          scrollToTopBtn.removeClass('visible');
+        }
+      });
+
+      scrollToTopBtn.on('click', function() {
+        $('html, body').animate({ scrollTop: 0 }, 500);
+      });
+    }
   });
 })(jQuery, Ink);
 

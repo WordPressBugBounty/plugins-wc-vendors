@@ -133,6 +133,7 @@ class WCV_Emails {
         require_once WCV_PLUGIN_DIR . 'classes/admin/emails/class-wcv-vendor-notify-denied.php';
         require_once WCV_PLUGIN_DIR . 'classes/admin/emails/class-wcv-vendor-notify-order.php';
         require_once WCV_PLUGIN_DIR . 'classes/admin/emails/class-wcv-vendor-notify-cancelled-order.php';
+        require_once WCV_PLUGIN_DIR . 'classes/admin/emails/class-wcv-vendor-notify-out-of-stock.php';
 
         $emails['WCVendors_Customer_Notify_Shipped']       = new WCVendors_Customer_Notify_Shipped();
         $emails['WCVendors_Admin_Notify_Shipped']          = new WCVendors_Admin_Notify_Shipped();
@@ -144,6 +145,7 @@ class WCV_Emails {
         $emails['WCVendors_Vendor_Notify_Denied']          = new WCVendors_Vendor_Notify_Denied();
         $emails['WCVendors_Vendor_Notify_Order']           = new WCVendors_Vendor_Notify_Order();
         $emails['WCVendors_Vendor_Notify_Cancelled_Order'] = new WCVendors_Vendor_Notify_Cancelled_Order();
+        $emails['WCVendors_Vendor_Notify_Out_Of_Stock']    = new WCVendors_Vendor_Notify_Out_Of_Stock();
 
         return $emails;
     } // email_classes

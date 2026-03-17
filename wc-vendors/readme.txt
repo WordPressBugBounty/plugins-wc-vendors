@@ -2,8 +2,8 @@
 Contributors: jkohlbach, RymeraWebCo, Rymera01, smub
 Tags: multivendor, marketplace, multi vendor, product vendors, woocommerce commissions
 Requires at least: 5.5.0
-Tested up to: 6.9
-Stable tag: 2.6.6
+Tested up to: 7.0
+Stable tag: 2.6.7
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -298,6 +298,16 @@ You can report security bugs through the Patchstack Vulnerability Disclosure Pro
 12. Email notifications for admins, customers and vendors
 
 == Changelog ==
+
+= Version 2.6.7 - 10th March 2026 =
+ * Feature: Scheduled automated emails to vendors when a product is out of stock
+ * Improvement: Remove cart and checkout blocks notice
+ * Improvement: Make the menu bar sticky and add a scroll to top button
+ * Improvement: WC cart/checkout blocks compatibility
+ * Bug Fix: Vendors cannot create new tags
+ * Bug Fix: Allow HTML in vendor shop description, stripping HTML content
+ * Bug Fix: Empty categories do not appear in product add/edit form for checklist category display
+ * Bug Fix: Date filter timezone mismatch on vendor dashboard
 
 = Version 2.6.6 - 10th February 2026 =
  * Feature: AI-powered product moderation and review system

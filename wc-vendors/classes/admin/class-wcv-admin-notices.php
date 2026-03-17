@@ -32,13 +32,12 @@ class WCVendors_Admin_Notices {
      */
     private static $core_notices
         = array(
-            'install'           => 'install_notice',
-            'update'            => 'update_notice',
-            'template_files'    => 'template_file_check_notice',
-            'theme_support'     => 'theme_check_notice',
-            'review_request'    => 'review_request_notice',
-            'cart_and_checkout' => 'cart_and_checkout_notice',
-            'usage_tracking'    => 'usage_tracking_notice',
+            'install'        => 'install_notice',
+            'update'         => 'update_notice',
+            'template_files' => 'template_file_check_notice',
+            'theme_support'  => 'theme_check_notice',
+            'review_request' => 'review_request_notice',
+            'usage_tracking' => 'usage_tracking_notice',
         );
 
     /**
@@ -62,7 +61,6 @@ class WCVendors_Admin_Notices {
         add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_admin_notice_script' ) );
         add_action( 'wp_ajax_wcvendors_dismiss_notice', array( __CLASS__, 'ajax_process_dismiss_notice' ) );
         add_action( 'wcvendors_notice_scheduled_action', array( __CLASS__, 'trigger_notice' ), 10, 1 );
-        add_action( 'wp_ajax_wcvendors_switch_to_classic_cart_checkout', 'wcv_switch_to_classic_cart_checkout' );
     }
 
     /**
@@ -440,37 +438,6 @@ class WCVendors_Admin_Notices {
         wp_die();
     }
 
-    /**
-     * Cart and checkout notice
-     *
-     * @since 2.4.7
-     * @return void
-     */
-    public static function cart_and_checkout_notice() {
-
-        $cart_page     = get_post( wc_get_page_id( 'cart' ) );
-        $checkout_page = get_post( wc_get_page_id( 'checkout' ) );
-        $has_block     = has_block( 'woocommerce/checkout', $checkout_page ) || has_block( 'woocommerce/cart', $cart_page );
-        $is_dimissed   = wc_string_to_bool( get_option( 'wcvendors_dismissed_notice_cart_and_checkout', 'no' ) );
-
-        if ( ! current_user_can( 'manage_options' ) ) {
-            return;
-        }
-
-        if ( ! $has_block ) {
-            return;
-        }
-
-        if ( version_compare( WC()->version, '8.3.0', '<' ) ) {
-            return;
-        }
-
-        if ( $is_dimissed ) {
-            return;
-        }
-
-        include 'views/notices/html-notice-cart-and-checkout.php';
-    }
 
     /**
      * Usage tracking notice

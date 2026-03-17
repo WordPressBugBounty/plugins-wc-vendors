@@ -49,6 +49,7 @@ class WCVendors_Admin_Settings extends WC_Admin_Settings {
             $settings[] = include WCV_ABSPATH_ADMIN . 'settings/class-wcv-settings-commission.php';
             $settings[] = include WCV_ABSPATH_ADMIN . 'settings/class-wcv-settings-capabilities.php';
             $settings[] = include WCV_ABSPATH_ADMIN . 'settings/class-wcv-settings-display.php';
+            $settings[] = include WCV_ABSPATH_ADMIN . 'settings/class-wcv-settings-notifications.php';
             $settings[] = include WCV_ABSPATH_ADMIN . 'settings/class-wcv-settings-advanced.php';
             if ( ! is_wcv_pro_active() ) {
                 $settings[] = include WCV_ABSPATH_ADMIN . 'settings/class-wcv-settings-form.php';
@@ -227,7 +228,13 @@ class WCVendors_Admin_Settings extends WC_Admin_Settings {
                                 class="<?php echo esc_attr( $value['class'] ); ?>"
                                 placeholder="<?php echo esc_attr( $value['placeholder'] ); ?>"
                                 <?php self::build_custom_attribute( $custom_attributes ); ?>
-                                /><?php echo esc_html( $value['suffix'] ); ?> <?php echo wp_kses_post( $description ); ?>
+                                />
+                                <?php
+                                if ( ! empty( $value['suffix'] ) ) :
+                                ?>
+                                <span style="margin-left: 5px;"><?php echo esc_html( $value['suffix'] ); ?></span>
+                                <?php endif; ?>
+                                <?php echo wp_kses_post( $description ); ?>
                             <?php do_action( 'wcvendors_after_standard_text_input_field', $value ); ?>
                         </td>
                     </tr>

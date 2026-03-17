@@ -649,8 +649,8 @@ class WCV_Order_Controller {
     public function table_rows() {
 
         $date_range = array(
-            'before' => gmdate( 'Y-m-d', $this->get_end_date() ),
-            'after'  => gmdate( 'Y-m-d', $this->get_start_date() ),
+            'before' => $this->get_end_date(),
+            'after'  => $this->get_start_date(),
         );
 
         /**
@@ -1483,8 +1483,8 @@ class WCV_Order_Controller {
         include_once 'class-wcv-export-helper.php';
 
         $date_range = array(
-            'before' => gmdate( 'Y-m-d', $this->get_end_date() ),
-            'after'  => gmdate( 'Y-m-d', $this->get_start_date() ),
+            'before' => $this->get_end_date(),
+            'after'  => $this->get_start_date(),
         );
 
         $csv_output  = new \WCV_Export_Helper();

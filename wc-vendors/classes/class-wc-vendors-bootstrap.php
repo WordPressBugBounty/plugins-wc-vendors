@@ -123,6 +123,8 @@ class WC_Vendors_Bootstrap {
         // Test payment gateway.
         add_filter( 'woocommerce_payment_gateways', array( $this, 'add_wcvendors_test_gateway' ) );
 
+        add_action( 'woocommerce_blocks_payment_method_type_registration', array( $this, 'add_wcv_test_gateway_block' ), 10, 1 );
+
         add_action( 'wcvendors_sync_vendor_status', 'wcvendors_add_vendor_status_meta_key' );
 
         add_action( 'wcvendors_after_update_plugin', array( $this, 'after_plugin_update' ) );
@@ -444,6 +446,10 @@ class WC_Vendors_Bootstrap {
         // Initialize the synchronizer.
         $synchronizer = new WCV_Order_Data_Synchronizer();
         $synchronizer->init_hooks();
+
+        // Out-of-stock vendor reminders.
+        include_once WCV_PLUGIN_DIR . 'classes/class-wcv-out-of-stock-reminder.php';
+        new WCV_Out_Of_Stock_Reminder();
     }
 
     /**
@@ -530,6 +536,7 @@ class WC_Vendors_Bootstrap {
     public function include_gateways() {
         require_once WCV_PLUGIN_DIR . 'classes/gateways/PayPal_Masspay/class-paypal-masspay.php';
         require_once WCV_PLUGIN_DIR . 'classes/gateways/WCV_Gateway_Test/class-wcv-gateway-test.php';
+        require_once WCV_PLUGIN_DIR . 'classes/gateways/WCV_Gateway_Test/class-wcv-gateway-test-block.php';
     }
 
     /**
@@ -653,6 +660,23 @@ class WC_Vendors_Bootstrap {
     public function add_wcvendors_test_gateway( $methods ) {
         $methods[] = 'WC_Gateway_WCV_Gateway_Test';
         return $methods;
+    }
+
+    /**
+     * Add blocks support for the WC Vendors Test Gateway.
+     *
+     * @since 2.6.7
+     * @version 2.6.7
+     *
+     * @param Automattic\WooCommerce\Blocks\Payments\Integrations\PaymentMethodTypesRegistry $payment_method_types The payment method types registry.
+     * @return void
+     */
+    public function add_wcv_test_gateway_block( $payment_method_types ) {
+
+        if ( ! class_exists( 'WC_Payment_Method_Type_WCV_Gateway_Test_Block' ) ) {
+            return;
+        }
+        $payment_method_types->register( new WC_Payment_Method_Type_WCV_Gateway_Test_Block() );
     }
 
     /**

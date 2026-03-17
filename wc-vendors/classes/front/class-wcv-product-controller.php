@@ -636,7 +636,7 @@ class WCV_Product_Controller {
 
             $post_tags = is_array( $_POST['product_tags'] ) ? $_POST['product_tags'] : array(); //phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 
-            $post_tags = array_map( 'intval', $post_tags );
+            $post_tags = array_map( 'sanitize_text_field', $post_tags );
 
             $tags = array();
 

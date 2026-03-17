@@ -553,61 +553,6 @@ if ( ! function_exists( 'wcv_trigger_admin_notice' ) ) {
     }
 }
 
-if ( ! function_exists( 'wcv_switch_to_classic_cart_checkout' ) ) {
-
-    /**
-     * Switch to classic cart/checkout
-     *
-     * @since 2.4.8
-     * @version 2.4.8
-     * @return void
-     */
-    function wcv_switch_to_classic_cart_checkout() {
-        if ( ! current_user_can( 'manage_woocommerce' ) ) {
-            return;
-        }
-
-        if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'switch_cc_blocks' ) ) {
-            return;
-        }
-
-        $cart_page     = get_post( wc_get_page_id( 'cart' ) );
-        $checkout_page = get_post( wc_get_page_id( 'checkout' ) );
-
-        if ( ! $cart_page || ! $checkout_page ) {
-            return;
-        }
-
-        if ( ! has_block( 'woocommerce/cart', $cart_page ) && ! has_block( 'woocommerce/checkout', $checkout_page ) ) {
-            wp_die();
-        }
-
-        if ( has_block( 'woocommerce/cart', $cart_page ) ) {
-            wp_update_post(
-                array(
-                    'ID'           => $cart_page->ID,
-                    'post_content' => '<!-- wp:woocommerce/classic-shortcode /-->',
-                )
-            );
-        }
-
-        if ( has_block( 'woocommerce/checkout', $checkout_page ) ) {
-            wp_update_post(
-                array(
-                    'ID'           => $checkout_page->ID,
-                    'post_content' => '<!-- wp:woocommerce/classic-shortcode {"shortcode":"checkout"} /-->	',
-                )
-            );
-        }
-        wp_send_json_success(
-            array(
-                'message' => __( 'Successfully switched to Classic Cart/Checkout.', 'wc-vendors' ),
-            )
-        );
-        wp_die();
-    }
-}
-
 if ( ! function_exists( 'wcv_get_product_total_sales' ) ) {
     /**
      * Get total sales for a product by order status.

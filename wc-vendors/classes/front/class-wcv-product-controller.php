@@ -1601,7 +1601,7 @@ class WCV_Product_Controller {
                 for ( $ii = 0; $ii < $file_url_size; $ii++ ) {
                     if ( ! empty( $file_urls[ $ii ] ) ) {
                         // Find type and file URL.
-                        if ( 0 === strpos( $file_urls[ $ii ], 'http' ) ) {
+                        if ( str_starts_with( $file_urls[ $ii ], 'http' ) ) {
                             $file_is  = 'absolute';
                             $file_url = esc_url_raw( $file_urls[ $ii ] );
                         } elseif ( '[ ' === substr( $file_urls[ $ii ], 0, 1 ) && ' ]' === substr( $file_urls[ $ii ], -1 ) ) {
@@ -2063,10 +2063,11 @@ class WCV_Product_Controller {
                 continue;
             }
 
-            $product_price = wc_get_price_to_display( $product );
+            $tn_img  = has_post_thumbnail( $row->ID ) ? get_the_post_thumbnail( $row->ID, array( 160, 160 ), array( 'style' => 'margin-bottom: 0;' ) ) : wc_placeholder_img( 'thumbnail', array( 'style' => 'margin-bottom: 0;' ) );
+            $tn_sale = $product->is_on_sale() ? '<span class="wcv-sale-badge">' . esc_html__( 'Sale', 'wc-vendors' ) . '</span>' : '';
 
             $new_row->ID          = $row->ID;
-            $new_row->tn          = has_post_thumbnail( $row->ID ) ? get_the_post_thumbnail( $row->ID, array( 160, 160 ), array( 'style' => 'margin-bottom: 0;' ) ) : wc_placeholder_img( 'thumbnail', array( 'style' => 'margin-bottom: 0;' ) );
+            $new_row->tn          = '<div class="wcv-thumb-wrap">' . $tn_img . $tn_sale . '</div>';
             $new_row->tn         .= sprintf(
                 '<div class="wcv_mobile">
                 <h4 class="wcv-product-title">
@@ -2082,7 +2083,7 @@ class WCV_Product_Controller {
                 'publish' === $row->post_status ? $product->get_date_created()->date( $this->date_format ) : ''
             );
             $new_row->details     = apply_filters( 'wcv_product_row_details', $this->build_row_details( $product ) );
-            $new_row->price       = wc_price( $product_price . $product->get_price_suffix() );
+            $new_row->price       = $product->get_price_html();
             $new_row->status      = apply_filters( 'wcv_product_row_status', '', $row->post_status, $product->get_type(), $row->post_date, $product->get_stock_status(), $product );
             $new_row->row_actions = $row_actions;
             $new_row->product     = $product;
@@ -2252,12 +2253,6 @@ class WCV_Product_Controller {
             $attribute_taxonomy->attribute_type  = 'text';
             $attribute_taxonomy->attribute_label = '';
         }
-
-            $attribute_types = wc_get_attribute_types();
-
-            if ( ! array_key_exists( $attribute_taxonomy->attribute_type, $attribute_types ) || ! ( 'text' === $attribute_taxonomy->attribute_type ) || ! ( 'select' === $attribute_taxonomy->attribute_type ) ) {
-                $attribute_taxonomy->attribute_type = 'select';
-            }
 
         $attribute_terms_allowed = wc_string_to_bool( wcv_get_pro_option( 'wcvendors_allow_vendor_attribute_terms', 'no' ) );
 
@@ -2594,7 +2589,7 @@ class WCV_Product_Controller {
             die( -1 );
         }
 
-        if ( function_exists( 'set_time_limit' ) && false === strpos( ini_get( 'disable_functions' ), 'set_time_limit' ) && ! ini_get( 'safe_mode' ) ) {
+        if ( function_exists( 'set_time_limit' ) && ! str_contains( ini_get( 'disable_functions' ), 'set_time_limit' ) && ! ini_get( 'safe_mode' ) ) {
 			@set_time_limit( 0 ); //phpcs:ignore
         }
 
@@ -2975,7 +2970,7 @@ class WCV_Product_Controller {
     public function filter_upload( $file ) {
 
         // Run the prefix code on the dashboard for all vendor uploaded images.
-        if ( false === strpos( wp_get_referer(), \WCV_Vendor_Dashboard::get_dashboard_page_url() ) ) {
+        if ( ! str_contains( wp_get_referer(), \WCV_Vendor_Dashboard::get_dashboard_page_url() ) ) {
             return $file;
         }
 
@@ -2984,7 +2979,7 @@ class WCV_Product_Controller {
         $image        = getimagesize( $file['tmp_name'] );
 
         // Only run this code on images.
-        if ( false === $image || false === strpos( $image['mime'], 'image' ) ) {
+        if ( false === $image || ! str_contains( $image['mime'], 'image' ) ) {
             return $file;
         }
 
@@ -3006,7 +3001,7 @@ class WCV_Product_Controller {
         }
 
         // Only run this on the Pro dashboard page product page.
-        if ( false === strpos( wp_get_referer(), \WCV_Vendor_Dashboard::get_dashboard_page_url( 'product' ) ) ) {
+        if ( ! str_contains( wp_get_referer(), \WCV_Vendor_Dashboard::get_dashboard_page_url( 'product' ) ) ) {
             return $file;
         }
 
@@ -3290,7 +3285,7 @@ class WCV_Product_Controller {
             $row_data['sku'] = $product->get_sku();
         }
 
-        $row_data['price'] = wc_price( $product->get_price() );
+        $row_data['price'] = $product->get_price_html();
 
         ob_start();
 

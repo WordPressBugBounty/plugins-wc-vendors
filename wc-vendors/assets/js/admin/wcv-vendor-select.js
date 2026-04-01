@@ -1,21 +1,21 @@
-(function($) {
-  var debouncedInit = debounce(initSelect2, 100);
+;(function($) {
+  var debouncedInit = debounce(initSelect2, 100)
 
   $('document').ready(function() {
-    initSelect2();
-  });
-  $('button.editinline').on('click', debouncedInit);
+    initSelect2()
+  })
+  $('button.editinline').on('click', debouncedInit)
   $('#doaction').on('click', function() {
-    if ($('#bulk-action-selector-top').val() === 'edit') debouncedInit();
-  });
+    if ($('#bulk-action-selector-top').val() === 'edit') debouncedInit()
+  })
   $('#doaction2').on('click', function() {
-    if ($('#bulk-action-selector-bottom').val() === 'edit') debouncedInit();
-  });
+    if ($('#bulk-action-selector-bottom').val() === 'edit') debouncedInit()
+  })
 
   function initSelect2() {
     var $selectBox = $('.wcv-vendor-select:visible').length
       ? $('.wcv-vendor-select:visible')
-      : $('#post_author_override');
+      : $('#post_author_override')
 
     $selectBox.select2({
       minimumInputLength: wcv_vendor_select.minimum_input_length,
@@ -27,30 +27,31 @@
         data: function(params) {
           return {
             action: 'wcv_search_vendors',
-            term: params.term
-          };
+            term: params.term,
+            _ajax_nonce: wcv_vendor_select.vendor_search_nonce
+          }
         }
       }
-    });
+    })
 
     $('#bulk-edit .cancel').on('click', function() {
-      $selectBox.select2('destroy');
-    });
+      $selectBox.select2('destroy')
+    })
   }
 
   function debounce(func, wait, immediate) {
-    var timeout;
+    var timeout
     return function() {
       var context = this,
-        args = arguments;
+        args = arguments
       var later = function() {
-        timeout = null;
-        if (!immediate) func.apply(context, args);
-      };
-      var callNow = immediate && !timeout;
-      clearTimeout(timeout);
-      timeout = setTimeout(later, wait);
-      if (callNow) func.apply(context, args);
-    };
+        timeout = null
+        if (!immediate) func.apply(context, args)
+      }
+      var callNow = immediate && !timeout
+      clearTimeout(timeout)
+      timeout = setTimeout(later, wait)
+      if (callNow) func.apply(context, args)
+    }
   }
-})(jQuery);
+})(jQuery)

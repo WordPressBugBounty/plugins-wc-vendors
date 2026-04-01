@@ -140,7 +140,7 @@ class WCV_Vite_Loader {
      * @return string
      */
     public function add_module_to_scripts_tag( $tag, $handle ) {
-        if ( strpos( $handle, $this->app_name ) !== false ) {
+        if ( str_contains( $handle, $this->app_name ) ) {
             $tag = str_replace( ' src', ' type="module" src', $tag ); // phpcs:ignore
         }
         return $tag;

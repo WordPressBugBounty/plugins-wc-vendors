@@ -493,10 +493,11 @@ class WC_Vendors_Bootstrap {
                 'wcv_quick-edit',
                 'wcv_quick_edit_params',
                 array(
-                    'allow_featured' => apply_filters(
+                    'allow_featured'      => apply_filters(
                         'wcvendors_capability_allow_product_featured',
                         get_option( 'wcvendors_capability_product_featured', 'no' )
                     ),
+                    'vendor_search_nonce' => wp_create_nonce( 'wcv_vendor_search' ),
                 )
             );
             break;

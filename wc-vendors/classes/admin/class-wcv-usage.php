@@ -438,7 +438,7 @@ class Usage {
 
         // Don't track anything from our domains.
         $home_url = trailingslashit( home_url() );
-        if ( strpos( $home_url, 'wholesalesuiteplugin.com' ) !== false || strpos( $home_url, 'advancedcouponsplugin.com' ) !== false || strpos( $home_url, 'wcvendors.com' ) !== false ) {
+        if ( str_contains( $home_url, 'wholesalesuiteplugin.com' ) || str_contains( $home_url, 'advancedcouponsplugin.com' ) || str_contains( $home_url, 'wcvendors.com' ) ) {
             return false;
         }
 

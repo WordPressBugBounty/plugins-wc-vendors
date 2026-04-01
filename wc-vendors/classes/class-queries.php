@@ -372,7 +372,7 @@ class WCV_Queries {
         if ( null === WC()->session ) {
             $session_class = apply_filters( 'woocommerce_session_handler', 'WC_Session_Handler' );
             // Prefix session class with global namespace if not already namespaced.
-            if ( false === strpos( $session_class, '\\' ) ) {
+            if ( ! str_contains( $session_class, '\\' ) ) {
                 $session_class = '\\' . $session_class;
             }
             WC()->session = new $session_class();

@@ -1,15 +1,27 @@
 Changelog for WC Vendors Marketplace
 
+Version 2.6.8 - 31st March 2026
+
+ * Improvement: Replace strpos() with str_contains() across the codebase
+ * Improvement: Redesign the submenu for the Vendor Dashboard settings page
+ * Improvement: Add product quantity as a separate column in the Orders CSV file exported from the Vendor Dashboard
+ * Improvement: Show sale price and sale badge on the Vendor Dashboard product table
+ * Improvement: Update display description in settings to show new [wcv_pro_vendorslist] shortcode
+ * Bug Fix: Incorrect negative percentage displayed when current value is higher than last month
+ * Bug Fix: Call to undefined function format_commission_rate during update routine
+ * Bug Fix: Quick Edit option displays incorrect vendor name
+ * Bug Fix: Attribute value field missing for non-select/text attribute types
+
 Version 2.6.7 - 10th March 2026
 
-* Feature: Scheduled automated emails to vendors when a product is out of stock
-* Improvement: Remove cart and checkout blocks notice
-* Improvement: Make the menu bar sticky and add a scroll to top button
-* Improvement: WC cart/checkout blocks compatibility
-* Bug Fix: Vendors cannot create new tags
-* Bug Fix: Allow HTML in vendor shop description, stripping HTML content
-* Bug Fix: Empty categories do not appear in product add/edit form for checklist category display
-* Bug Fix: Date filter timezone mismatch on vendor dashboard
+ * Feature: Scheduled automated emails to vendors when a product is out of stock
+ * Improvement: Remove cart and checkout blocks notice
+ * Improvement: Make the menu bar sticky and add a scroll to top button
+ * Improvement: WC cart/checkout blocks compatibility
+ * Bug Fix: Vendors cannot create new tags
+ * Bug Fix: Allow HTML in vendor shop description, stripping HTML content
+ * Bug Fix: Empty categories do not appear in product add/edit form for checklist category display
+ * Bug Fix: Date filter timezone mismatch on vendor dashboard
 
 Version 2.6.6 - 10th February 2026
 
@@ -562,7 +574,7 @@ Version 2.1.14 - 11th September 2019
 * Fixed: Php notice on orders view page
 * Fixed: spelling in attributes file
 
-Verison 2.1.13 - 26th August 2019
+Version 2.1.13 - 26th August 2019
 
 * Added: New shop description option for vendor store page
 * Added: Check post type on delete for sub orders

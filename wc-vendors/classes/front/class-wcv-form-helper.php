@@ -1430,7 +1430,7 @@ class WCV_Form_Helper {
                                 $new_validation_rules['data-parsley-decimal'] = wc_get_price_decimal_separator();
                                 break;
                             default:
-                                if ( strpos( $rule, 'max_length' ) === 0 ) {
+                                if ( str_starts_with( $rule, 'max_length' ) ) {
                                     preg_match( '/\[(.*)\]/', $rule, $matches );
                                     $new_validation_rules['data-parsley-maxlength'] = $matches[1];
                                 }

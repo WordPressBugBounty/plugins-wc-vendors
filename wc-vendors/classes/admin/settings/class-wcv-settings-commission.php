@@ -28,6 +28,19 @@ if ( ! class_exists( 'WCVendors_Settings_Commission', false ) ) :
             $this->label = __( 'Commission', 'wc-vendors' );
 
             parent::__construct();
+            add_action( 'init', array( $this, 'register_filters' ), 20 );
+        }
+
+        /**
+         * Register option filters.
+         *
+         * Deferred to the init hook so the filter is not active during the
+         * install/update routine (create_options), preventing a fatal error
+         * caused by wcv-admin-functions.php not yet being loaded at that point.
+         *
+         * @since 2.6.8
+         */
+        public function register_filters() {
             add_filter( 'option_wcvendors_vendor_commission_rate', array( $this, 'format_commission_rate' ), 10, 1 );
         }
 
@@ -47,7 +60,7 @@ if ( ! class_exists( 'WCVendors_Settings_Commission', false ) ) :
             }
 
             $wc_separator = wc_get_price_decimal_separator();
-            if ( '.' !== $wc_separator && false !== strpos( $value, $wc_separator ) ) {
+            if ( '.' !== $wc_separator && str_contains( $value, $wc_separator ) ) {
                 return $value;
             }
 

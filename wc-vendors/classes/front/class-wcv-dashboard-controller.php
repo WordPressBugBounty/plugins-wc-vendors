@@ -131,9 +131,14 @@ class WCV_Dashboard_Controller {
         $this->last_month_start_date = ( clone $now )->modify( 'first day of last month' )->format( 'Y-m-d' );
         $now->setTime( 23, 59, 59 );
 
-        // Check if last month has the same date as end_date, if not assign it to the last day of last month.
-        $last_day_of_last_month    = ( clone $now )->modify( 'last day of last month' )->format( 'Y-m-d' );
-        $this->last_month_end_date = ( $now->format( 'Y-m-d' ) === $this->end_date ) ? $now->format( 'Y-m-d' ) : $last_day_of_last_month;
+        // Set last month end date to the same day-of-month as today, capped at the last day of last month.
+        // Avoids PHP's modify('-1 month') / modify('last month') overflow (e.g. March 31 → April 1).
+        $last_day_of_last_month_dt = ( clone $now )->modify( 'last day of last month' );
+        $target_day                = min( (int) $now->format( 'd' ), (int) $last_day_of_last_month_dt->format( 'd' ) );
+        $this->last_month_end_date = ( clone $now )
+            ->modify( 'first day of last month' )
+            ->modify( '+' . ( $target_day - 1 ) . ' days' )
+            ->format( 'Y-m-d' );
 
         $this->orders                  = $this->get_orders();
         $this->pending_shipping_orders = $this->get_pending_shipping_orders();

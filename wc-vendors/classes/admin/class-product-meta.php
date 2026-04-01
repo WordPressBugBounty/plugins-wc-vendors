@@ -79,6 +79,7 @@ class WCV_Product_Meta {
             'wcv_vendor_select',
             array(
                 'minimum_input_length' => apply_filters( 'wcvndors_vendor_select_minimum_input_length', 4 ),
+                'vendor_search_nonce'  => wp_create_nonce( 'wcv_vendor_search' ),
             )
         );
     }
@@ -175,7 +176,7 @@ class WCV_Product_Meta {
         }
 
         // Return if this isn't the vendor author override dropdown.
-        if ( ! strpos( $output, 'post_author_override' ) ) {
+        if ( ! str_contains( $output, 'post_author_override' ) ) {
             return $output;
         }
 
@@ -433,41 +434,26 @@ class WCV_Product_Meta {
      */
     public function display_vendor_dropdown_quick_edit() {
 
-        global $post, $wp_query;
-        $author_ids     = array_unique( array_values( array_column( $wp_query->posts, 'post_author' ) ) );
-        $selectbox_args = array(
-            'id'       => 'post_author-new',
-            'class'    => 'select',
-            'selected' => $post->post_author,
-            'authors'  => $author_ids,
-        );
-        $output         = $this->vendor_selectbox( $selectbox_args, false );
-
         wp_nonce_field( 'wcv-media-author-override', 'wcv-media-author-override-nonce' );
         ?>
         <br class="clear"/>
         <label class="inline-edit-author-new">
-            <span class="title">
-            <?php
-            echo esc_attr(
-                sprintf(
-                // translators: %s is the name used to refer to a vendor.
-                __( '%s', 'wc-vendors' ), wcv_get_vendor_name() ) ); // phpcs:ignore ?></span>
-            <?php echo wp_kses( $output, wcv_allowed_html_tags() ); ?>
+            <span class="title"><?php echo esc_html( wcv_get_vendor_name() ); ?></span>
+            <select name="post_author-new" id="post_author-new" class="wcv-vendor-select-quick-edit" style="width:200px;"></select>
         </label>
         <br class="clear"/>
         <label class="inline-edit-author-new">
             <input name="product_media_author_override" type="checkbox"/>
             <span class="title">Media</span>
             <?php
-            echo esc_attr(
+            echo esc_html(
                 sprintf(
-                // translators: %s is the name used to refer to a vendor.
+                    // translators: %s is the name used to refer to a vendor.
                     __( 'Assign media to %s', 'wc-vendors' ),
                     wcv_get_vendor_name()
                 )
             );
-                ?>
+            ?>
         </label>
         <?php
     }
@@ -636,11 +622,16 @@ class WCV_Product_Meta {
 
         switch ( $column ) {
             case 'name':
+                $vendor_user  = get_userdata( (int) $vendor );
+                $vendor_name  = $vendor_user ? $vendor_user->display_name : '';
+                $pv_shop_name = get_user_meta( (int) $vendor, 'pv_shop_name', true );
+                if ( $vendor_name && $pv_shop_name ) {
+                    $vendor_name .= ' (' . $pv_shop_name . ')';
+                }
                 ?>
                 <div class="hidden vendor" id="vendor_<?php echo esc_attr( $post_id ); ?>">
-                    <div id="post_author">
-                        <?php echo esc_attr( $vendor ); ?>
-                    </div>
+                    <div class="post_author"><?php echo esc_attr( $vendor ); ?></div>
+                    <div class="post_author_name"><?php echo esc_attr( $vendor_name ); ?></div>
                 </div>
                 <?php
                 break;
@@ -701,6 +692,8 @@ class WCV_Product_Meta {
      */
     public function search_vendors() {
         global $wpdb;
+
+        check_ajax_referer( 'wcv_vendor_search', '_ajax_nonce' );
 
         $search_string = sanitize_text_field( wp_unslash( $_POST['term'] ) ); // phpcs:ignore
 

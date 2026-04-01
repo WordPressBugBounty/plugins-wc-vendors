@@ -756,7 +756,7 @@ class WCV_Vendor_Dashboard {
         */
         $my_account_url = get_permalink( wc_get_page_id( 'myaccount' ) );
 
-        if ( ( $referer && strpos( $referer, $my_account_url ) !== false ) && $accept_terms && $redirect_to_form && $manual ) {
+        if ( ( $referer && str_contains( $referer, $my_account_url ) ) && $accept_terms && $redirect_to_form && $manual ) {
             $is_vendor = false;
         }
 
@@ -1429,7 +1429,7 @@ class WCV_Vendor_Dashboard {
         );
         $request_uri = isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
         foreach ( $slugs as $old_slug => $new_slug ) {
-            if ( strpos( $request_uri, $old_slug ) !== false ) {
+            if ( str_contains( $request_uri, $old_slug ) ) {
                 wp_safe_redirect( home_url( $new_slug ), 301 );
                 exit;
             }

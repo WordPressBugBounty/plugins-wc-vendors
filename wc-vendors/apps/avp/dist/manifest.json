@@ -3,202 +3,202 @@
     "file": "assets/DynamicControl-ec409874.css",
     "src": "DynamicControl.css"
   },
-  "_ActionButton.7aaa0aa3.js": {
-    "file": "common/ActionButton.7aaa0aa3.js",
+  "_ActionButton.265b9cc4.js": {
+    "file": "common/ActionButton.265b9cc4.js",
     "imports": [
       "src/main.ts",
-      "_vendor.c7ac217d.js",
-      "_VendorStore.03335c4e.js"
+      "_vendor.84fc1123.js",
+      "_VendorStore.d737faa9.js"
     ]
   },
-  "_DynamicControl.3bcb2aa9.js": {
+  "_DynamicControl.627d1dc9.js": {
     "css": [
       "assets/DynamicControl-ec409874.css"
     ],
     "dynamicImports": [
       "src/components/DynamicComponent.vue"
     ],
-    "file": "common/DynamicControl.3bcb2aa9.js",
+    "file": "common/DynamicControl.627d1dc9.js",
     "imports": [
       "src/main.ts",
-      "_vendor.c7ac217d.js",
-      "_antd.1fca4c02.js",
-      "_VendorStore.03335c4e.js",
-      "_index.e98ba066.js",
+      "_vendor.84fc1123.js",
+      "_antd.7f3c63f7.js",
+      "_VendorStore.d737faa9.js",
+      "_index.4e3cad7b.js",
       "__plugin-vue_export-helper.c27b6911.js",
-      "_index.d3a17d8d.js",
-      "_index.2f9d31f8.js",
-      "_VendorEdit.d2b62d10.js"
+      "_index.109b4b21.js",
+      "_index.380800ce.js",
+      "_VendorEdit.9f7f9a17.js"
     ],
     "isDynamicEntry": true
   },
-  "_VendorEdit.d2b62d10.js": {
+  "_VendorEdit.9f7f9a17.js": {
     "dynamicImports": [
-      "_DynamicControl.3bcb2aa9.js"
+      "_DynamicControl.627d1dc9.js"
     ],
-    "file": "common/VendorEdit.d2b62d10.js",
+    "file": "common/VendorEdit.9f7f9a17.js",
     "imports": [
       "src/main.ts",
-      "_vendor.c7ac217d.js",
-      "_VendorStore.03335c4e.js",
-      "_index.aa07ebbd.js",
-      "_hasIn.c63e6020.js",
-      "_antd.1fca4c02.js",
-      "_initDefaultProps.e3cf1eda.js",
-      "_index.2f9d31f8.js",
-      "_index.e98ba066.js",
-      "_index.231110d3.js"
+      "_vendor.84fc1123.js",
+      "_VendorStore.d737faa9.js",
+      "_index.ebb33149.js",
+      "_hasIn.ec097647.js",
+      "_antd.7f3c63f7.js",
+      "_initDefaultProps.71991ecc.js",
+      "_index.380800ce.js",
+      "_index.4e3cad7b.js",
+      "_index.7f1c23e8.js"
     ],
     "isDynamicEntry": true
   },
-  "_VendorStore.03335c4e.js": {
-    "file": "common/VendorStore.03335c4e.js",
+  "_VendorStore.d737faa9.js": {
+    "file": "common/VendorStore.d737faa9.js",
     "imports": [
       "src/main.ts",
-      "_vendor.c7ac217d.js",
-      "_antd.1fca4c02.js",
-      "_initDefaultProps.e3cf1eda.js"
+      "_vendor.84fc1123.js",
+      "_antd.7f3c63f7.js",
+      "_initDefaultProps.71991ecc.js"
     ]
   },
   "__plugin-vue_export-helper.c27b6911.js": {
     "file": "common/_plugin-vue_export-helper.c27b6911.js"
   },
-  "_antd.1fca4c02.js": {
-    "file": "common/antd.1fca4c02.js",
+  "_antd.7f3c63f7.js": {
+    "file": "common/antd.7f3c63f7.js",
     "imports": [
-      "_vendor.c7ac217d.js"
+      "_vendor.84fc1123.js"
     ]
   },
-  "_hasIn.c63e6020.js": {
-    "file": "common/hasIn.c63e6020.js",
+  "_hasIn.ec097647.js": {
+    "file": "common/hasIn.ec097647.js",
     "imports": [
-      "_VendorStore.03335c4e.js"
+      "_VendorStore.d737faa9.js"
     ]
   },
-  "_index.231110d3.js": {
-    "file": "common/index.231110d3.js",
-    "imports": [
-      "src/main.ts",
-      "_vendor.c7ac217d.js",
-      "_VendorStore.03335c4e.js",
-      "_initDefaultProps.e3cf1eda.js",
-      "_ActionButton.7aaa0aa3.js"
-    ]
-  },
-  "_index.2f9d31f8.js": {
-    "file": "common/index.2f9d31f8.js",
+  "_index.109b4b21.js": {
+    "file": "common/index.109b4b21.js",
     "imports": [
       "src/main.ts",
-      "_vendor.c7ac217d.js",
-      "_VendorStore.03335c4e.js",
-      "_index.231110d3.js",
-      "_antd.1fca4c02.js"
+      "_vendor.84fc1123.js",
+      "_VendorStore.d737faa9.js",
+      "_initDefaultProps.71991ecc.js",
+      "_antd.7f3c63f7.js"
     ]
   },
-  "_index.88348e24.js": {
-    "file": "common/index.88348e24.js",
+  "_index.380800ce.js": {
+    "file": "common/index.380800ce.js",
     "imports": [
       "src/main.ts",
-      "_vendor.c7ac217d.js",
-      "_VendorStore.03335c4e.js",
-      "_index.99e6b1c5.js",
-      "_antd.1fca4c02.js",
-      "_index.d3a17d8d.js",
-      "_responsiveObserve.c3ec2d73.js",
-      "_initDefaultProps.e3cf1eda.js"
+      "_vendor.84fc1123.js",
+      "_VendorStore.d737faa9.js",
+      "_index.7f1c23e8.js",
+      "_antd.7f3c63f7.js"
     ]
   },
-  "_index.99e6b1c5.js": {
-    "file": "common/index.99e6b1c5.js",
+  "_index.4e3cad7b.js": {
+    "file": "common/index.4e3cad7b.js",
     "imports": [
       "src/main.ts",
-      "_vendor.c7ac217d.js",
-      "_initDefaultProps.e3cf1eda.js"
+      "_vendor.84fc1123.js",
+      "_VendorStore.d737faa9.js"
     ]
   },
-  "_index.aa07ebbd.js": {
-    "file": "common/index.aa07ebbd.js",
+  "_index.60678172.js": {
+    "file": "common/index.60678172.js",
     "imports": [
       "src/main.ts",
-      "_vendor.c7ac217d.js",
-      "_VendorStore.03335c4e.js",
-      "_initDefaultProps.e3cf1eda.js",
-      "_ActionButton.7aaa0aa3.js"
+      "_vendor.84fc1123.js",
+      "_VendorStore.d737faa9.js",
+      "_index.e3da6296.js",
+      "_antd.7f3c63f7.js",
+      "_index.109b4b21.js",
+      "_responsiveObserve.eb3c0da1.js",
+      "_initDefaultProps.71991ecc.js"
     ]
   },
-  "_index.d3a17d8d.js": {
-    "file": "common/index.d3a17d8d.js",
+  "_index.6a48a719.js": {
+    "file": "common/index.6a48a719.js",
     "imports": [
       "src/main.ts",
-      "_vendor.c7ac217d.js",
-      "_VendorStore.03335c4e.js",
-      "_initDefaultProps.e3cf1eda.js",
-      "_antd.1fca4c02.js"
+      "_vendor.84fc1123.js",
+      "_responsiveObserve.eb3c0da1.js",
+      "_VendorStore.d737faa9.js"
     ]
   },
-  "_index.e98ba066.js": {
-    "file": "common/index.e98ba066.js",
+  "_index.7f1c23e8.js": {
+    "file": "common/index.7f1c23e8.js",
     "imports": [
       "src/main.ts",
-      "_vendor.c7ac217d.js",
-      "_VendorStore.03335c4e.js"
+      "_vendor.84fc1123.js",
+      "_VendorStore.d737faa9.js",
+      "_initDefaultProps.71991ecc.js",
+      "_ActionButton.265b9cc4.js"
     ]
   },
-  "_index.f2b34937.js": {
-    "file": "common/index.f2b34937.js",
+  "_index.e3da6296.js": {
+    "file": "common/index.e3da6296.js",
     "imports": [
       "src/main.ts",
-      "_vendor.c7ac217d.js",
-      "_responsiveObserve.c3ec2d73.js",
-      "_VendorStore.03335c4e.js"
+      "_vendor.84fc1123.js",
+      "_initDefaultProps.71991ecc.js"
     ]
   },
-  "_initDefaultProps.e3cf1eda.js": {
-    "file": "common/initDefaultProps.e3cf1eda.js",
+  "_index.ebb33149.js": {
+    "file": "common/index.ebb33149.js",
+    "imports": [
+      "src/main.ts",
+      "_vendor.84fc1123.js",
+      "_VendorStore.d737faa9.js",
+      "_initDefaultProps.71991ecc.js",
+      "_ActionButton.265b9cc4.js"
+    ]
+  },
+  "_initDefaultProps.71991ecc.js": {
+    "file": "common/initDefaultProps.71991ecc.js",
     "imports": [
       "src/main.ts"
     ]
   },
-  "_responsiveObserve.c3ec2d73.js": {
-    "file": "common/responsiveObserve.c3ec2d73.js",
+  "_responsiveObserve.eb3c0da1.js": {
+    "file": "common/responsiveObserve.eb3c0da1.js",
     "imports": [
       "src/main.ts",
-      "_vendor.c7ac217d.js"
+      "_vendor.84fc1123.js"
     ]
   },
-  "_vendor.c7ac217d.js": {
-    "file": "common/vendor.c7ac217d.js"
+  "_vendor.84fc1123.js": {
+    "file": "common/vendor.84fc1123.js"
   },
   "src/components/Admin.vue": {
-    "file": "components/Admin.3f6f931c.js",
+    "file": "components/Admin.8f6492e9.js",
     "imports": [
-      "_vendor.c7ac217d.js",
+      "_vendor.84fc1123.js",
       "__plugin-vue_export-helper.c27b6911.js"
     ],
     "isDynamicEntry": true,
     "src": "src/components/Admin.vue"
   },
   "src/components/CommissionTiers.vue": {
-    "file": "components/CommissionTiers.fa24825d.js",
+    "file": "components/CommissionTiers.f1aa37fe.js",
     "imports": [
-      "_vendor.c7ac217d.js",
+      "_vendor.84fc1123.js",
       "src/main.ts",
-      "_index.d3a17d8d.js",
-      "_VendorStore.03335c4e.js",
-      "_antd.1fca4c02.js",
-      "_DynamicControl.3bcb2aa9.js",
-      "_index.aa07ebbd.js",
-      "_index.88348e24.js",
-      "_initDefaultProps.e3cf1eda.js",
-      "_index.e98ba066.js",
+      "_index.109b4b21.js",
+      "_VendorStore.d737faa9.js",
+      "_antd.7f3c63f7.js",
+      "_DynamicControl.627d1dc9.js",
+      "_index.ebb33149.js",
+      "_index.60678172.js",
+      "_initDefaultProps.71991ecc.js",
+      "_index.4e3cad7b.js",
       "__plugin-vue_export-helper.c27b6911.js",
-      "_index.2f9d31f8.js",
-      "_index.231110d3.js",
-      "_ActionButton.7aaa0aa3.js",
-      "_VendorEdit.d2b62d10.js",
-      "_hasIn.c63e6020.js",
-      "_index.99e6b1c5.js",
-      "_responsiveObserve.c3ec2d73.js"
+      "_index.380800ce.js",
+      "_index.7f1c23e8.js",
+      "_ActionButton.265b9cc4.js",
+      "_VendorEdit.9f7f9a17.js",
+      "_hasIn.ec097647.js",
+      "_index.e3da6296.js",
+      "_responsiveObserve.eb3c0da1.js"
     ],
     "isDynamicEntry": true,
     "src": "src/components/CommissionTiers.vue"
@@ -207,7 +207,7 @@
     "dynamicImports": [
       "src/components/Admin.vue",
       "src/components/CommissionTiers.vue",
-      "_DynamicControl.3bcb2aa9.js",
+      "_DynamicControl.627d1dc9.js",
       "src/components/GMap.vue",
       "src/components/OpeningHours.vue",
       "src/components/ShippingAddress.vue",
@@ -216,14 +216,14 @@
       "src/components/Spinner.vue",
       "src/components/VendorApprovalModal.vue",
       "src/components/VendorDetailModal.vue",
-      "_VendorEdit.d2b62d10.js",
+      "_VendorEdit.9f7f9a17.js",
       "src/components/VendorTable.vue"
     ],
-    "file": "components/DynamicComponent.1ce66b03.js",
+    "file": "components/DynamicComponent.5e981f86.js",
     "imports": [
       "src/main.ts",
-      "_vendor.c7ac217d.js",
-      "_antd.1fca4c02.js"
+      "_vendor.84fc1123.js",
+      "_antd.7f3c63f7.js"
     ],
     "isDynamicEntry": true,
     "src": "src/components/DynamicComponent.vue"
@@ -236,122 +236,122 @@
     "css": [
       "assets/GMap-86d63f51.css"
     ],
-    "file": "components/GMap.3b621ed5.js",
+    "file": "components/GMap.aa29eec4.js",
     "imports": [
-      "_vendor.c7ac217d.js",
+      "_vendor.84fc1123.js",
       "src/main.ts",
-      "_VendorStore.03335c4e.js",
+      "_VendorStore.d737faa9.js",
       "__plugin-vue_export-helper.c27b6911.js",
-      "_antd.1fca4c02.js",
-      "_initDefaultProps.e3cf1eda.js"
+      "_antd.7f3c63f7.js",
+      "_initDefaultProps.71991ecc.js"
     ],
     "isDynamicEntry": true,
     "src": "src/components/GMap.vue"
   },
   "src/components/OpeningHours.vue": {
-    "file": "components/OpeningHours.e60d6d24.js",
+    "file": "components/OpeningHours.11025af0.js",
     "imports": [
-      "_vendor.c7ac217d.js",
+      "_vendor.84fc1123.js",
       "src/main.ts",
-      "_VendorStore.03335c4e.js",
-      "_antd.1fca4c02.js",
-      "_index.d3a17d8d.js",
-      "_index.aa07ebbd.js",
-      "_DynamicControl.3bcb2aa9.js",
-      "_index.88348e24.js",
-      "_initDefaultProps.e3cf1eda.js",
-      "_ActionButton.7aaa0aa3.js",
-      "_index.e98ba066.js",
+      "_VendorStore.d737faa9.js",
+      "_antd.7f3c63f7.js",
+      "_index.109b4b21.js",
+      "_index.ebb33149.js",
+      "_DynamicControl.627d1dc9.js",
+      "_index.60678172.js",
+      "_initDefaultProps.71991ecc.js",
+      "_ActionButton.265b9cc4.js",
+      "_index.4e3cad7b.js",
       "__plugin-vue_export-helper.c27b6911.js",
-      "_index.2f9d31f8.js",
-      "_index.231110d3.js",
-      "_VendorEdit.d2b62d10.js",
-      "_hasIn.c63e6020.js",
-      "_index.99e6b1c5.js",
-      "_responsiveObserve.c3ec2d73.js"
+      "_index.380800ce.js",
+      "_index.7f1c23e8.js",
+      "_VendorEdit.9f7f9a17.js",
+      "_hasIn.ec097647.js",
+      "_index.e3da6296.js",
+      "_responsiveObserve.eb3c0da1.js"
     ],
     "isDynamicEntry": true,
     "src": "src/components/OpeningHours.vue"
   },
   "src/components/ShippingAddress.vue": {
-    "file": "components/ShippingAddress.eba09565.js",
+    "file": "components/ShippingAddress.b4c95bf0.js",
     "imports": [
-      "_vendor.c7ac217d.js",
+      "_vendor.84fc1123.js",
       "src/main.ts",
-      "_DynamicControl.3bcb2aa9.js",
-      "_index.d3a17d8d.js",
-      "_antd.1fca4c02.js",
-      "_VendorStore.03335c4e.js",
-      "_initDefaultProps.e3cf1eda.js",
-      "_index.e98ba066.js",
+      "_DynamicControl.627d1dc9.js",
+      "_index.109b4b21.js",
+      "_antd.7f3c63f7.js",
+      "_VendorStore.d737faa9.js",
+      "_initDefaultProps.71991ecc.js",
+      "_index.4e3cad7b.js",
       "__plugin-vue_export-helper.c27b6911.js",
-      "_index.2f9d31f8.js",
-      "_index.231110d3.js",
-      "_ActionButton.7aaa0aa3.js",
-      "_VendorEdit.d2b62d10.js",
-      "_index.aa07ebbd.js",
-      "_hasIn.c63e6020.js"
+      "_index.380800ce.js",
+      "_index.7f1c23e8.js",
+      "_ActionButton.265b9cc4.js",
+      "_VendorEdit.9f7f9a17.js",
+      "_index.ebb33149.js",
+      "_hasIn.ec097647.js"
     ],
     "isDynamicEntry": true,
     "src": "src/components/ShippingAddress.vue"
   },
   "src/components/ShippingFlat.vue": {
-    "file": "components/ShippingFlat.f754bf0c.js",
+    "file": "components/ShippingFlat.45e16ad1.js",
     "imports": [
-      "_vendor.c7ac217d.js",
-      "_DynamicControl.3bcb2aa9.js",
+      "_vendor.84fc1123.js",
+      "_DynamicControl.627d1dc9.js",
       "src/main.ts",
-      "_index.f2b34937.js",
-      "_antd.1fca4c02.js",
-      "_VendorStore.03335c4e.js",
-      "_initDefaultProps.e3cf1eda.js",
-      "_index.e98ba066.js",
+      "_index.6a48a719.js",
+      "_antd.7f3c63f7.js",
+      "_VendorStore.d737faa9.js",
+      "_initDefaultProps.71991ecc.js",
+      "_index.4e3cad7b.js",
       "__plugin-vue_export-helper.c27b6911.js",
-      "_index.d3a17d8d.js",
-      "_index.2f9d31f8.js",
-      "_index.231110d3.js",
-      "_ActionButton.7aaa0aa3.js",
-      "_VendorEdit.d2b62d10.js",
-      "_index.aa07ebbd.js",
-      "_hasIn.c63e6020.js",
-      "_responsiveObserve.c3ec2d73.js"
+      "_index.109b4b21.js",
+      "_index.380800ce.js",
+      "_index.7f1c23e8.js",
+      "_ActionButton.265b9cc4.js",
+      "_VendorEdit.9f7f9a17.js",
+      "_index.ebb33149.js",
+      "_hasIn.ec097647.js",
+      "_responsiveObserve.eb3c0da1.js"
     ],
     "isDynamicEntry": true,
     "src": "src/components/ShippingFlat.vue"
   },
   "src/components/ShippingTableRates.vue": {
-    "file": "components/ShippingTableRates.40831d90.js",
+    "file": "components/ShippingTableRates.53cdca88.js",
     "imports": [
-      "_vendor.c7ac217d.js",
+      "_vendor.84fc1123.js",
       "src/main.ts",
-      "_DynamicControl.3bcb2aa9.js",
-      "_VendorStore.03335c4e.js",
-      "_index.d3a17d8d.js",
-      "_index.aa07ebbd.js",
-      "_antd.1fca4c02.js",
-      "_index.88348e24.js",
-      "_index.e98ba066.js",
+      "_DynamicControl.627d1dc9.js",
+      "_VendorStore.d737faa9.js",
+      "_index.109b4b21.js",
+      "_index.ebb33149.js",
+      "_antd.7f3c63f7.js",
+      "_index.60678172.js",
+      "_index.4e3cad7b.js",
       "__plugin-vue_export-helper.c27b6911.js",
-      "_index.2f9d31f8.js",
-      "_index.231110d3.js",
-      "_initDefaultProps.e3cf1eda.js",
-      "_ActionButton.7aaa0aa3.js",
-      "_VendorEdit.d2b62d10.js",
-      "_hasIn.c63e6020.js",
-      "_index.99e6b1c5.js",
-      "_responsiveObserve.c3ec2d73.js"
+      "_index.380800ce.js",
+      "_index.7f1c23e8.js",
+      "_initDefaultProps.71991ecc.js",
+      "_ActionButton.265b9cc4.js",
+      "_VendorEdit.9f7f9a17.js",
+      "_hasIn.ec097647.js",
+      "_index.e3da6296.js",
+      "_responsiveObserve.eb3c0da1.js"
     ],
     "isDynamicEntry": true,
     "src": "src/components/ShippingTableRates.vue"
   },
   "src/components/Spinner.vue": {
-    "file": "components/Spinner.3bc040a4.js",
+    "file": "components/Spinner.939733c4.js",
     "imports": [
-      "_vendor.c7ac217d.js",
+      "_vendor.84fc1123.js",
       "src/main.ts",
-      "_index.99e6b1c5.js",
-      "_antd.1fca4c02.js",
-      "_initDefaultProps.e3cf1eda.js"
+      "_index.e3da6296.js",
+      "_antd.7f3c63f7.js",
+      "_initDefaultProps.71991ecc.js"
     ],
     "isDynamicEntry": true,
     "src": "src/components/Spinner.vue"
@@ -364,22 +364,22 @@
     "css": [
       "assets/VendorApprovalModal-60c96757.css"
     ],
-    "file": "components/VendorApprovalModal.6f3521c4.js",
+    "file": "components/VendorApprovalModal.23fdc782.js",
     "imports": [
-      "_vendor.c7ac217d.js",
+      "_vendor.84fc1123.js",
       "src/main.ts",
-      "_index.99e6b1c5.js",
-      "_VendorStore.03335c4e.js",
-      "_hasIn.c63e6020.js",
-      "_index.d3a17d8d.js",
-      "_index.f2b34937.js",
-      "_index.88348e24.js",
-      "_antd.1fca4c02.js",
-      "_initDefaultProps.e3cf1eda.js",
-      "_index.231110d3.js",
+      "_index.e3da6296.js",
+      "_VendorStore.d737faa9.js",
+      "_hasIn.ec097647.js",
+      "_index.109b4b21.js",
+      "_index.6a48a719.js",
+      "_index.60678172.js",
+      "_antd.7f3c63f7.js",
+      "_initDefaultProps.71991ecc.js",
+      "_index.7f1c23e8.js",
       "__plugin-vue_export-helper.c27b6911.js",
-      "_responsiveObserve.c3ec2d73.js",
-      "_ActionButton.7aaa0aa3.js"
+      "_responsiveObserve.eb3c0da1.js",
+      "_ActionButton.265b9cc4.js"
     ],
     "isDynamicEntry": true,
     "src": "src/components/VendorApprovalModal.vue"
@@ -392,20 +392,20 @@
     "css": [
       "assets/VendorDetailModal-010bd40d.css"
     ],
-    "file": "components/VendorDetailModal.5fe7421d.js",
+    "file": "components/VendorDetailModal.b4577690.js",
     "imports": [
-      "_vendor.c7ac217d.js",
+      "_vendor.84fc1123.js",
       "src/main.ts",
-      "_VendorStore.03335c4e.js",
-      "_index.99e6b1c5.js",
-      "_responsiveObserve.c3ec2d73.js",
-      "_index.231110d3.js",
-      "_index.e98ba066.js",
-      "_index.2f9d31f8.js",
+      "_VendorStore.d737faa9.js",
+      "_index.e3da6296.js",
+      "_responsiveObserve.eb3c0da1.js",
+      "_index.7f1c23e8.js",
+      "_index.4e3cad7b.js",
+      "_index.380800ce.js",
       "__plugin-vue_export-helper.c27b6911.js",
-      "_antd.1fca4c02.js",
-      "_initDefaultProps.e3cf1eda.js",
-      "_ActionButton.7aaa0aa3.js"
+      "_antd.7f3c63f7.js",
+      "_initDefaultProps.71991ecc.js",
+      "_ActionButton.265b9cc4.js"
     ],
     "isDynamicEntry": true,
     "src": "src/components/VendorDetailModal.vue"
@@ -423,19 +423,19 @@
       "src/components/VendorDetailModal.vue",
       "src/components/VendorApprovalModal.vue"
     ],
-    "file": "components/VendorTable.ac1eeff9.js",
+    "file": "components/VendorTable.4e5f4e8c.js",
     "imports": [
       "src/main.ts",
-      "_vendor.c7ac217d.js",
-      "_VendorStore.03335c4e.js",
+      "_vendor.84fc1123.js",
+      "_VendorStore.d737faa9.js",
       "__plugin-vue_export-helper.c27b6911.js",
-      "_index.88348e24.js",
-      "_index.f2b34937.js",
-      "_index.d3a17d8d.js",
-      "_antd.1fca4c02.js",
-      "_initDefaultProps.e3cf1eda.js",
-      "_index.99e6b1c5.js",
-      "_responsiveObserve.c3ec2d73.js"
+      "_index.60678172.js",
+      "_index.6a48a719.js",
+      "_index.109b4b21.js",
+      "_antd.7f3c63f7.js",
+      "_initDefaultProps.71991ecc.js",
+      "_index.e3da6296.js",
+      "_responsiveObserve.eb3c0da1.js"
     ],
     "isDynamicEntry": true,
     "src": "src/components/VendorTable.vue"
@@ -448,17 +448,17 @@
     "css": [
       "assets/VendorTableCell-9bc62d0b.css"
     ],
-    "file": "components/VendorTable/VendorTableCell.66555e45.js",
+    "file": "components/VendorTable/VendorTableCell.e518d7ac.js",
     "imports": [
-      "_vendor.c7ac217d.js",
+      "_vendor.84fc1123.js",
       "src/main.ts",
-      "_VendorStore.03335c4e.js",
-      "_antd.1fca4c02.js",
-      "_index.e98ba066.js",
-      "_index.aa07ebbd.js",
+      "_VendorStore.d737faa9.js",
+      "_antd.7f3c63f7.js",
+      "_index.4e3cad7b.js",
+      "_index.ebb33149.js",
       "__plugin-vue_export-helper.c27b6911.js",
-      "_initDefaultProps.e3cf1eda.js",
-      "_ActionButton.7aaa0aa3.js"
+      "_initDefaultProps.71991ecc.js",
+      "_ActionButton.265b9cc4.js"
     ],
     "isDynamicEntry": true,
     "src": "src/components/VendorTable/VendorTableCell.vue"
@@ -468,12 +468,12 @@
       "src/components/Admin.vue",
       "src/components/Spinner.vue",
       "src/components/VendorTable.vue",
-      "_VendorEdit.d2b62d10.js"
+      "_VendorEdit.9f7f9a17.js"
     ],
-    "file": "main.d2f63bca.js",
+    "file": "main.491ba5c0.js",
     "imports": [
-      "_vendor.c7ac217d.js",
-      "_antd.1fca4c02.js"
+      "_vendor.84fc1123.js",
+      "_antd.7f3c63f7.js"
     ],
     "isEntry": true,
     "src": "src/main.ts"

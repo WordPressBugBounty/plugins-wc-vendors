@@ -476,7 +476,7 @@ class WCV_Order_Data_Synchronizer {
 
                 if ( ! empty( $sub_order_transaction_id ) ) {
                     $order_data['transaction_id'] = $sub_order_transaction_id;
-                } elseif ( strpos( $parent_order_transaction_id, ',' ) === false && ! empty( $parent_order_transaction_id ) ) {
+                } elseif ( ! str_contains( $parent_order_transaction_id, ',' ) && ! empty( $parent_order_transaction_id ) ) {
                     $order_data['transaction_id'] = $parent_order_transaction_id;
                 }
 

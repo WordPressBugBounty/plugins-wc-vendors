@@ -103,7 +103,7 @@ class WCV_All_Vendors_Page {
      * @return string
      */
     public function add_module_to_scripts_tag( $tag, $handle ) {
-        if ( strpos( $handle, 'wcv-all-vendors-page' ) !== false ) {
+        if ( str_contains( $handle, 'wcv-all-vendors-page' ) ) {
             $tag = str_replace( ' src', ' type="module" src', $tag ); // phpcs:ignore
         }
         return $tag;
@@ -133,6 +133,15 @@ class WCV_All_Vendors_Page {
                 }
             }
         }
+
+        /**
+         * Fires after the AVP main script is enqueued.
+         * Pro plugins can use this hook to enqueue additional component bundles.
+         * Handles with prefix 'wcv-all-vendors-page' automatically get type="module" added.
+         *
+         * @since 2.6.7
+         */
+        do_action( 'wcv_avp_enqueue_scripts' );
 
         if ( $js_object['maybe_init_map'] ) {
             $map_api_key = $js_object['map_api_key'];

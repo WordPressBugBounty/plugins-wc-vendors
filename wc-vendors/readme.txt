@@ -1,9 +1,9 @@
 === WC Vendors - WooCommerce Multivendor, WooCommerce Marketplace, Product Vendors ===
 Contributors: jkohlbach, RymeraWebCo, Rymera01, smub
 Tags: multivendor, marketplace, multi vendor, product vendors, woocommerce commissions
-Requires at least: 5.5.0
+Requires at least: 5.9
 Tested up to: 7.0
-Stable tag: 2.6.7
+Stable tag: 2.6.8
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -299,6 +299,17 @@ You can report security bugs through the Patchstack Vulnerability Disclosure Pro
 
 == Changelog ==
 
+= Version 2.6.8 - 31st March 2026 =
+ * Improvement: Replace strpos() with str_contains() across the codebase
+ * Improvement: Redesign the submenu for the Vendor Dashboard settings page
+ * Improvement: Add product quantity as a separate column in the Orders CSV file exported from the Vendor Dashboard
+ * Improvement: Show sale price and sale badge on the Vendor Dashboard product table
+ * Improvement: Update display description in settings to show new [wcv_pro_vendorslist] shortcode
+ * Bug Fix: Incorrect negative percentage displayed when current value is higher than last month
+ * Bug Fix: Call to undefined function format_commission_rate during update routine
+ * Bug Fix: Quick Edit option displays incorrect vendor name
+ * Bug Fix: Attribute value field missing for non-select/text attribute types
+
 = Version 2.6.7 - 10th March 2026 =
  * Feature: Scheduled automated emails to vendors when a product is out of stock
  * Improvement: Remove cart and checkout blocks notice
@@ -331,39 +342,6 @@ You can report security bugs through the Patchstack Vulnerability Disclosure Pro
  * Bug Fix: Fatal error while deactivating WooCommerce immediately
  * Bug Fix: Security issues
  * Security Fix: Prevent unauthorized vendor order access
-
-= Version 2.6.4 - 14th November 2025 =
- * Feature: Option to write a custom message in vendor denial/approval emails per vendor
- * Feature: Dashboard cross-promo box with 1-click install
- * Improvement: Add SaveTo Wishlist Lite for WooCommerce to the About page
- * Improvement: Update the Select2 script handle to resolve the WooCommerce 10.3.0+ deprecation warning
- * Improvement: Add a parameter to display product categories in the Products by Vendor shortcode
- * Bug Fix: Remove PayPal Adaptive Payments and fix the test gateway crash
- * Bug Fix: Auction downloadable missing general tab/option to upload files
- * Bug Fix: Theme overrides not applied for certain dashboard templates due to the wrong path in the controller
- * Bug Fix: Incorrect refund detection when handling partial refunds per vendor
-
-= Version 2.6.3 - 13th October 2025 =
- * Feature: Add vendor detail modal for admin to review pending vendors on the All Vendors page
- * Improvement: Support username and user ID in the "vendor" parameter of the products by vendor shortcodes
- * Improvement: Add parameter to limit the number of displayed products without pagination via shortcodes
- * Improvement: Hide vendor shipping feature in free version
- * Improvement: Clarify single product header dependency on shop header
- * Bug Fix: Vendors and admins receive duplicate emails on new vendor application
- * Bug Fix: Admin notification emails for vendor applications are not sent when site language is not English
-
-= Version 2.6.2 - 26th September 2025 =
- * Feature: Group subcategories under parent categories in category filter dropdown
- * Improvement: Enhanced admin setting field custom attributes rendering
- * Bug Fix: WC Vendors overriding RankMath metadata on non-vendor pages (Newsfeed, Forums, Courses)
- * Bug Fix: Inventory tab disabled in WCVP stays hidden even after deactivating WCVP
- * Bug Fix: Vendors allowed to create custom tags in Marketplace and Pro
- * Bug Fix: Zero commissions are not automatically marked as Paid
- * Bug Fix: Missing Inventory tab for external product type and fixed SKU and tax fields not being hidden properly
- * Bug Fix: Cancelled status filter missing in vendor dashboard Orders page
- * Bug Fix: Create Missing Vendor Sub-orders Tool not working properly
- * Bug Fix: The Add your socials step appears in the onboarding setup progress
- * Bug Fix: Vendor Product Edit Button links to WP Admin instead of Vendor Dashboard
 
 
 

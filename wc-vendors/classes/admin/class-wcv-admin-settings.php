@@ -912,7 +912,7 @@ class WCVendors_Admin_Settings extends WC_Admin_Settings {
 
         $vendor_dashboard_page_content = $vendor_dashboard_page->post_content;
 
-        if ( false === strpos( $vendor_dashboard_page_content, '[wcv_vendor_dashboard]' ) ) {
+        if ( ! str_contains( $vendor_dashboard_page_content, '[wcv_vendor_dashboard]' ) ) {
 
             self::add_error( __( 'The vendor dashboard page does not have the correct shortcode. Please add the [wcv_vendor_dashboard] shortcode to the page or select another page.', 'wc-vendors' ) );
         }

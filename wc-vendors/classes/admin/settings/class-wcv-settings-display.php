@@ -336,10 +336,11 @@ if ( ! class_exists( 'WCVendors_Settings_Display', false ) ) :
                             'class'   => 'wc-enhanced-select-nostd',
                             'css'     => 'min-width:300px;',
                             'desc'    => sprintf(
-                                /* translators: %s vendor label */
-                                __( '<br />This sets the page used to display a paginated list of all %1$s stores. Your %1$s stores will be available at <code>%2$s/page-slug/store-name/</code><br />This page should contain the following shortcode. <code>[wcv_vendorslist]</code>', 'wc-vendors' ),
+                                /* translators: %1$s: vendor label, %2$s: home URL, %3$s: shortcode */
+                                __( '<br />This sets the page used to display a paginated list of all %1$s stores. Your %1$s stores will be available at <code>%2$s/page-slug/store-name/</code><br />This page should contain the following shortcode. <code>%3$s</code>', 'wc-vendors' ),
                                 wcv_get_vendor_name( true, false ),
-                                esc_html( home_url() )
+                                esc_html( home_url() ),
+                                is_wcv_pro_active() ? '[wcv_pro_vendorslist]' : '[wcv_vendorslist]'
                             ),
                         ),
                         array(

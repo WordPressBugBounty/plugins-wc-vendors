@@ -397,7 +397,15 @@ class Vendors_Settings {
             );
         }
 
-        $this->settings = $settings;
+        /**
+         * Filter the vendor settings array.
+         *
+         * @since 2.6.7
+         * @param array $settings  The vendor settings array.
+         * @param int   $vendor_id The vendor ID.
+         * @return array The filtered settings.
+         */
+        $this->settings = apply_filters( 'wcvendors_vendor_settings', $settings, $this->vendor_id );
         return $this->settings;
     }
 

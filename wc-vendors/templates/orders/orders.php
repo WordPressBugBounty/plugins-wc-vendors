@@ -184,7 +184,7 @@ echo esc_html(
                     <div class="order-tracking">
                         <?php
 
-                        wc_enqueue_js( WCV_Vendor_Dashboard_Legacy::wc_st_js( $provider_array ) );
+                        wp_add_inline_script( 'jquery', WCV_Orders::wc_st_js( $provider_array ) );
 
                         $vendor_order = wc_get_order( $order_id );
 

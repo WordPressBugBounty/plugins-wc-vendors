@@ -1496,7 +1496,7 @@ class WCV_Order_Controller {
         unset( $csv_headers['ID'] );
         $csv_headers  = apply_filters( 'wcv_order_export_csv_headers', $csv_headers );
         $csv_rows     = apply_filters( 'wcv_order_export_csv_rows', $rows, $orders, $date_range );
-        $csv_filename = apply_filters( 'wcv_order_export_csv_filename', 'orders' );
+        $csv_filename = apply_filters( 'wcv_order_export_csv_filename', 'orders-' . gmdate( 'Y-m-d' ) );
 
         $csv_output->download_csv( $csv_headers, $csv_rows, $csv_filename );
     }

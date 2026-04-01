@@ -83,7 +83,15 @@
                     <div class="control align-right" data-index_value="<?php echo esc_attr( $i ); ?>" data-taxonomy="<?php echo esc_attr( $taxo ); ?>"
                         data-label="<?php echo esc_html( $attribute_label ); ?>">
                         <?php if ( $attribute['is_taxonomy'] ) : ?>
-                            <?php if ( 'select' === $attribute_taxonomy->attribute_type ) : ?>
+                            <?php if ( 'text' === $attribute_taxonomy->attribute_type ) : ?>
+
+                                <input type="text" id="attribute_values_<?php echo esc_attr( $i ); ?>"
+                                        name="attribute_values[<?php echo esc_attr( $i ); ?>]"
+                                        value="<?php echo esc_attr( implode( ' ' . WC_DELIMITER . ' ', wp_get_post_terms( $post_id, $taxo, array( 'fields' => 'names' ) ) ) ); ?>"
+                                        placeholder="<?php echo esc_attr( sprintf( /* translators: %s: delimiter */ __( '"%s" separate terms', 'wc-vendors' ), WC_DELIMITER ) ); ?>"
+                                        class="attribute_values"/>
+
+                            <?php else : ?>
 
                                 <select multiple="multiple" id="attribute_values_<?php echo esc_attr( $i ); ?>"
                                         data-placeholder="<?php esc_attr_e( 'Select terms', 'wc-vendors' ); ?>"
@@ -114,14 +122,6 @@
                                 <?php endif; ?>
 
                                 <?php do_action( 'wcv_product_option_terms', $attribute_taxonomy, $i, $attribute ); ?>
-
-                            <?php elseif ( 'text' === $attribute_taxonomy->attribute_type ) : ?>
-
-                                <input type="text" id="attribute_values_<?php echo esc_attr( $i ); ?>"
-                                        name="attribute_values[<?php echo esc_attr( $i ); ?>]"
-                                        value="<?php echo esc_attr( implode( ' ' . WC_DELIMITER . ' ', wp_get_post_terms( $post_id, $taxo, array( 'fields' => 'names' ) ) ) ); ?>"
-                                        placeholder="<?php echo esc_attr( sprintf( /* translators: %s: delimiter */ __( '"%s" separate terms', 'wc-vendors' ), WC_DELIMITER ) ); ?>"
-                                        class="attribute_values"/>
 
                             <?php endif; ?>
 

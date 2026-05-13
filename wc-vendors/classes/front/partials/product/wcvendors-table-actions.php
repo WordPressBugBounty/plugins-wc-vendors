@@ -25,7 +25,7 @@ use function WC_Vendors\Classes\Includes\wcv_get_product_types;
 
 ?>
 <?php if ( 'before' === $position ) : ?>
-<form class="wcv-search-form wcv-form" method="post">
+<form class="wcv-search-form wcv-form" method="get">
     <div class="wcv_dashboard_table_header wcv-cols-group wcv-search wcv-product-table-search-<?php echo esc_attr( $position ); ?>">
         <div class="wcv-flex wcv-flex-wrap">
             <div class="quick-link-wrapper small-100 all-60">
@@ -61,9 +61,9 @@ use function WC_Vendors\Classes\Includes\wcv_get_product_types;
 
                 $product_types = apply_filters( 'wcvendors_capability_filter_product_types', $product_types );
 
-                $product_cat_raw  = isset( $_POST['_wcv_product_category'] ) ? wp_unslash( $_POST['_wcv_product_category'] ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-                $product_tag_raw  = isset( $_POST['_wcv_product_tag'] ) ? wp_unslash( $_POST['_wcv_product_tag'] ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-                $product_type_raw = isset( $_POST['_wcv_product_type'] ) ? wp_unslash( $_POST['_wcv_product_type'] ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+                $product_cat_raw  = isset( $_GET['_wcv_product_category'] ) ? wp_unslash( $_GET['_wcv_product_category'] ) : array(); // phpcs:ignore WordPress.Security.NonceVerification.Recommended,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+                $product_tag_raw  = isset( $_GET['_wcv_product_tag'] ) ? wp_unslash( $_GET['_wcv_product_tag'] ) : array(); // phpcs:ignore WordPress.Security.NonceVerification.Recommended,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+                $product_type_raw = isset( $_GET['_wcv_product_type'] ) ? wp_unslash( $_GET['_wcv_product_type'] ) : array(); // phpcs:ignore WordPress.Security.NonceVerification.Recommended,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 
                 $product_cat_get  = array_map( 'sanitize_text_field', $product_cat_raw );
                 $product_tag_get  = array_map( 'sanitize_text_field', $product_tag_raw );
@@ -149,6 +149,7 @@ use function WC_Vendors\Classes\Includes\wcv_get_product_types;
                         'wcv_product_update_button',
                         array(
                             'id'            => 'update_button_product',
+                            'name'          => '',
                             'value'         => __( 'Update', 'wc-vendors' ),
                             'type'          => 'submit',
                             'button_text'   => __( 'Update', 'wc-vendors' ),
@@ -183,7 +184,6 @@ use function WC_Vendors\Classes\Includes\wcv_get_product_types;
             <?php endif; ?>
         </div>
     </div>
-    <?php wp_nonce_field( 'wcv_product_table_nonce', 'wcv_product_table_nonce' ); ?>
 </form>
 <?php else : ?>
     <div class="all-100 small-100 wcv-product-table-pagination-<?php echo esc_attr( $position ); ?>">

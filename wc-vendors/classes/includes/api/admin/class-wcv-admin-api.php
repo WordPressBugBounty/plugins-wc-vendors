@@ -12,6 +12,11 @@ class WCV_Admin_API extends WCV_API {
     protected $enable_rate_limiting = false;
 
     /**
+     * Maximum number of vendor IDs allowed in a single bulk action request.
+     */
+    const BULK_VENDOR_ACTION_LIMIT = 100;
+
+    /**
      * Register routes.
      */
     public function register_routes() {
@@ -59,6 +64,12 @@ class WCV_Admin_API extends WCV_API {
         $this->register_route(
             '/vendors/action/(?P<id>\d+)/(?P<action>\w+)',
             'do_vendor_action',
+            WP_REST_Server::EDITABLE
+        );
+
+        $this->register_route(
+            '/vendors/bulk-action',
+            'do_bulk_vendor_action',
             WP_REST_Server::EDITABLE
         );
 
@@ -464,14 +475,27 @@ class WCV_Admin_API extends WCV_API {
     }
 
     /**
+     * Get the computed vendor status value for a given vendor ID.
+     *
+     * @since 2.6.9
+     *
+     * @param int $vendor_id Vendor ID.
+     * @return string Status value: 'active', 'inactive', or 'pending'.
+     */
+    private function get_vendor_status_value( $vendor_id ) {
+        $vendor        = new Vendors_Settings( $vendor_id, true );
+        $vendor_status = $vendor->get_vendor_status();
+        return $vendor_status['value'];
+    }
+
+    /**
      * Action inactive vendor
      *
      * @param int $vendor_id Vendor ID.
      */
     public function set_vendor_inactive( $vendor_id ) {
 
-        $vendor = new Vendors_Settings( $vendor_id, true );
-        $status = $vendor->get_prop( 'vendor_status' );
+        $status = $this->get_vendor_status_value( $vendor_id );
         if ( 'inactive' === $status ) {
             return new WP_REST_Response(
                 array(
@@ -481,6 +505,7 @@ class WCV_Admin_API extends WCV_API {
                 200
             );
         }
+        $vendor = new Vendors_Settings( $vendor_id, true );
         $vendor->set_prop( 'vendor_status', 'inactive' );
         $result = $vendor->save();
 
@@ -511,8 +536,7 @@ class WCV_Admin_API extends WCV_API {
      */
     public function set_vendor_active( $vendor_id ) {
 
-        $vendor = new Vendors_Settings( $vendor_id, true );
-        $status = $vendor->get_prop( 'vendor_status' );
+        $status = $this->get_vendor_status_value( $vendor_id );
         if ( 'active' === $status ) {
             return new WP_REST_Response(
                 array(
@@ -522,6 +546,7 @@ class WCV_Admin_API extends WCV_API {
                 200
             );
         }
+        $vendor = new Vendors_Settings( $vendor_id, true );
         $vendor->set_prop( 'vendor_status', 'active' );
         $result = $vendor->save();
         if ( ! is_wp_error( $result ) ) {
@@ -542,6 +567,144 @@ class WCV_Admin_API extends WCV_API {
                 200
             );
         }
+    }
+
+    /**
+     * Do bulk vendor action.
+     *
+     * Expects a JSON body with:
+     *   - vendor_ids       (int[])  IDs to process.
+     *   - action           (string) One of: approve, deny, activate, deactivate.
+     *   - customMessage    (string) Optional custom message for approve/deny emails.
+     *   - useCustomMessage (bool)   Whether to use the custom message.
+     *
+     * @since 2.6.9
+     *
+     * @param WP_REST_Request $request Full details about the request.
+     *
+     * @return WP_REST_Response
+     */
+    public function do_bulk_vendor_action( $request ) {
+        $body           = $request->get_json_params();
+        $vendor_ids     = isset( $body['vendor_ids'] ) && is_array( $body['vendor_ids'] ) ? $body['vendor_ids'] : array();
+        $action         = isset( $body['action'] ) ? sanitize_key( $body['action'] ) : '';
+        $custom_message = isset( $body['customMessage'] ) ? sanitize_textarea_field( wp_unslash( $body['customMessage'] ) ) : '';
+        $use_custom_msg = ! empty( $body['useCustomMessage'] );
+
+        if ( empty( $vendor_ids ) ) {
+            return new WP_REST_Response(
+                array(
+                    'success' => false,
+                    'message' => __( 'No vendor IDs provided.', 'wc-vendors' ),
+                ),
+                400
+            );
+        }
+
+        if ( count( $vendor_ids ) > self::BULK_VENDOR_ACTION_LIMIT ) {
+            return new WP_REST_Response(
+                array(
+                    'success' => false,
+                    /* translators: %d: maximum number of vendors allowed */
+                    'message' => sprintf( __( 'Too many vendors selected. Please select %d or fewer.', 'wc-vendors' ), self::BULK_VENDOR_ACTION_LIMIT ),
+                ),
+                400
+            );
+        }
+
+        if ( ! in_array( $action, array( 'approve', 'deny', 'activate', 'deactivate' ), true ) ) {
+            return new WP_REST_Response(
+                array(
+                    'success' => false,
+                    'message' => __( 'Invalid action.', 'wc-vendors' ),
+                ),
+                400
+            );
+        }
+
+        $results       = array();
+        $success_count = 0;
+        $fail_count    = 0;
+        $message       = '';
+
+        // Note: each iteration may trigger approval/denial emails. For large batches
+        // on shared hosting this risks PHP timeouts; consider queuing via Action Scheduler
+        // if the limit is raised significantly above its current value.
+        foreach ( $vendor_ids as $vendor_id ) {
+            $vendor_id = absint( $vendor_id );
+            if ( ! $vendor_id ) {
+                ++$fail_count;
+                continue;
+            }
+
+            switch ( $action ) {
+                case 'approve':
+                    $result = $this->approve_vendor( $vendor_id, $custom_message, $use_custom_msg );
+                    break;
+                case 'deny':
+                    $result = $this->deny_vendor( $vendor_id, $custom_message, $use_custom_msg );
+                    break;
+                case 'activate':
+                    $result = $this->set_vendor_active( $vendor_id );
+                    break;
+                case 'deactivate':
+                    $result = $this->set_vendor_inactive( $vendor_id );
+                    break;
+                default:
+                    continue 2;
+            }
+
+            $data      = $result->get_data();
+            $results[] = array(
+                'id'      => $vendor_id,
+                'success' => $data['success'],
+                'message' => $data['message'],
+            );
+
+            if ( $data['success'] ) {
+                ++$success_count;
+            } else {
+                ++$fail_count;
+            }
+        }
+
+        switch ( $action ) {
+            case 'approve':
+                /* translators: %d: number of approved vendors */
+                $message = sprintf( _n( '%d vendor approved.', '%d vendors approved.', $success_count, 'wc-vendors' ), $success_count );
+                break;
+            case 'deny':
+                /* translators: %d: number of denied vendors */
+                $message = sprintf( _n( '%d vendor denied.', '%d vendors denied.', $success_count, 'wc-vendors' ), $success_count );
+                break;
+            case 'activate':
+                /* translators: %d: number of activated vendors */
+                $message = sprintf( _n( '%d vendor activated.', '%d vendors activated.', $success_count, 'wc-vendors' ), $success_count );
+                break;
+            case 'deactivate':
+                /* translators: %d: number of deactivated vendors */
+                $message = sprintf( _n( '%d vendor deactivated.', '%d vendors deactivated.', $success_count, 'wc-vendors' ), $success_count );
+                break;
+        }
+
+        if ( $fail_count > 0 ) {
+            $message .= ' ' . sprintf(
+                /* translators: %d: number of vendors that could not be processed */
+                _n( '%d vendor could not be processed.', '%d vendors could not be processed.', $fail_count, 'wc-vendors' ),
+                $fail_count
+            );
+        }
+
+        return new WP_REST_Response(
+            array(
+                'success'       => true,
+                'message'       => $message,
+                'success_count' => $success_count,
+                'fail_count'    => $fail_count,
+                'results'       => $results,
+            ),
+            200
+        );
     }
 
     /**

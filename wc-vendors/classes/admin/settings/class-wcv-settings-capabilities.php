@@ -207,6 +207,45 @@ if ( ! class_exists( 'WCVendors_Settings_Capabilities', false ) ) :
                             'id'   => 'product_add_options',
                         ),
 
+                        array(
+                            'title' => __( 'Product Visibility', 'wc-vendors' ),
+                            'type'  => 'title',
+                            'desc'  => sprintf(
+                                /* translators: %s vendor singular possessive */
+                                __( 'Control the visibility of a %s\'s products on the store.', 'wc-vendors' ),
+                                wcv_get_vendor_name( false, false )
+                            ),
+                            'id'    => 'wcvendors_pending_vendor_actions',
+                        ),
+
+                        array(
+                            'title'    => sprintf(
+                                /* translators: %s vendor singular name */
+                                __( 'When a %s Is Set to Pending', 'wc-vendors' ),
+                                wcv_get_vendor_name( false, false )
+                            ),
+                            'desc_tip' => sprintf(
+                                /* translators: %s vendor singular possessive */
+                                __( 'If a %s\'s account is moved to Pending, their published products can be automatically hidden until they are re-approved.', 'wc-vendors' ),
+                                wcv_get_vendor_name( false, false )
+                            ),
+                            'id'       => 'wcvendors_pending_vendor_product_action',
+                            'type'     => 'select',
+                            'class'    => 'wc-enhanced-select',
+                            'css'      => 'min-width:300px;',
+                            'default'  => 'do_nothing',
+                            'options'  => array(
+                                'do_nothing'     => __( 'Leave products as is', 'wc-vendors' ),
+                                'set_to_draft'   => __( 'Set products to Draft', 'wc-vendors' ),
+                                'set_to_pending' => __( 'Set products to Pending Review', 'wc-vendors' ),
+                            ),
+                        ),
+
+                        array(
+                            'type' => 'sectionend',
+                            'id'   => 'wcvendors_pending_vendor_actions',
+                        ),
+
                     )
                 );
             } elseif ( 'order' === $current_section ) {
@@ -318,6 +357,18 @@ if ( ! class_exists( 'WCVendors_Settings_Capabilities', false ) ) :
                             ),
                             'id'      => 'wcvendors_capability_order_customer_phone',
                             'default' => 'yes',
+                            'type'    => 'checkbox',
+                        ),
+
+                        array(
+                            'title'   => __( 'Payment Method', 'wc-vendors' ),
+                            'desc'    => sprintf(
+                                /* translators: %s vendor name */
+                                __( 'Allow %s to view the payment method used by the customer', 'wc-vendors' ),
+                                wcv_get_vendor_name( false, false )
+                            ),
+                            'id'      => 'wcvendors_capability_order_payment_method',
+                            'default' => 'no',
                             'type'    => 'checkbox',
                         ),
 

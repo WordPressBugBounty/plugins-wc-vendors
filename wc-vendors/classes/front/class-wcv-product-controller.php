@@ -289,18 +289,10 @@ class WCV_Product_Controller {
      * @version 2.5.5
      */
     public function process_search_and_filter( $args ) {
-        $request = isset( $_SERVER['REQUEST_METHOD'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_METHOD'] ) ) : '';
-        if ( 'POST' === $request ) {
-            $nonce = isset( $_POST['wcv_product_table_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['wcv_product_table_nonce'] ) ) : '';
-            if ( ! wp_verify_nonce( $nonce, 'wcv_product_table_nonce' ) ) {
-                wp_die( 'Invalid nonce' );
-            }
-        }
-
-        $search       = isset( $_POST['wcv-search'] ) ? sanitize_text_field( wp_unslash( $_POST['wcv-search'] ) ) : '';
-        $product_tag   = isset( $_POST['_wcv_product_tag'] ) ? $_POST['_wcv_product_tag'] : ''; // phpcs:ignore
-        $product_cat   = isset( $_POST['_wcv_product_category'] ) ? $_POST['_wcv_product_category'] : ''; // phpcs:ignore
-        $product_type = isset( $_POST['_wcv_product_type'] ) ? $_POST['_wcv_product_type'] : ''; // phpcs:ignore
+        $search       = isset( $_GET['wcv-search'] ) ? sanitize_text_field( wp_unslash( $_GET['wcv-search'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        $product_tag  = isset( $_GET['_wcv_product_tag'] ) ? array_map( 'absint', (array) $_GET['_wcv_product_tag'] ) : array(); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        $product_cat  = isset( $_GET['_wcv_product_category'] ) ? array_map( 'absint', (array) $_GET['_wcv_product_category'] ) : array(); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        $product_type = isset( $_GET['_wcv_product_type'] ) ? array_map( 'sanitize_key', (array) $_GET['_wcv_product_type'] ) : array(); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
         $hide_product_types = get_option( 'wcvendors_capability_product_types', array() );
 
@@ -342,49 +334,33 @@ class WCV_Product_Controller {
             }
         }
 
-        if ( ! empty( $product_tag ) ) {
-
-            $product_tag_array = is_array( $product_tag ) ? array_filter( $product_tag ) : array( $product_tag );
-
-            if ( ! empty( $product_tag_array ) ) {
-                $args['tax_query'][] = array(
-                    'taxonomy' => 'product_tag',
-                    'field'    => 'term_id',
-                    'terms'    => $product_tag_array,
-                    'operator' => 'IN',
-                );
-            }
-        }
-
-        if ( ! empty( $product_cat ) ) {
-
-            $product_cat_array = is_array( $product_cat ) ? array_filter( $product_cat ) : array( $product_cat );
-
-            if ( ! empty( $product_cat_array ) ) {
-                $args['tax_query'][] = array(
-                    'taxonomy' => 'product_cat',
-                    'field'    => 'term_id',
-                    'terms'    => $product_cat_array,
-                    'operator' => 'IN',
-                );
-            }
-        }
-
-        if ( ! empty( $product_type ) ) {
-
-            $product_type_array = is_array( $product_type ) ? array_filter( $product_type ) : array( $product_type );
-
-            if ( ! empty( $product_type_array ) ) {
-                $args['tax_query'][] = array(
-                    'taxonomy' => 'product_type',
-                    'field'    => 'slug',
-                    'terms'    => $product_type_array,
-                    'operator' => 'IN',
-                );
-            }
-        }
+        $this->maybe_add_tax_query( $args, 'product_tag', 'term_id', $product_tag );
+        $this->maybe_add_tax_query( $args, 'product_cat', 'term_id', $product_cat );
+        $this->maybe_add_tax_query( $args, 'product_type', 'slug', $product_type );
 
         return $args;
+    }
+
+    /**
+     * Append a taxonomy IN clause to a WP_Query args array if $terms is non-empty.
+     *
+     * @since 2.6.9
+     *
+     * @param array  $args     WP_Query args passed by reference.
+     * @param string $taxonomy Taxonomy slug.
+     * @param string $field    Term field to match against ('term_id' or 'slug').
+     * @param mixed  $terms    Term value(s) — scalar or array.
+     */
+    private function maybe_add_tax_query( &$args, $taxonomy, $field, $terms ) {
+        $terms_array = array_filter( (array) $terms );
+        if ( ! empty( $terms_array ) ) {
+            $args['tax_query'][] = array(
+                'taxonomy' => $taxonomy,
+                'field'    => $field,
+                'terms'    => $terms_array,
+                'operator' => 'IN',
+            );
+        }
     }
 
     /**
@@ -769,8 +745,8 @@ class WCV_Product_Controller {
             $product = new $classname( $post_id );
 
             // Featured Product.
-            if ( isset( $_POST['featured'] ) ) {
-                $product->set_featured( sanitize_text_field( wp_unslash( $_POST['featured'] ) ) );
+            if ( wc_string_to_bool( get_option( 'wcvendors_capability_product_featured', 'no' ) ) ) {
+                $product->set_featured( isset( $_POST['_featured'] ) ? 'yes' : 'no' );
             }
 
             // Catalog visibility.
@@ -2031,9 +2007,14 @@ class WCV_Product_Controller {
                 $product
             );
 
-            // Check if you can edit published products or the product is variable.
-            if ( ( ! $can_edit && 'publish' === $row->post_status ) || $lock_edit_products ) {
+            // Statuses a vendor may edit via the Submit Products capability (own draft/pending submissions).
+            $submittable_statuses = apply_filters( 'wcv_edit_object_status', array( 'draft', 'pending' ) );
+            $can_edit_via_submit  = $can_submit && in_array( $row->post_status, $submittable_statuses, true );
+
+            // Hide Edit (and Duplicate) when neither capability permits editing this product.
+            if ( ( ! $can_edit && ! $can_edit_via_submit ) || $lock_edit_products ) {
                 unset( $row_actions['edit'] );
+                unset( $row_actions['duplicate'] );
             }
 
             // Check if you can delete the product.
@@ -2044,16 +2025,6 @@ class WCV_Product_Controller {
             // Check if you can duplicate the product.
             if ( ! $allow_duplicate ) {
                 unset( $row_actions['duplicate'] );
-            }
-
-            // Check if you can submit the product.
-            if ( ! $can_submit ) {
-                $unset_actions = array( 'edit', 'duplicate' );
-                foreach ( $unset_actions as $action ) {
-                    if ( isset( $row_actions[ $action ] ) ) {
-                        unset( $row_actions[ $action ] );
-                    }
-                }
             }
 
             $product_types = wcv_get_product_types();
@@ -2127,7 +2098,7 @@ class WCV_Product_Controller {
 
         $current_user_id   = get_current_user_id();
         $lock_new_products = apply_filters( 'wcv_product_table_lock_new_products', ( 'yes' === wcv_get_pro_user_meta( $current_user_id, '_wcv_lock_new_products_vendor', 'no' ) ) ? true : false );
-        $search            = isset( $_POST['wcv-search'] ) ? sanitize_text_field( wp_unslash( $_POST['wcv-search'] ) ) : '';
+        $search            = isset( $_GET['wcv-search'] ) ? sanitize_text_field( wp_unslash( $_GET['wcv-search'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         $can_submit        = wc_string_to_bool( get_option( 'wcvendors_capability_products_enabled', 'no' ) );
 
         $pagination_wrapper = apply_filters(

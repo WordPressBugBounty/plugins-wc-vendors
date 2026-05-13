@@ -468,9 +468,11 @@ class WCV_Order_Controller {
         }
 
         if ( isset( $_GET['wcv_export_orders'] ) ) {
-
-            $vendor_id = get_current_user_id();
-            $this->export_csv();
+            if ( ! isset( $_GET['wcv_export_nonce'] ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_GET['wcv_export_nonce'] ) ), 'wcv-export-orders' ) ) {
+                return false;
+            }
+            $export_format = isset( $_GET['wcv_export_format'] ) && 'order' === sanitize_key( wp_unslash( $_GET['wcv_export_format'] ) ) ? 'order' : 'line_item';
+            $this->export_csv( $export_format );
         }
 
         if ( isset( $_POST['wcv_order_id'] ) && isset( $_POST['wcv_add_note'] ) ) {
@@ -547,12 +549,22 @@ class WCV_Order_Controller {
             // Order status.
             if ( isset( $_POST['_wcv_order_status_input'] ) && ! empty( $_POST['_wcv_order_status_input'] ) && '' !== $update_button ) {
                 $order_status_input = wp_unslash( $_POST['_wcv_order_status_input'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-                if ( is_array( $order_status_input ) ) {
-                    $sanitized_statuses = array_map( 'sanitize_text_field', $order_status_input );
-                    WC()->session->set( 'wcv_order_filter_status', $sanitized_statuses );
-                } else {
-                    WC()->session->set( 'wcv_order_filter_status', sanitize_text_field( $order_status_input ) );
+                $allowed_statuses   = array_keys( wcv_get_order_statuses() );
+                $submitted          = is_array( $order_status_input ) ? $order_status_input : array( $order_status_input );
+                $sanitized_statuses = array();
+                foreach ( $submitted as $raw ) {
+                    if ( ! is_string( $raw ) ) {
+                        continue;
+                    }
+                    $clean = sanitize_text_field( $raw );
+                    if ( in_array( $clean, $allowed_statuses, true ) ) {
+                        $sanitized_statuses[] = $clean;
+                    }
                 }
+                WC()->session->set(
+                    'wcv_order_filter_status',
+                    ! empty( $sanitized_statuses ) ? $sanitized_statuses : ''
+                );
             } else {
                 WC()->session->set( 'wcv_order_filter_status', '' );
             }
@@ -1477,8 +1489,11 @@ class WCV_Order_Controller {
      *
      * @version 2.5.2
      * @since   2.5.2
+     * @since   2.6.9 - Added $export_format parameter.
+     *
+     * @param string $export_format 'line_item' (default) or 'order'.
      */
-    public function export_csv() {
+    public function export_csv( $export_format = 'line_item' ) {
 
         include_once 'class-wcv-export-helper.php';
 
@@ -1487,16 +1502,18 @@ class WCV_Order_Controller {
             'after'  => $this->get_start_date(),
         );
 
-        $csv_output  = new \WCV_Export_Helper();
-        $csv_headers = $csv_output->get_export_headers();
-        $orders      = WCV_Vendor_Controller::get_orders2( get_current_user_id(), $date_range, true );
-        $rows        = $csv_output->format_orders_export( $orders );
+        $csv_output           = new \WCV_Export_Helper();
+        $csv_headers          = $csv_output->get_export_headers();
+        $show_refunded_orders = wcv_is_show_reversed_order();
+        $orders               = WCV_Vendor_Controller::get_orders2( get_current_user_id(), $date_range, $show_refunded_orders );
+        $rows        = $csv_output->format_orders_export( $orders, $export_format );
 
         // Remove the ID column as its not required.
         unset( $csv_headers['ID'] );
-        $csv_headers  = apply_filters( 'wcv_order_export_csv_headers', $csv_headers );
-        $csv_rows     = apply_filters( 'wcv_order_export_csv_rows', $rows, $orders, $date_range );
-        $csv_filename = apply_filters( 'wcv_order_export_csv_filename', 'orders-' . gmdate( 'Y-m-d' ) );
+        $csv_headers   = apply_filters( 'wcv_order_export_csv_headers', $csv_headers );
+        $csv_rows      = apply_filters( 'wcv_order_export_csv_rows', $rows, $orders, $date_range );
+        $format_suffix = 'order' === $export_format ? 'per-order' : 'per-line-item';
+        $csv_filename  = apply_filters( 'wcv_order_export_csv_filename', 'orders-' . $format_suffix . '-' . gmdate( 'Y-m-d' ) );
 
         $csv_output->download_csv( $csv_headers, $csv_rows, $csv_filename );
     }
@@ -1653,10 +1670,10 @@ class WCV_Order_Controller {
         $order->update_meta_data( '_wcv_tracking_details', $order_tracking_details );
         $order->save();
 
-        $this->add_order_note( $order_id, $order_note );
-
-        // Clear any existing 'unshipped' notices before marking as shipped.
+        // Clear any existing stale notices before adding tracking result notices.
         wc_clear_notices();
+
+        $this->add_order_note( $order_id, $order_note );
 
         // Mark as shipped as tracking information has been added.
         self::mark_shipped( $vendor_id, $order_id );
@@ -1813,8 +1830,9 @@ class WCV_Order_Controller {
 
         $show_shipping_address = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_shipping', 'no' ) );
         $show_shipping_name    = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_shipping_name', 'no' ) );
+        $show_customer_name    = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_name', 'no' ) );
 
-        if ( ! $show_shipping_name ) {
+        if ( ! $show_shipping_name || ! $show_customer_name ) {
             if ( array_key_exists( 'first_name', $address ) ) {
                 unset( $address['first_name'] );
             }
@@ -1978,7 +1996,7 @@ class WCV_Order_Controller {
     /**
      * Get the order status from the order filter
      *
-     * @return string $order_statuses The comma separated list of order statuses to filter by.
+     * @return array|string Array of validated status slugs from the session, or empty string when no filter is active.
      * @version 2.5.2
      * @since   2.5.2 - Added
      */

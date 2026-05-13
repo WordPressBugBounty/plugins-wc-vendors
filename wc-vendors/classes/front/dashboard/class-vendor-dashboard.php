@@ -333,7 +333,7 @@ class WCV_Vendor_Dashboard {
         $pages = $this->get_dashboard_pages();
         foreach ( $pages as $page ) {
             if ( $page['slug'] === $object ) {
-                $page_title = isset( $page['label'] ) ? $page['label'] : '';
+                $page_title = isset( $page['heading'] ) ? $page['heading'] : ( isset( $page['label'] ) ? $page['label'] : '' );
                 $page_title = apply_filters( 'wcv_dashboard_page_title', $page_title, $object, $action );
                 if ( '' === $action ) {
                     if ( isset( $page['after_label'] ) ) {
@@ -353,8 +353,11 @@ class WCV_Vendor_Dashboard {
         }
 
         if ( 'dashboard' === $object ) {
+            $page_headings  = get_option( 'wcvendors_dashboard_headings', array() );
+            $home_title     = ( ! empty( $page_headings['home'] ) ) ? $page_headings['home'] : __( 'Dashboard', 'wc-vendors' );
+            $filtered_title = apply_filters( 'wcv_dashboard_page_title', $home_title, $object, $action );
             echo '<div class="wcv-gap-bottom ' . esc_attr( $object ) . '">';
-            echo '<h3 class="wcv-tab-page-heading">' . esc_html__( 'Dashboard', 'wc-vendors' ) . '</h3>';
+            echo '<h3 class="wcv-tab-page-heading">' . esc_html( $filtered_title ) . '</h3>';
             echo '</div>';
         }
 
@@ -519,11 +522,41 @@ class WCV_Vendor_Dashboard {
         );
 
         if ( $can_export_orders ) {
+            $base_url      = remove_query_arg( array( 'wcv_export_orders', 'wcv_export_format', 'wcv_export_nonce' ) );
+            $export_nonce  = wp_create_nonce( 'wcv-export-orders' );
+            $line_item_url = esc_url(
+                add_query_arg(
+                    array(
+                        'wcv_export_orders' => 'true',
+                        'wcv_export_format' => 'line_item',
+                        'wcv_export_nonce'  => $export_nonce,
+                    ),
+                    $base_url
+                )
+            );
+            $order_url     = esc_url(
+                add_query_arg(
+                    array(
+                        'wcv_export_orders' => 'true',
+                        'wcv_export_format' => 'order',
+                        'wcv_export_nonce'  => $export_nonce,
+                    ),
+                    $base_url
+                )
+            );
+            $export_icon   = wp_kses( wcv_get_icon( 'wcv-icon wcv-icon-dashboard-icon', 'wcv-icon-export' ), wcv_allowed_html_tags() );
+
             $this->dashboard_pages['order']['after_label'] = array(
-                '<a href="' . esc_url( add_query_arg( 'wcv_export_orders', 'true' ) ) . '" class="wcv-button wcv-button-link">',
-                wp_kses( wcv_get_icon( 'wcv-icon wcv-icon-20 wcv-icon-middle', 'wcv-icon-export' ), wcv_allowed_html_tags() ),
-                '<strong class="vertical-middle">' . esc_attr__( 'Export Orders', 'wc-vendors' ) . '</strong>',
-                '</a>',
+                '<div class="wcv-export-dropdown-wrapper">',
+                '<button type="button" class="wcv-button button quick-link-btn wcv-export-toggle no-margin" aria-expanded="false" aria-haspopup="true">',
+                $export_icon,
+                '<span class="wcv-button-text">' . esc_html__( 'Export Orders', 'wc-vendors' ) . '</span>',
+                '</button>',
+                '<ul class="wcv-more-dropdown wcv-export-dropdown">',
+                '<li><a href="' . $line_item_url . '">' . esc_html__( 'One row per product', 'wc-vendors' ) . '</a></li>',
+                '<li><a href="' . $order_url . '">' . esc_html__( 'One row per order', 'wc-vendors' ) . '</a></li>',
+                '</ul>',
+                '</div>',
             );
         }
 
@@ -563,7 +596,19 @@ class WCV_Vendor_Dashboard {
             unset( $this->dashboard_pages['product'] );
         }
 
-        return wcv_deprecated_filter( 'wcv_pro_dashboard_urls', '2.5.2', 'wcv_dashboard_urls', $this->dashboard_pages );
+        $pages         = wcv_deprecated_filter( 'wcv_pro_dashboard_urls', '2.5.2', 'wcv_dashboard_urls', $this->dashboard_pages );
+        $page_headings = get_option( 'wcvendors_dashboard_headings', array() );
+
+        foreach ( $pages as $array_key => $page ) {
+            if ( ! isset( $page['heading'] ) ) {
+                $slug                           = isset( $page['slug'] ) ? $page['slug'] : $array_key;
+                $pages[ $array_key ]['heading'] = ( ! empty( $page_headings[ $slug ] ) )
+                    ? $page_headings[ $slug ]
+                    : ( isset( $page['label'] ) ? $page['label'] : '' );
+            }
+        }
+
+        return $pages;
     }
 
     /**
@@ -955,6 +1000,11 @@ class WCV_Vendor_Dashboard {
                 $custom_pages = self::get_custom_pages();
 
                 foreach ( $pages as $page ) {
+                    // Skip pages with no path-based slug (e.g. view_store uses a full URL or is empty).
+                    if ( empty( $page['slug'] ) || false !== filter_var( $page['slug'], FILTER_VALIDATE_URL ) ) {
+                        continue;
+                    }
+
                     // Type Rule.
                     $type_rule = array(
                         $dashboard_page_slug . '/' . $page['slug'] . '?$'             => 'index.php?pagename=' . $dashboard_page_slug . '&object=' . $page['slug'],

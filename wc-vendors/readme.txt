@@ -3,7 +3,7 @@ Contributors: jkohlbach, RymeraWebCo, Rymera01, smub
 Tags: multivendor, marketplace, multi vendor, product vendors, woocommerce commissions
 Requires at least: 5.9
 Tested up to: 7.0
-Stable tag: 2.6.8
+Stable tag: 2.6.9
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -298,6 +298,20 @@ You can report security bugs through the Patchstack Vulnerability Disclosure Pro
 12. Email notifications for admins, customers and vendors
 
 == Changelog ==
+
+= Version 2.6.9 - 30th April 2026 =
+ * Feature: Add setting to auto-unpublish vendor products when role changes to Pending Vendor
+ * Improvement: Register a dedicated sidebar widget area for the WC Vendors single store page
+ * Improvement: Add bulk approve and deny actions for pending vendors
+ * Improvement: Show payment method on the order details page
+ * Improvement: Retain vendor status filter selection after page refresh
+ * Improvement: Add option for one row per order or one row per line item for the order CSV export
+ * Improvement: Add option to rename the Vendor Dashboard label
+ * Bug Fix: Fix missing borders in vendor order email
+ * Bug Fix: Persist product filters across pagination
+ * Bug Fix: Fix featured product setting not being enforced and missing in Vendor Dashboard
+ * Security: Harden input handling on the Vendor Dashboard orders screen
+ * Bug Fix: Refunded orders shown on vendor orders dashboard when "Show reversed orders" setting is disabled
 
 = Version 2.6.8 - 31st March 2026 =
  * Improvement: Replace strpos() with str_contains() across the codebase

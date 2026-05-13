@@ -1381,7 +1381,7 @@ class WCV_Vendors {
      */
     public static function add_rewrite_rules() {
 
-        $permalink = untrailingslashit( get_option( 'wcvendors_vendor_shop_permalink' ) );
+        $permalink = untrailingslashit( get_option( 'wcvendors_vendor_shop_permalink', 'vendors' ) );
 
         // Remove beginning slash.
         if ( '/' === substr( $permalink, 0, 1 ) ) {

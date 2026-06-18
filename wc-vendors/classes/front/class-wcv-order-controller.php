@@ -1267,6 +1267,7 @@ class WCV_Order_Controller {
      *  Order Details Template
      *
      * @since    2.5.2
+     * @since    2.7.0 Batch fetch per-product shipping to eliminate an N+1 query in the line-item loop.
      *
      * @param     object $order_row order id for notes.
      */
@@ -1303,6 +1304,23 @@ class WCV_Order_Controller {
             }
 
             $show_tax_columns = count( $order_taxes ) === 1;
+        }
+
+        // Batch fetch per-product shipping for this order to avoid an N+1 query in the line-item loop below.
+        $item_shipping_map = array();
+        if ( wc_tax_enabled() && ! empty( $line_items ) ) {
+            $shipping_rows = $wpdb->get_results(
+                $wpdb->prepare(
+                    "SELECT product_id, total_shipping FROM {$wpdb->prefix}pv_commission WHERE vendor_id = %d AND order_id = %d",
+                    $vendor_id,
+                    $order->get_id()
+                )
+            ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+            foreach ( $shipping_rows as $shipping_row ) {
+                if ( ! isset( $item_shipping_map[ (int) $shipping_row->product_id ] ) ) {
+                    $item_shipping_map[ (int) $shipping_row->product_id ] = $shipping_row->total_shipping;
+                }
+            }
         }
 
         foreach ( $line_items as $item_id => $item ) {
@@ -1358,7 +1376,7 @@ class WCV_Order_Controller {
             }
 
             if ( wc_tax_enabled() ) {
-                $item_shipping = $wpdb->get_var( $wpdb->prepare( "SELECT total_shipping FROM {$wpdb->prefix}pv_commission WHERE product_id = %d AND vendor_id = %d AND order_id = %d", $product_id, $vendor_id, $order->get_id() ) );
+                $item_shipping = isset( $item_shipping_map[ (int) $product_id ] ) ? $item_shipping_map[ (int) $product_id ] : null;
                 $shipping_tax += \WCV_Shipping::calculate_shipping_tax( $item_shipping, $order, $item->get_tax_class() );
             }
 
@@ -1506,7 +1524,7 @@ class WCV_Order_Controller {
         $csv_headers          = $csv_output->get_export_headers();
         $show_refunded_orders = wcv_is_show_reversed_order();
         $orders               = WCV_Vendor_Controller::get_orders2( get_current_user_id(), $date_range, $show_refunded_orders );
-        $rows        = $csv_output->format_orders_export( $orders, $export_format );
+        $rows                 = $csv_output->format_orders_export( $orders, $export_format );
 
         // Remove the ID column as its not required.
         unset( $csv_headers['ID'] );

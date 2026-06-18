@@ -222,12 +222,12 @@ if ( ! class_exists( 'WCVendors_Settings_Capabilities', false ) ) :
                             'title'    => sprintf(
                                 /* translators: %s vendor singular name */
                                 __( 'When a %s Is Set to Pending', 'wc-vendors' ),
-                                wcv_get_vendor_name( false, false )
+                                wcv_get_vendor_name( true, true )
                             ),
                             'desc_tip' => sprintf(
                                 /* translators: %s vendor singular possessive */
                                 __( 'If a %s\'s account is moved to Pending, their published products can be automatically hidden until they are re-approved.', 'wc-vendors' ),
-                                wcv_get_vendor_name( false, false )
+                                wcv_get_vendor_name( true, false )
                             ),
                             'id'       => 'wcvendors_pending_vendor_product_action',
                             'type'     => 'select',
@@ -472,6 +472,18 @@ if ( ! class_exists( 'WCVendors_Settings_Capabilities', false ) ) :
                                 wcv_get_vendor_name( false, false )
                             ),
                             'id'      => 'wcvendors_capability_products_review_own',
+                            'default' => 'no',
+                            'type'    => 'checkbox',
+                        ),
+
+                        array(
+                            'title'   => __( 'Trash Bin', 'wc-vendors' ),
+                            'desc'    => sprintf(
+                                /* translators: %s vendor name */
+                                __( 'Allow %s to view, restore, and permanently delete their trashed products', 'wc-vendors' ),
+                                wcv_get_vendor_name( false, false )
+                            ),
+                            'id'      => 'wcvendors_vendor_trash_bin_enabled',
                             'default' => 'no',
                             'type'    => 'checkbox',
                         ),

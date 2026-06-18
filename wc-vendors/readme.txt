@@ -3,7 +3,7 @@ Contributors: jkohlbach, RymeraWebCo, Rymera01, smub
 Tags: multivendor, marketplace, multi vendor, product vendors, woocommerce commissions
 Requires at least: 5.9
 Tested up to: 7.0
-Stable tag: 2.6.9
+Stable tag: 2.7.0
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -299,6 +299,18 @@ You can report security bugs through the Patchstack Vulnerability Disclosure Pro
 
 == Changelog ==
 
+= Version 2.7.0 - 16th June 2026 =
+ * Feature: Add a Trash Bin for vendors to restore or permanently delete their own products
+ * Bug Fix: Incorrect plural vendor label on the "When a Vendor Is Set to Pending" setting
+ * Bug Fix: Calculation errors and crash risk in get_vendor_dues_from_order
+ * Bug Fix: Inactive vendor store page accessible via URL
+ * Bug Fix: "Security check failed" error on the WC Vendors reports tab
+ * Bug Fix: Fatal error on null result in count_products_status
+ * Bug Fix: Fatal error on wp-login.php registration when a vendor terms page is set
+ * Bug Fix: Fatal error when wp_enqueue_scripts fires in an admin context
+ * Bug Fix: Variation with a custom attribute is not saved
+ * Bug Fix: Refunded orders leak onto the vendor dashboard when "Show reversed orders" is disabled
+
 = Version 2.6.9 - 30th April 2026 =
  * Feature: Add setting to auto-unpublish vendor products when role changes to Pending Vendor
  * Improvement: Register a dedicated sidebar widget area for the WC Vendors single store page
@@ -310,7 +322,6 @@ You can report security bugs through the Patchstack Vulnerability Disclosure Pro
  * Bug Fix: Fix missing borders in vendor order email
  * Bug Fix: Persist product filters across pagination
  * Bug Fix: Fix featured product setting not being enforced and missing in Vendor Dashboard
- * Security: Harden input handling on the Vendor Dashboard orders screen
  * Bug Fix: Refunded orders shown on vendor orders dashboard when "Show reversed orders" setting is disabled
 
 = Version 2.6.8 - 31st March 2026 =

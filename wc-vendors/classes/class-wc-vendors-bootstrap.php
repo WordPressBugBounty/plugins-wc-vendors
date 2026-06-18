@@ -692,6 +692,9 @@ class WC_Vendors_Bootstrap {
         add_action( 'template_redirect', array( $this->product_controller, 'process_submit' ) );
         add_action( 'template_redirect', array( $this->product_controller, 'process_delete' ) );
         add_action( 'template_redirect', array( $this->product_controller, 'process_duplicate' ) );
+        add_action( 'template_redirect', array( $this->product_controller, 'process_restore' ) );
+        add_action( 'template_redirect', array( $this->product_controller, 'process_delete_permanent' ) );
+        add_action( 'template_redirect', array( $this->product_controller, 'process_empty_trash' ) );
         add_action( 'template_redirect', array( $this->report_controller, 'process_submit' ) );
 
         // Product controller ajax actions.

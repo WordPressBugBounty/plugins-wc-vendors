@@ -180,6 +180,8 @@ class WCV_Queries {
     /**
      * Sum of orders for a specific product
      *
+     * @since 2.7.0 Sanitize the product ID list, guard the empty IN() clause, and run the query through $wpdb->prepare().
+     *
      * @param array $product_ids The product IDs.
      * @param array $args        The arguments.
      *
@@ -216,6 +218,14 @@ class WCV_Queries {
 
         $args = wp_parse_args( $args, $defaults );
 
+        $product_ids = array_values( array_unique( array_filter( array_map( 'absint', $product_ids ) ) ) );
+
+        if ( empty( $product_ids ) ) {
+            return array();
+        }
+
+        $placeholders = implode( ',', array_fill( 0, count( $product_ids ), '%d' ) );
+
         $sql = "
         SELECT COUNT(order_id) as total_orders,
                 SUM(total_due + total_shipping + tax) as line_total,
@@ -224,16 +234,17 @@ class WCV_Queries {
 
         FROM {$wpdb->prefix}pv_commission
 
-        WHERE   product_id IN ('" . implode( "','", $product_ids ) . "')
-        AND     time >= '" . $args['dates']['after'] . "'
-        AND     time <= '" . $args['dates']['before'] . "'
+        WHERE   product_id IN ( $placeholders )
+        AND     time >= %s
+        AND     time <= %s
         AND     status != 'reversed'
         ";
 
+        $query_args = array_merge( $product_ids, array( $args['dates']['after'], $args['dates']['before'] ) );
+
         if ( ! empty( $args['vendor_id'] ) ) {
-            $sql .= "
-            AND vendor_id = {$args['vendor_id']}
-        ";
+            $sql         .= ' AND vendor_id = %d ';
+            $query_args[] = $args['vendor_id'];
         }
 
         $sql .= '
@@ -241,7 +252,7 @@ class WCV_Queries {
         ORDER BY time DESC;
         ';
 
-        $orders = $wpdb->get_results( $sql ); // phpcs:ignore
+        $orders = $wpdb->get_results( $wpdb->prepare( $sql, $query_args ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
         return $orders;
     }
@@ -249,11 +260,13 @@ class WCV_Queries {
     /**
      * Sum of orders for a specific order
      *
+     * @since 2.7.0 Sanitize the order ID list, guard the empty IN() clause, and run the query through $wpdb->prepare().
+     *
      * @param array $order_ids  The order IDs.
      * @param array $args       The query args.
      * @param bool  $date_range Whether to query by date range.
      *
-     * @return object
+     * @return array
      */
     public static function sum_for_orders( array $order_ids, array $args = array(), $date_range = true ) {
         global $wpdb;
@@ -266,23 +279,31 @@ class WCV_Queries {
 
         $args = wp_parse_args( $args, $defaults );
 
+        $order_ids = array_values( array_unique( array_filter( array_map( 'absint', $order_ids ) ) ) );
+
+        if ( empty( $order_ids ) ) {
+            return array();
+        }
+
+        $placeholders = implode( ',', array_fill( 0, count( $order_ids ), '%d' ) );
+
         $sql = "SELECT COUNT(order_id) as total_orders,
                 SUM(total_due + total_shipping + tax) as line_total,
                 SUM(qty) as qty,
                 product_id FROM {$wpdb->prefix}pv_commission
-                WHERE   order_id IN ('" . implode( "','", $order_ids ) . "')";
+                WHERE   order_id IN ( $placeholders )";
+
+        $query_args = $order_ids;
 
         if ( ! empty( $dates ) ) {
-            $sql .= "
-            AND     time >= '" . $dates['after'] . "'
-            AND     time <= '" . $dates['before'] . "'
-        ";
+            $sql         .= ' AND time >= %s AND time <= %s ';
+            $query_args[] = $dates['after'];
+            $query_args[] = $dates['before'];
         }
 
         if ( ! empty( $args['vendor_id'] ) ) {
-            $sql .= "
-            AND vendor_id = {$args['vendor_id']}
-        ";
+            $sql         .= ' AND vendor_id = %d ';
+            $query_args[] = $args['vendor_id'];
         }
 
         $sql .= '
@@ -290,7 +311,7 @@ class WCV_Queries {
         ORDER BY time DESC;
         ';
 
-        $orders = $wpdb->get_results( $sql ); // phpcs:ignore
+        $orders = $wpdb->get_results( $wpdb->prepare( $sql, $query_args ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
         return $orders;
     }

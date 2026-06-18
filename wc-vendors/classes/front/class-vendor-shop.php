@@ -92,6 +92,8 @@ class WCV_Vendor_Shop {
     /**
      * Filter WooCommerce main query to include vendor shop pages.
      *
+     * @since 2.7.0 Inactive vendors' store pages now return a 404.
+     *
      * @param object $q    Existing query object.
      *
      * @return void
@@ -105,6 +107,15 @@ class WCV_Vendor_Shop {
 
         $vendor_id = WCV_Vendors::get_vendor_id( $vendor_shop );
         if ( ! $vendor_id ) {
+            $q->set_404();
+            status_header( 404 );
+
+            return;
+        }
+
+        // Inactive vendors' store pages should not be publicly accessible, consistent with how
+        // their products are hidden from the shop loop and blocked from purchase elsewhere.
+        if ( 'inactive' === get_user_meta( $vendor_id, '_wcv_vendor_status', true ) ) {
             $q->set_404();
             status_header( 404 );
 
@@ -437,10 +448,11 @@ class WCV_Vendor_Shop {
      * @param string $title The vendor page title.
      *
      * @since 1.9.9
+     * @since 2.7.0 Bail on 404s so inactive vendor pages don't leak the shop name into the title.
      */
     public function vendor_page_title( $title ) {
 
-        if ( WCV_Vendors::is_vendor_page() ) {
+        if ( ! is_404() && WCV_Vendors::is_vendor_page() ) {
 
             $title['title'] = self::page_title();
         }

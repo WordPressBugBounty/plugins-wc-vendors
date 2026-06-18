@@ -97,14 +97,16 @@ class WCV_Vendor_Dashboard {
      * Init hooks
      *
      * @since 2.5.2
-     * @version 2.5.2
+     * @version 2.7.0 Guard wp_enqueue_scripts registration with ! is_admin() to avoid loading front-end assets in admin context.
      */
     public function init_hooks() {
         add_filter( 'query_vars', array( $this, 'add_query_vars' ) );
         add_filter( 'rewrite_rules_array', array( $this, 'rewrite_rules' ) );
         add_shortcode( 'wcv_pro_dashboard', array( $this, 'load_dashboard' ) );
         add_shortcode( 'wcv_vendor_dashboard', array( $this, 'load_pro_shortcode_to_free' ) );
-        add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
+        if ( ! is_admin() ) {
+            add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
+        }
         if ( is_user_logged_in() && WCV_Vendors::is_vendor( get_current_user_id() ) ) {
             add_filter( 'woocommerce_account_menu_items', array( $this, 'add_vendor_dashboard_item' ) );
             add_filter( 'woocommerce_get_endpoint_url', array( $this, 'add_vendor_dashboard_endpoint' ), 10, 2 );
@@ -216,8 +218,19 @@ class WCV_Vendor_Dashboard {
 
     /**
      * Enqueue scripts and styles
+     *
+     * Bails early when WCV_Public_Assets is not loaded (e.g. admin context) to avoid a fatal error.
+     *
+     * @since 2.5.2
+     * @version 2.7.0 Add class_exists() guard for WCV_Public_Assets.
+     *
+     * @return void
      */
     public function enqueue_scripts() {
+
+        if ( ! class_exists( WCV_Public_Assets::class ) ) {
+            return;
+        }
 
         $public_assets = WCV_Public_Assets::get_instance();
         $public_assets->enqueue_scripts();
@@ -496,9 +509,12 @@ class WCV_Vendor_Dashboard {
             'id'          => 'product',
             'label'       => __( 'Products', 'wc-vendors' ),
             'actions'     => array(
-                'edit'      => __( ' Edit', 'wc-vendors' ),
-                'duplicate' => __( ' Duplicate', 'wc-vendors' ),
-                'delete'    => __( ' Delete', 'wc-vendors' ),
+                'edit'             => __( ' Edit', 'wc-vendors' ),
+                'duplicate'        => __( ' Duplicate', 'wc-vendors' ),
+                'delete'           => __( ' Delete', 'wc-vendors' ),
+                'restore'          => __( ' Restore', 'wc-vendors' ),
+                'delete_permanent' => __( ' Delete Permanently', 'wc-vendors' ),
+                'empty_trash'      => __( ' Empty Trash', 'wc-vendors' ),
             ),
             'icon'        => 'wcv-icon-tshirt',
             'after_label' => array( $after_product_label ),
@@ -710,7 +726,14 @@ class WCV_Vendor_Dashboard {
         switch ( $object ) {
             // Product permissions.
             case 'product':
-                return ( $can_edit_live && (int) WCV_Vendors::get_vendor_from_product( $object_id ) === get_current_user_id() ) ? true : false;
+                $is_owner = ( (int) WCV_Vendors::get_vendor_from_product( $object_id ) === get_current_user_id() );
+
+                // Owners may manage their own trashed products when the trash bin is enabled.
+                if ( $is_owner && 'trash' === $post_status && wc_string_to_bool( get_option( 'wcvendors_vendor_trash_bin_enabled', 'no' ) ) ) {
+                    return true;
+                }
+
+                return ( $can_edit_live && $is_owner ) ? true : false;
             // Dashboard.
             default:
                 return apply_filters( 'wcvendors_dashboard_check_object_permission', true, $object, $object_id );

@@ -365,7 +365,7 @@ class WCV_Table_Helper {
         $this->get_action_column();
 
         // display the table.
-        wcv_deprecated_filter( 'wcvendors_pro_table_before_' . $this->id, '2.5.2', 'wcvendors_table_before_' . $this->id, $this->id, 'before' );
+        wcv_deprecated_action( 'wcvendors_pro_table_before_' . $this->id, '2.5.2', 'wcvendors_table_before_' . $this->id, $this->id, 'before' );
 
         $no_data_notice = wcv_deprecated_filter(
             'wcvendors_pro_table_no_data_notice_' . $this->id,

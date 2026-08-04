@@ -3,7 +3,7 @@ Contributors: jkohlbach, RymeraWebCo, Rymera01, smub
 Tags: multivendor, marketplace, multi vendor, product vendors, woocommerce commissions
 Requires at least: 5.9
 Tested up to: 7.0
-Stable tag: 2.7.0
+Stable tag: 2.7.1
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -298,6 +298,16 @@ You can report security bugs through the Patchstack Vulnerability Disclosure Pro
 12. Email notifications for admins, customers and vendors
 
 == Changelog ==
+
+= Version 2.7.1 - 30th July 2026 =
+ * Improvement: Add Total Refunded Sales row and calculate vendor commission on net sales
+ * Improvement: Optimize vendor ID lookup and vendors shortcode query performance
+ * Bug Fix: Authenticated SQL injection via the status parameter in the vendors REST endpoint (CVE-2026-15351)
+ * Bug Fix: Vendor order search ignored customer info capability settings
+ * Bug Fix: Fatal error on PHP 8 from static WCV_Shipping hook callbacks
+ * Bug Fix: Incorrect StoreAgent brand name and AI Moderate capability label
+ * Bug Fix: Reversed commissions included in Gross Sales Report totals
+ * Bug Fix: wcvendors_table_before_{id} now fires as an action to match wcvendors_table_after_{id}
 
 = Version 2.7.0 - 16th June 2026 =
  * Feature: Add a Trash Bin for vendors to restore or permanently delete their own products

@@ -2366,9 +2366,14 @@ class WCV_Order_Controller {
 
         $order_ids = array();
 
+        // Customer info capabilities gate what a vendor may see. The search must honour them too,
+        // otherwise a vendor can confirm a customer's email/phone/name/address placed an order with
+        // them via a targeted search even though the value is never displayed. See issue #1849.
+        $customer_caps = $this->get_customer_search_capabilities();
+
         switch ( $this->search_filter ) {
         case 'customer':
-            $order_ids = $this->search_orders_by_customer( $this->search_input );
+            $order_ids = $this->search_orders_by_customer( $this->search_input, $customer_caps );
             break;
         case 'product':
             $order_ids = $this->search_orders_by_product( $this->search_input );
@@ -2377,7 +2382,7 @@ class WCV_Order_Controller {
             $order_ids = $this->search_orders_by_order_id( $this->search_input );
             break;
         default:
-            $order_ids = $this->search_orders_by_all( $this->search_input );
+            $order_ids = $this->search_orders_by_all( $this->search_input, $customer_caps );
             break;
         }
 
@@ -2406,10 +2411,13 @@ class WCV_Order_Controller {
     /**
      * Search orders by all criteria
      *
-     * @param string $search_input The search input.
+     * @param string     $search_input  The search input.
+     * @param array|null $customer_caps Customer info capabilities used to gate which customer
+     *                                  fields may be matched (see get_customer_search_capabilities()).
+     *                                  Null keeps all fields searchable (backwards compatible).
      * @return array $orders The orders.
      */
-    public function search_orders_by_all( $search_input ) {
+    public function search_orders_by_all( $search_input, $customer_caps = null ) {
         global $wpdb;
         $is_hpos = wcv_hpos_enabled();
 
@@ -2457,16 +2465,23 @@ class WCV_Order_Controller {
 
         $order_ids = $wpdb->get_col( $query ); // phpcs:ignore
 
+        // Drop candidates whose only match is a customer field the vendor is not allowed to see.
+        // Product name and order ID matches are not customer PII, so they are kept.
+        $order_ids = $this->filter_search_by_customer_capabilities( $order_ids, $search_input, $customer_caps, true );
+
         return $order_ids;
     }
 
     /**
      * Search orders by customer
      *
-     * @param string $search_input The search input.
+     * @param string     $search_input  The search input.
+     * @param array|null $customer_caps Customer info capabilities used to gate which customer
+     *                                  fields may be matched (see get_customer_search_capabilities()).
+     *                                  Null keeps all fields searchable (backwards compatible).
      * @return array $orders The orders.
      */
-    public function search_orders_by_customer( $search_input ) {
+    public function search_orders_by_customer( $search_input, $customer_caps = null ) {
         global $wpdb;
         $is_hpos = wcv_hpos_enabled();
 
@@ -2503,6 +2518,11 @@ class WCV_Order_Controller {
         // phpcs:enable
 
         $order_ids = $wpdb->get_col( $query ); // phpcs:ignore
+
+        // The only match vector here is customer info, so drop any candidate whose match relied on
+        // a customer field the vendor is not allowed to see.
+        $order_ids = $this->filter_search_by_customer_capabilities( $order_ids, $search_input, $customer_caps, false );
+
         return $order_ids;
     }
 
@@ -2586,5 +2606,193 @@ class WCV_Order_Controller {
 
         $order_ids = $wpdb->get_col( $query ); // phpcs:ignore
         return $order_ids;
+    }
+
+    /**
+     * Get the customer info capabilities that gate order search.
+     *
+     * Each flag mirrors a "Capabilities" setting. When a flag is false the matching customer field
+     * must not be discoverable through the order search box.
+     *
+     * @since 2.7.1
+     *
+     * @return array {
+     *     @type bool $name          Customer (billing) name.
+     *     @type bool $shipping_name Customer shipping name.
+     *     @type bool $billing       Customer billing address (incl. company).
+     *     @type bool $shipping      Customer shipping address (incl. company).
+     *     @type bool $email         Customer email.
+     *     @type bool $phone         Customer phone (billing and shipping).
+     * }
+     */
+    protected function get_customer_search_capabilities() {
+        // Default fallbacks match the display side (wcv-dashboard-functions.php, emails, exports),
+        // which all default to 'no'. This keeps search hiding exactly what the dashboard hides when
+        // an option has never been saved, instead of leaving a field discoverable via search.
+        return array(
+            'name'          => wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_name', 'no' ) ),
+            'shipping_name' => wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_shipping_name', 'no' ) ),
+            'billing'       => wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_billing', 'no' ) ),
+            'shipping'      => wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_shipping', 'no' ) ),
+            'email'         => wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_email', 'no' ) ),
+            'phone'         => wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_phone', 'no' ) ),
+        );
+    }
+
+    /**
+     * Remove search results that only matched on a customer field the vendor may not view.
+     *
+     * The order search relies on WooCommerce's address index, which bundles every customer field
+     * (name, address, email, phone) into one blob, so the SQL cannot tell which field matched. This
+     * re-checks each candidate against only the fields whose capability is enabled, using
+     * WooCommerce getters so it works under both HPOS and legacy storage.
+     *
+     * @since 2.7.1
+     *
+     * @param array      $order_ids          Candidate vendor sub-order IDs from the SQL search.
+     * @param string     $search_input       The raw search term.
+     * @param array|null $customer_caps      Capabilities from get_customer_search_capabilities(), or
+     *                                       null to keep every field searchable.
+     * @param bool       $match_non_customer Whether product name / order ID matches also keep a
+     *                                       candidate (true for the "all" filter).
+     * @return array Filtered order IDs.
+     */
+    protected function filter_search_by_customer_capabilities( $order_ids, $search_input, $customer_caps, $match_non_customer ) {
+
+        // Nothing to strip when no capabilities were supplied or every field is allowed.
+        if ( empty( $order_ids ) || null === $customer_caps || ! in_array( false, $customer_caps, true ) ) {
+            return $order_ids;
+        }
+
+        $needle = trim( $search_input );
+        if ( '' === $needle ) {
+            return $order_ids;
+        }
+
+        // Batch load the candidate sub-orders and their parents up front so the loop below issues a
+        // fixed number of queries instead of one per candidate. This path only runs when at least
+        // one capability is disabled, but the search result set can still be large.
+        $sub_by_id      = array();
+        $parent_ids     = array();
+        $sub_order_args = array(
+            'type'     => 'shop_order_vendor',
+            'post__in' => $order_ids,
+            'limit'    => -1,
+        );
+        foreach ( wc_get_orders( $sub_order_args ) as $sub_order ) {
+            $sub_by_id[ $sub_order->get_id() ] = $sub_order;
+            if ( $sub_order->get_parent_id() ) {
+                $parent_ids[] = $sub_order->get_parent_id();
+            }
+        }
+
+        $parent_by_id = array();
+        if ( ! empty( $parent_ids ) ) {
+            $parent_args = array(
+                'post__in' => array_unique( $parent_ids ),
+                'limit'    => -1,
+            );
+            foreach ( wc_get_orders( $parent_args ) as $parent_order ) {
+                $parent_by_id[ $parent_order->get_id() ] = $parent_order;
+            }
+        }
+
+        $filtered = array();
+
+        foreach ( $order_ids as $order_id ) {
+            $sub_order = isset( $sub_by_id[ $order_id ] ) ? $sub_by_id[ $order_id ] : null;
+            if ( ! $sub_order ) {
+                continue;
+            }
+
+            // Customer details live on the parent order. Fall back to the sub-order when there is no
+            // parent, or when the parent could not be loaded (e.g. it was deleted).
+            $parent_id    = $sub_order->get_parent_id();
+            $parent_order = ( $parent_id && isset( $parent_by_id[ $parent_id ] ) ) ? $parent_by_id[ $parent_id ] : $sub_order;
+
+            $haystack = $this->build_customer_search_haystack( $parent_order, $customer_caps );
+            $matched  = ( '' !== $haystack && false !== stripos( $haystack, $needle ) );
+
+            // Product name and order ID are not customer PII, so they keep the candidate on "all".
+            if ( ! $matched && $match_non_customer ) {
+                if ( (string) $parent_order->get_id() === $needle ) {
+                    $matched = true;
+                } else {
+                    foreach ( $sub_order->get_items() as $item ) {
+                        if ( false !== stripos( $item->get_name(), $needle ) ) {
+                            $matched = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if ( $matched ) {
+                $filtered[] = $order_id;
+            }
+        }
+
+        return $filtered;
+    }
+
+    /**
+     * Build a search haystack from only the customer fields the vendor is allowed to view.
+     *
+     * @since 2.7.1
+     *
+     * @param \WC_Order $order         The (parent) order carrying the customer details.
+     * @param array     $customer_caps Capabilities from get_customer_search_capabilities().
+     * @return string Space separated searchable text.
+     */
+    protected function build_customer_search_haystack( $order, $customer_caps ) {
+
+        // Field order here need not match WooCommerce's concatenated address index. We only test each
+        // enabled field for a substring match, so ordering is irrelevant except in the rare case of a
+        // term that straddles two adjacent fields in WC's index; that edge is accepted as a benign
+        // false negative in exchange for only exposing fields the vendor is allowed to view.
+        $parts = array();
+
+        if ( ! empty( $customer_caps['name'] ) ) {
+            $parts[] = $order->get_billing_first_name();
+            $parts[] = $order->get_billing_last_name();
+        }
+
+        if ( ! empty( $customer_caps['shipping_name'] ) ) {
+            $parts[] = $order->get_shipping_first_name();
+            $parts[] = $order->get_shipping_last_name();
+        }
+
+        if ( ! empty( $customer_caps['billing'] ) ) {
+            $parts[] = $order->get_billing_company();
+            $parts[] = $order->get_billing_address_1();
+            $parts[] = $order->get_billing_address_2();
+            $parts[] = $order->get_billing_city();
+            $parts[] = $order->get_billing_state();
+            $parts[] = $order->get_billing_postcode();
+            $parts[] = $order->get_billing_country();
+        }
+
+        if ( ! empty( $customer_caps['shipping'] ) ) {
+            $parts[] = $order->get_shipping_company();
+            $parts[] = $order->get_shipping_address_1();
+            $parts[] = $order->get_shipping_address_2();
+            $parts[] = $order->get_shipping_city();
+            $parts[] = $order->get_shipping_state();
+            $parts[] = $order->get_shipping_postcode();
+            $parts[] = $order->get_shipping_country();
+        }
+
+        if ( ! empty( $customer_caps['email'] ) ) {
+            $parts[] = $order->get_billing_email();
+        }
+
+        if ( ! empty( $customer_caps['phone'] ) ) {
+            $parts[] = $order->get_billing_phone();
+            if ( is_callable( array( $order, 'get_shipping_phone' ) ) ) {
+                $parts[] = $order->get_shipping_phone();
+            }
+        }
+
+        return trim( implode( ' ', array_filter( $parts ) ) );
     }
 }

@@ -445,7 +445,7 @@ if ( ! class_exists( 'WCVendors_Settings_Capabilities', false ) ) :
                         ),
 
                         array(
-                            'title'   => __( 'AI Moderate', 'wc-vendors' ),
+                            'title'   => __( 'AI Product Moderation', 'wc-vendors' ),
                             'desc'    => $this->get_ai_moderate_description(),
                             'id'      => 'wcvendors_capability_ai_moderate',
                             'default' => 'no',
@@ -537,18 +537,18 @@ if ( ! class_exists( 'WCVendors_Settings_Capabilities', false ) ) :
             }
 
             if ( ! wcv_is_plugin_installed( $plugin_basename ) ) {
-                return $desc . ' <span class="description" style="color: #d63638;">(' . __( 'Store Agent AI for WooCommerce plugin is required', 'wc-vendors' ) . ')</span>';
+                return $desc . ' <span class="description" style="color: #d63638;">(' . __( 'StoreAgent AI for WooCommerce plugin is required', 'wc-vendors' ) . ')</span>';
             }
 
             if ( ! is_plugin_active( $plugin_basename ) ) {
-                return $desc . ' <span class="description" style="color: #d63638;">(' . __( 'Store Agent AI for WooCommerce plugin must be activated', 'wc-vendors' ) . ')</span>';
+                return $desc . ' <span class="description" style="color: #d63638;">(' . __( 'StoreAgent AI for WooCommerce plugin must be activated', 'wc-vendors' ) . ')</span>';
             }
 
             // Check if Store Agent is connected.
             if ( class_exists( '\SAAI\Helpers\Connect' ) ) {
                 $is_connected = \SAAI\Helpers\Connect::is_connected();
                 if ( ! $is_connected ) {
-                    return $desc . ' <span class="description" style="color: #d63638;">(' . __( 'You need to connect your store to Store Agent AI first', 'wc-vendors' ) . ')</span>';
+                    return $desc . ' <span class="description" style="color: #d63638;">(' . __( 'You need to connect your store to StoreAgent AI first', 'wc-vendors' ) . ')</span>';
                 }
             }
 
@@ -589,9 +589,9 @@ if ( ! class_exists( 'WCVendors_Settings_Capabilities', false ) ) :
                     'store_agent_slug'          => 'storeagent-ai-for-woocommerce',
                     'store_agent_dashboard_url' => admin_url( 'admin.php?page=storeagent-dashboard' ),
                     'store_agent_logo_url'      => $store_agent_logo,
-                    'i18n_store_agent_required' => __( 'Store Agent AI for WooCommerce is required for AI Moderate feature.', 'wc-vendors' ),
-                    'i18n_step_1_title'         => __( 'Step 1: Install and Activate Store Agent', 'wc-vendors' ),
-                    'i18n_step_2_title'         => __( 'Step 2: Connect to Store Agent', 'wc-vendors' ),
+                    'i18n_store_agent_required' => __( 'StoreAgent AI for WooCommerce is required for AI Product Moderation feature.', 'wc-vendors' ),
+                    'i18n_step_1_title'         => __( 'Step 1: Install and Activate StoreAgent', 'wc-vendors' ),
+                    'i18n_step_2_title'         => __( 'Step 2: Connect to StoreAgent', 'wc-vendors' ),
                     'i18n_install_and_activate' => __( 'Install and Activate', 'wc-vendors' ),
                     'i18n_activate'             => __( 'Activate', 'wc-vendors' ),
                     'i18n_connect_store_agent'  => __( 'Open Connection Page', 'wc-vendors' ),
@@ -600,11 +600,11 @@ if ( ! class_exists( 'WCVendors_Settings_Capabilities', false ) ) :
                     'i18n_installing'           => __( 'Installing...', 'wc-vendors' ),
                     'i18n_activating'           => __( 'Activating...', 'wc-vendors' ),
                     'i18n_checking_connection'  => __( 'Checking...', 'wc-vendors' ),
-                    'i18n_connection_success'   => __( 'Connection successful! Store Agent is ready.', 'wc-vendors' ),
-                    'i18n_connection_not_ready' => __( 'Not connected yet. Please connect Store Agent and try again.', 'wc-vendors' ),
+                    'i18n_connection_success'   => __( 'Connection successful! StoreAgent is ready.', 'wc-vendors' ),
+                    'i18n_connection_not_ready' => __( 'Not connected yet. Please connect StoreAgent and try again.', 'wc-vendors' ),
                     'i18n_connection_error'     => __( 'Unable to verify connection. Please try again.', 'wc-vendors' ),
-                    'i18n_install_success'      => __( 'Store Agent installed and activated successfully!', 'wc-vendors' ),
-                    'i18n_install_error'        => __( 'Failed to install Store Agent. Please try again.', 'wc-vendors' ),
+                    'i18n_install_success'      => __( 'StoreAgent installed and activated successfully!', 'wc-vendors' ),
+                    'i18n_install_error'        => __( 'Failed to install StoreAgent. Please try again.', 'wc-vendors' ),
                     'i18n_step_completed'       => __( 'Completed', 'wc-vendors' ),
                 )
             );
@@ -637,9 +637,9 @@ if ( ! class_exists( 'WCVendors_Settings_Capabilities', false ) ) :
             // Template variables.
             $store_agent_logo_url      = $store_agent_logo;
             $store_agent_dashboard_url = admin_url( 'admin.php?page=storeagent-dashboard' );
-            $i18n_store_agent_required = __( 'Store Agent AI for WooCommerce is required for AI Moderate feature.', 'wc-vendors' );
-            $i18n_step_1_title         = __( 'Step 1: Install and Activate Store Agent', 'wc-vendors' );
-            $i18n_step_2_title         = __( 'Step 2: Connect to Store Agent', 'wc-vendors' );
+            $i18n_store_agent_required = __( 'StoreAgent AI for WooCommerce is required for AI Product Moderation feature.', 'wc-vendors' );
+            $i18n_step_1_title         = __( 'Step 1: Install and Activate StoreAgent', 'wc-vendors' );
+            $i18n_step_2_title         = __( 'Step 2: Connect to StoreAgent', 'wc-vendors' );
             $i18n_install_and_activate = __( 'Install and Activate', 'wc-vendors' );
             $i18n_connect_store_agent  = __( 'Open Connection Page', 'wc-vendors' );
             $i18n_check_connection     = __( 'Check Connection', 'wc-vendors' );

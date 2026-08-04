@@ -271,6 +271,8 @@ class WCV_Admin_API extends WCV_API {
     /**
      * Custom query to search customers.
      *
+     * @since 2.7.1 Replaced extract() with explicit assignments; status is now allow-listed and prepared.
+     *
      * @param array $params Array of parameters.
      *
      * @return array $results Tuple of results and total results.
@@ -288,7 +290,12 @@ class WCV_Admin_API extends WCV_API {
             ),
         );
 
-        extract( $params ); // phpcs:ignore
+        // Assign only the known parameters explicitly. Using extract() here would
+        // create/overwrite arbitrary locals from request input (e.g. $wpdb).
+        $search = (string) $params['search'];
+        $status = (string) $params['status'];
+        $limit  = absint( $params['limit'] );
+        $page   = max( 1, absint( $params['page'] ) );
 
         $offset = ( $page - 1 ) * $limit;
 
@@ -326,7 +333,11 @@ class WCV_Admin_API extends WCV_API {
             if ( 'pending' === $status ) {
                 $where_query = "AND ucap.meta_value LIKE '%\"pending_vendor\"%'";
             } else {
-                $where_query .= "AND vstatus.meta_value = '{$status}' AND ucap.meta_value NOT LIKE '%\"pending_vendor\"%' ";
+                $status       = in_array( $status, array( 'active', 'inactive' ), true ) ? $status : 'active';
+                $where_query .= $wpdb->prepare(
+                    "AND vstatus.meta_value = %s AND ucap.meta_value NOT LIKE '%%\"pending_vendor\"%%' ", // phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.LikeWildcardsInQuery -- %% is the correct prepare() escape for a literal % in a LIKE pattern; pending_vendor is a hardcoded role slug, not user input.
+                    $status
+                );
             }
         }
 
@@ -363,7 +374,7 @@ class WCV_Admin_API extends WCV_API {
         // Get vendor counts.
         $vendor_count = $this->_get_vendor_count_for_all_status();
 
-        // TODO: sanitize parameter values.
+        // Parameter values are sanitized in _query_vendor_ids() (allow-list + $wpdb->prepare).
         $params = $request->get_params();
 
         // Query the vendor IDs based on the provided parameters.

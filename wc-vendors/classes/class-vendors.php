@@ -608,11 +608,17 @@ class WCV_Vendors {
      *
      * @param string|int $input The username or user ID.
      *
-     * @return int
+     * @return int|false
+     * @version 2.7.1 Added fast-path for numeric vendor IDs to skip the get_users() lookup.
      */
     public static function get_vendor_id( $input ) {
         if ( empty( $input ) ) {
             return false;
+        }
+
+        // Numeric vendor ID needs no slug lookup; skip the get_users() query.
+        if ( is_numeric( $input ) && self::is_vendor( (int) $input ) ) {
+            return (int) $input;
         }
 
         $users = get_users(

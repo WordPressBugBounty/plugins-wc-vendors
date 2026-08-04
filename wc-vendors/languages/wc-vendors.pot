@@ -8,7 +8,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Language-Team: WC Vendors <translate@wcvendors.com>\n"
 "Last-Translator: Jamie Madden <translate@wcvendors.com>\n"
-"POT-Creation-Date: 2026-06-16 06:30+0000\n"
+"POT-Creation-Date: 2026-07-30 04:24+0000\n"
 "Report-Msgid-Bugs-To: https://www.wcvendors.com\n"
 "X-Poedit-Basepath: ..\n"
 "X-Poedit-KeywordsList: __;_e;_ex:1,2c;_n:1,2;_n_noop:1,2;_nx:1,2,4c;_nx_noop:1,2,3c;_x:1,2c;esc_attr__;esc_attr_e;esc_attr_x:1,2c;esc_html__;esc_html_e;esc_html_x:1,2c\n"
@@ -386,15 +386,15 @@ msgstr ""
 msgid "Product Price"
 msgstr ""
 
-#: classes/class-vendor-settings.php:734, classes/front/class-wcv-product-controller.php:3691, classes/includes/wcv-all-vendors-page-i18n.php:14, classes/includes/api/admin/class-wcv-admin-api.php:836
+#: classes/class-vendor-settings.php:734, classes/front/class-wcv-product-controller.php:3691, classes/includes/wcv-all-vendors-page-i18n.php:14, classes/includes/api/admin/class-wcv-admin-api.php:847
 msgid "Pending"
 msgstr ""
 
-#: classes/class-vendor-settings.php:735, classes/includes/wcv-all-vendors-page-i18n.php:12, classes/includes/wcv-marketplace-dashboard-i18n.php:69, classes/includes/api/admin/class-wcv-admin-api.php:836
+#: classes/class-vendor-settings.php:735, classes/includes/wcv-all-vendors-page-i18n.php:12, classes/includes/wcv-marketplace-dashboard-i18n.php:69, classes/includes/api/admin/class-wcv-admin-api.php:847
 msgid "Inactive"
 msgstr ""
 
-#: classes/class-vendor-settings.php:736, classes/includes/wcv-all-vendors-page-i18n.php:11, classes/includes/wcv-marketplace-dashboard-i18n.php:68, classes/includes/api/admin/class-wcv-admin-api.php:836
+#: classes/class-vendor-settings.php:736, classes/includes/wcv-all-vendors-page-i18n.php:11, classes/includes/wcv-marketplace-dashboard-i18n.php:68, classes/includes/api/admin/class-wcv-admin-api.php:847
 msgid "Active"
 msgstr ""
 
@@ -730,7 +730,7 @@ msgstr ""
 msgid "Date"
 msgstr ""
 
-#: classes/admin/class-admin-reports.php:702, templates/dashboard/reports/reports.php:76
+#: classes/admin/class-admin-reports.php:702, templates/dashboard/reports/reports.php:94
 msgid "Total Commission"
 msgstr ""
 
@@ -1676,75 +1676,83 @@ msgstr ""
 msgid "Integration with Simple Auctions plugin to create an auction marketplace just like eBay, Gumtree, or Facebook Marketplace. Allow your vendors to sell auction products right from their dashboard."
 msgstr ""
 
-#: classes/admin/class-wcv-plugin-installer.php:249, classes/includes/api/admin/class-wcv-reports-api.php:335
-msgid "WooCommerce"
+#: classes/admin/class-wcv-plugin-installer.php:249
+msgid "WC Vendors Engage"
 msgstr ""
 
 #: classes/admin/class-wcv-plugin-installer.php:251
+msgid "Build customer loyalty with store followers and exclusive follower-only discounts. Let customers follow their favourite vendors, receive filtered product feeds, and automatically unlock follower discounts at checkout."
+msgstr ""
+
+#: classes/admin/class-wcv-plugin-installer.php:256, classes/includes/api/admin/class-wcv-reports-api.php:335
+msgid "WooCommerce"
+msgstr ""
+
+#: classes/admin/class-wcv-plugin-installer.php:258
 msgid "The most customizable eCommerce platform for building your online business."
 msgstr ""
 
-#: classes/admin/class-wcv-plugin-installer.php:255
+#: classes/admin/class-wcv-plugin-installer.php:262
 msgid "Advanced Coupons for WooCommerce"
 msgstr ""
 
-#: classes/admin/class-wcv-plugin-installer.php:257
+#: classes/admin/class-wcv-plugin-installer.php:264
 msgid "Create new coupon types in WooCommerce with Advanced Coupons. Limit coupons to certain user roles. Control cart conditions when coupons should and shouldn't apply. Auto apply coupons + more."
 msgstr ""
 
-#: classes/admin/class-wcv-plugin-installer.php:261
+#: classes/admin/class-wcv-plugin-installer.php:268
 msgid "WooCommerce Wholesale Prices"
 msgstr ""
 
-#: classes/admin/class-wcv-plugin-installer.php:263
+#: classes/admin/class-wcv-plugin-installer.php:270
 msgid "The #1 WooCommerce wholesale plugin for adding wholesale prices & managing B2B customers. Trusted by over 25k store owners for managing wholesale orders, pricing, visibility, user roles, and more."
 msgstr ""
 
-#: classes/admin/class-wcv-plugin-installer.php:267
+#: classes/admin/class-wcv-plugin-installer.php:274
 msgid "Store Toolkit for WooCommerce"
 msgstr ""
 
-#: classes/admin/class-wcv-plugin-installer.php:269
+#: classes/admin/class-wcv-plugin-installer.php:276
 msgid "A growing set of commonly-used WooCommerce admin tools such as deleting WooCommerce data in bulk, such as products, orders, coupons, and customers. It also adds extra small features, order filtering, and more."
 msgstr ""
 
-#: classes/admin/class-wcv-plugin-installer.php:273
+#: classes/admin/class-wcv-plugin-installer.php:280
 msgid "Store Exporter for WooCommerce"
 msgstr ""
 
-#: classes/admin/class-wcv-plugin-installer.php:275
+#: classes/admin/class-wcv-plugin-installer.php:282
 msgid "Easily export Orders, Subscriptions, Coupons, Products, Categories, Tags to a variety of formats. The deluxe version also adds scheduled exporting for easy reporting and syncing with other systems."
 msgstr ""
 
-#: classes/admin/class-wcv-plugin-installer.php:279
+#: classes/admin/class-wcv-plugin-installer.php:286
 msgid "Invoice Gateway for WooCommerce"
 msgstr ""
 
-#: classes/admin/class-wcv-plugin-installer.php:281
+#: classes/admin/class-wcv-plugin-installer.php:288
 msgid "Accept orders via a special invoice payment gateway method which lets your customer enter their order without upfront payment. Then just issue an invoice from your accounting system and paste in the number."
 msgstr ""
 
-#: classes/admin/class-wcv-plugin-installer.php:285
+#: classes/admin/class-wcv-plugin-installer.php:292
 msgid "StoreAgent AI for WooCommerce"
 msgstr ""
 
-#: classes/admin/class-wcv-plugin-installer.php:287
+#: classes/admin/class-wcv-plugin-installer.php:294
 msgid "StoreAgent is your WooCommerce AI tool kit, powered by the StoreAgent AI platform. It's all your AI content tools, AI insights and AI chat rolled into one."
 msgstr ""
 
-#: classes/admin/class-wcv-plugin-installer.php:291
+#: classes/admin/class-wcv-plugin-installer.php:298
 msgid "Product Feed PRO for WooCommerce"
 msgstr ""
 
-#: classes/admin/class-wcv-plugin-installer.php:293
+#: classes/admin/class-wcv-plugin-installer.php:300
 msgid "Most popular WooCommerce product feed plugin supporting Google shopping feed, meta/facebook feed, bing product feed and more."
 msgstr ""
 
-#: classes/admin/class-wcv-plugin-installer.php:297
+#: classes/admin/class-wcv-plugin-installer.php:304
 msgid "SaveTo Wishlist Lite for WooCommerce"
 msgstr ""
 
-#: classes/admin/class-wcv-plugin-installer.php:299
+#: classes/admin/class-wcv-plugin-installer.php:306
 msgid "A simple, powerful WooCommerce wishlist plugin to help customers save products they love and buy later."
 msgstr ""
 
@@ -2353,7 +2361,7 @@ msgstr ""
 msgid "You cannot review your own product."
 msgstr ""
 
-#: classes/front/class-wcv-public-assets.php:228, templates/dashboard/dashboard-tab-content-sales-snapshot.php:47, templates/dashboard/dashboard-tab-content-sales-snapshot.php:74, templates/dashboard/reports/reports.php:100
+#: classes/front/class-wcv-public-assets.php:228, templates/dashboard/dashboard-tab-content-sales-snapshot.php:47, templates/dashboard/dashboard-tab-content-sales-snapshot.php:74, templates/dashboard/reports/reports.php:118
 msgid "Total Orders"
 msgstr ""
 
@@ -4998,7 +5006,7 @@ msgstr ""
 msgid "Add Product"
 msgstr ""
 
-#: templates/dashboard/product-download.php:20, templates/dashboard/product-edit.php:19, templates/dashboard/product-simple.php:20, classes/includes/api/admin/class-wcv-admin-api.php:1494
+#: templates/dashboard/product-download.php:20, templates/dashboard/product-edit.php:19, templates/dashboard/product-simple.php:20, classes/includes/api/admin/class-wcv-admin-api.php:1505
 msgid "Edit Product"
 msgstr ""
 
@@ -5822,7 +5830,7 @@ msgid "Allow %s to publish products directly to the marketplace without requirin
 msgstr ""
 
 #: classes/admin/settings/class-wcv-settings-capabilities.php:448
-msgid "AI Moderate"
+msgid "AI Product Moderation"
 msgstr ""
 
 #: classes/admin/settings/class-wcv-settings-capabilities.php:456
@@ -6062,27 +6070,27 @@ msgid "Enable AI moderation for products"
 msgstr ""
 
 #: classes/admin/settings/class-wcv-settings-capabilities.php:540
-msgid "Store Agent AI for WooCommerce plugin is required"
+msgid "StoreAgent AI for WooCommerce plugin is required"
 msgstr ""
 
 #: classes/admin/settings/class-wcv-settings-capabilities.php:544
-msgid "Store Agent AI for WooCommerce plugin must be activated"
+msgid "StoreAgent AI for WooCommerce plugin must be activated"
 msgstr ""
 
 #: classes/admin/settings/class-wcv-settings-capabilities.php:551
-msgid "You need to connect your store to Store Agent AI first"
+msgid "You need to connect your store to StoreAgent AI first"
 msgstr ""
 
 #: classes/admin/settings/class-wcv-settings-capabilities.php:592, classes/admin/settings/class-wcv-settings-capabilities.php:640
-msgid "Store Agent AI for WooCommerce is required for AI Moderate feature."
+msgid "StoreAgent AI for WooCommerce is required for AI Product Moderation feature."
 msgstr ""
 
 #: classes/admin/settings/class-wcv-settings-capabilities.php:593, classes/admin/settings/class-wcv-settings-capabilities.php:641
-msgid "Step 1: Install and Activate Store Agent"
+msgid "Step 1: Install and Activate StoreAgent"
 msgstr ""
 
 #: classes/admin/settings/class-wcv-settings-capabilities.php:594, classes/admin/settings/class-wcv-settings-capabilities.php:642
-msgid "Step 2: Connect to Store Agent"
+msgid "Step 2: Connect to StoreAgent"
 msgstr ""
 
 #: classes/admin/settings/class-wcv-settings-capabilities.php:595, classes/admin/settings/class-wcv-settings-capabilities.php:643
@@ -6106,11 +6114,11 @@ msgid "Checking..."
 msgstr ""
 
 #: classes/admin/settings/class-wcv-settings-capabilities.php:603
-msgid "Connection successful! Store Agent is ready."
+msgid "Connection successful! StoreAgent is ready."
 msgstr ""
 
 #: classes/admin/settings/class-wcv-settings-capabilities.php:604
-msgid "Not connected yet. Please connect Store Agent and try again."
+msgid "Not connected yet. Please connect StoreAgent and try again."
 msgstr ""
 
 #: classes/admin/settings/class-wcv-settings-capabilities.php:605
@@ -6118,11 +6126,11 @@ msgid "Unable to verify connection. Please try again."
 msgstr ""
 
 #: classes/admin/settings/class-wcv-settings-capabilities.php:606
-msgid "Store Agent installed and activated successfully!"
+msgid "StoreAgent installed and activated successfully!"
 msgstr ""
 
 #: classes/admin/settings/class-wcv-settings-capabilities.php:607
-msgid "Failed to install Store Agent. Please try again."
+msgid "Failed to install StoreAgent. Please try again."
 msgstr ""
 
 #: classes/admin/settings/class-wcv-settings-commission.php:79
@@ -8437,31 +8445,35 @@ msgstr ""
 msgid "Commission Paid"
 msgstr ""
 
-#: templates/dashboard/reports/reports.php:57
+#: templates/dashboard/reports/reports.php:68
 msgid "Gross Sales Report"
 msgstr ""
 
-#: templates/dashboard/reports/reports.php:61
+#: templates/dashboard/reports/reports.php:72
 msgid "Total Order"
 msgstr ""
 
-#: templates/dashboard/reports/reports.php:66
+#: templates/dashboard/reports/reports.php:77
 msgid "Total Product Sold"
 msgstr ""
 
-#: templates/dashboard/reports/reports.php:71
+#: templates/dashboard/reports/reports.php:82
 msgid "Total Gross Sales"
 msgstr ""
 
-#: templates/dashboard/reports/reports.php:81
+#: templates/dashboard/reports/reports.php:88
+msgid "Total Refunded Sales"
+msgstr ""
+
+#: templates/dashboard/reports/reports.php:99
 msgid "Net Revenue"
 msgstr ""
 
-#: templates/dashboard/reports/reports.php:91
+#: templates/dashboard/reports/reports.php:109
 msgid "Orders Totals"
 msgstr ""
 
-#: templates/dashboard/reports/reports.php:94
+#: templates/dashboard/reports/reports.php:112
 msgid "No orders for this period. Adjust your dates above and click Update, or list new products for customers to buy."
 msgstr ""
 
@@ -9519,11 +9531,11 @@ msgstr ""
 msgid "Number of items per page."
 msgstr ""
 
-#: classes/includes/api/admin/class-wcv-admin-api.php:158, classes/includes/api/admin/class-wcv-admin-api.php:436, classes/includes/api/admin/class-wcv-admin-api.php:805
+#: classes/includes/api/admin/class-wcv-admin-api.php:158, classes/includes/api/admin/class-wcv-admin-api.php:447, classes/includes/api/admin/class-wcv-admin-api.php:816
 msgid "No vendor ID provided."
 msgstr ""
 
-#: classes/includes/api/admin/class-wcv-admin-api.php:171, classes/includes/api/admin/class-wcv-admin-api.php:447, classes/includes/api/admin/class-wcv-admin-api.php:818
+#: classes/includes/api/admin/class-wcv-admin-api.php:171, classes/includes/api/admin/class-wcv-admin-api.php:458, classes/includes/api/admin/class-wcv-admin-api.php:829
 msgid "Not a vendor."
 msgstr ""
 
@@ -9535,178 +9547,178 @@ msgstr ""
 msgid "Something went wrong."
 msgstr ""
 
-#: classes/includes/api/admin/class-wcv-admin-api.php:469, classes/includes/api/admin/class-wcv-admin-api.php:619
+#: classes/includes/api/admin/class-wcv-admin-api.php:480, classes/includes/api/admin/class-wcv-admin-api.php:630
 msgid "Invalid action."
 msgstr ""
 
-#: classes/includes/api/admin/class-wcv-admin-api.php:503
+#: classes/includes/api/admin/class-wcv-admin-api.php:514
 msgid "Vendor is already inactive."
 msgstr ""
 
-#: classes/includes/api/admin/class-wcv-admin-api.php:517
+#: classes/includes/api/admin/class-wcv-admin-api.php:528
 msgid "Vendor has been deactivated."
 msgstr ""
 
-#: classes/includes/api/admin/class-wcv-admin-api.php:544
+#: classes/includes/api/admin/class-wcv-admin-api.php:555
 msgid "Vendor is already active."
 msgstr ""
 
-#: classes/includes/api/admin/class-wcv-admin-api.php:565
+#: classes/includes/api/admin/class-wcv-admin-api.php:576
 msgid "An error occurred while activating the vendor."
 msgstr ""
 
-#: classes/includes/api/admin/class-wcv-admin-api.php:557
+#: classes/includes/api/admin/class-wcv-admin-api.php:568
 msgid "Vendor has been activated."
 msgstr ""
 
-#: classes/includes/api/admin/class-wcv-admin-api.php:598
+#: classes/includes/api/admin/class-wcv-admin-api.php:609
 msgid "No vendor IDs provided."
 msgstr ""
 
 #. translators: %d: maximum number of vendors allowed
-#: classes/includes/api/admin/class-wcv-admin-api.php:609
+#: classes/includes/api/admin/class-wcv-admin-api.php:620
 msgid "Too many vendors selected. Please select %d or fewer."
 msgstr ""
 
 #. translators: %d: number of approved vendors
-#: classes/includes/api/admin/class-wcv-admin-api.php:674
+#: classes/includes/api/admin/class-wcv-admin-api.php:685
 msgid "%d vendor approved."
 msgid_plural "%d vendors approved."
 msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d: number of denied vendors
-#: classes/includes/api/admin/class-wcv-admin-api.php:678
+#: classes/includes/api/admin/class-wcv-admin-api.php:689
 msgid "%d vendor denied."
 msgid_plural "%d vendors denied."
 msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d: number of activated vendors
-#: classes/includes/api/admin/class-wcv-admin-api.php:682
+#: classes/includes/api/admin/class-wcv-admin-api.php:693
 msgid "%d vendor activated."
 msgid_plural "%d vendors activated."
 msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d: number of deactivated vendors
-#: classes/includes/api/admin/class-wcv-admin-api.php:686
+#: classes/includes/api/admin/class-wcv-admin-api.php:697
 msgid "%d vendor deactivated."
 msgid_plural "%d vendors deactivated."
 msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %d: number of vendors that could not be processed
-#: classes/includes/api/admin/class-wcv-admin-api.php:693
+#: classes/includes/api/admin/class-wcv-admin-api.php:704
 msgid "%d vendor could not be processed."
 msgid_plural "%d vendors could not be processed."
 msgstr[0] ""
 msgstr[1] ""
 
-#: classes/includes/api/admin/class-wcv-admin-api.php:727
+#: classes/includes/api/admin/class-wcv-admin-api.php:738
 msgid "Vendor cannot be approved. Please make sure the vendor is pending."
 msgstr ""
 
-#: classes/includes/api/admin/class-wcv-admin-api.php:742
+#: classes/includes/api/admin/class-wcv-admin-api.php:753
 msgid "Vendor approved."
 msgstr ""
 
-#: classes/includes/api/admin/class-wcv-admin-api.php:767
+#: classes/includes/api/admin/class-wcv-admin-api.php:778
 msgid "Vendor cannot be denied. Please make sure the vendor is pending."
 msgstr ""
 
-#: classes/includes/api/admin/class-wcv-admin-api.php:784
+#: classes/includes/api/admin/class-wcv-admin-api.php:795
 msgid "Vendor denied."
 msgstr ""
 
-#: classes/includes/api/admin/class-wcv-admin-api.php:873
+#: classes/includes/api/admin/class-wcv-admin-api.php:884
 msgid "You do not have permission to view products."
 msgstr ""
 
-#: classes/includes/api/admin/class-wcv-admin-api.php:944
+#: classes/includes/api/admin/class-wcv-admin-api.php:955
 msgid "Unknown"
 msgstr ""
 
-#: classes/includes/api/admin/class-wcv-admin-api.php:988
+#: classes/includes/api/admin/class-wcv-admin-api.php:999
 msgid "You do not have permission to approve products."
 msgstr ""
 
-#: classes/includes/api/admin/class-wcv-admin-api.php:999, classes/includes/api/admin/class-wcv-admin-api.php:1078, classes/includes/api/admin/class-wcv-admin-api.php:1293
+#: classes/includes/api/admin/class-wcv-admin-api.php:1010, classes/includes/api/admin/class-wcv-admin-api.php:1089, classes/includes/api/admin/class-wcv-admin-api.php:1304
 msgid "Product ID is required."
 msgstr ""
 
-#: classes/includes/api/admin/class-wcv-admin-api.php:1010, classes/includes/api/admin/class-wcv-admin-api.php:1089, classes/includes/api/admin/class-wcv-admin-api.php:1304
+#: classes/includes/api/admin/class-wcv-admin-api.php:1021, classes/includes/api/admin/class-wcv-admin-api.php:1100, classes/includes/api/admin/class-wcv-admin-api.php:1315
 msgid "Product not found."
 msgstr ""
 
-#: classes/includes/api/admin/class-wcv-admin-api.php:1021
+#: classes/includes/api/admin/class-wcv-admin-api.php:1032
 msgid "Product is not pending approval."
 msgstr ""
 
-#: classes/includes/api/admin/class-wcv-admin-api.php:1049
+#: classes/includes/api/admin/class-wcv-admin-api.php:1060
 msgid "Product approved successfully."
 msgstr ""
 
-#: classes/includes/api/admin/class-wcv-admin-api.php:1067
+#: classes/includes/api/admin/class-wcv-admin-api.php:1078
 msgid "You do not have permission to unpublish products."
 msgstr ""
 
-#: classes/includes/api/admin/class-wcv-admin-api.php:1100
+#: classes/includes/api/admin/class-wcv-admin-api.php:1111
 msgid "Product is not published."
 msgstr ""
 
-#: classes/includes/api/admin/class-wcv-admin-api.php:1128
+#: classes/includes/api/admin/class-wcv-admin-api.php:1139
 msgid "Product unpublished successfully."
 msgstr ""
 
-#: classes/includes/api/admin/class-wcv-admin-api.php:1233
+#: classes/includes/api/admin/class-wcv-admin-api.php:1244
 msgid "You do not have permission to view vendors."
 msgstr ""
 
-#: classes/includes/api/admin/class-wcv-admin-api.php:1279
+#: classes/includes/api/admin/class-wcv-admin-api.php:1290
 msgid "You do not have permission to request product changes."
 msgstr ""
 
-#: classes/includes/api/admin/class-wcv-admin-api.php:1315
+#: classes/includes/api/admin/class-wcv-admin-api.php:1326
 msgid "Product is not pending."
 msgstr ""
 
-#: classes/includes/api/admin/class-wcv-admin-api.php:1328
+#: classes/includes/api/admin/class-wcv-admin-api.php:1339
 msgid "Vendor not found."
 msgstr ""
 
-#: classes/includes/api/admin/class-wcv-admin-api.php:1380
+#: classes/includes/api/admin/class-wcv-admin-api.php:1391
 msgid "Change request sent successfully."
 msgstr ""
 
 #. translators: %s: product name
-#: classes/includes/api/admin/class-wcv-admin-api.php:1408
+#: classes/includes/api/admin/class-wcv-admin-api.php:1419
 msgid "Change Request for Product: %s"
 msgstr ""
 
-#: classes/includes/api/admin/class-wcv-admin-api.php:1412
+#: classes/includes/api/admin/class-wcv-admin-api.php:1423
 msgid "Product Change Request"
 msgstr ""
 
 #. translators: %s: vendor display name
-#: classes/includes/api/admin/class-wcv-admin-api.php:1444
+#: classes/includes/api/admin/class-wcv-admin-api.php:1455
 msgid "Hello %s,"
 msgstr ""
 
 #. translators: %s: product name
-#: classes/includes/api/admin/class-wcv-admin-api.php:1452
+#: classes/includes/api/admin/class-wcv-admin-api.php:1463
 msgid "We need some changes to your product \"%s\"."
 msgstr ""
 
-#: classes/includes/api/admin/class-wcv-admin-api.php:1460
+#: classes/includes/api/admin/class-wcv-admin-api.php:1471
 msgid "Requested Changes"
 msgstr ""
 
-#: classes/includes/api/admin/class-wcv-admin-api.php:1472
+#: classes/includes/api/admin/class-wcv-admin-api.php:1483
 msgid "Suggested Fixes"
 msgstr ""
 
-#: classes/includes/api/admin/class-wcv-admin-api.php:1500
+#: classes/includes/api/admin/class-wcv-admin-api.php:1511
 msgid "Thank you for your cooperation."
 msgstr ""
 

@@ -86,12 +86,14 @@ class WCV_Export_Helper {
      */
     public function __construct() {
 
+        $capabilities = wcv_get_customer_info_capabilities();
+
         $this->can_export_csv         = wc_string_to_bool( get_option( 'wcvendors_capability_orders_export', 'no' ) );
-        $this->can_view_emails        = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_email', 'no' ) );
-        $this->can_view_name          = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_name', 'no' ) );
-        $this->can_view_shipping_name = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_shipping_name', 'no' ) );
-        $this->can_view_address       = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_shipping', 'no' ) );
-        $this->can_view_phone         = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_phone', 'no' ) );
+        $this->can_view_emails        = $capabilities['email'];
+        $this->can_view_name          = $capabilities['name'];
+        $this->can_view_shipping_name = $capabilities['shipping_name'];
+        $this->can_view_address       = $capabilities['shipping'];
+        $this->can_view_phone         = $capabilities['phone'];
     }
 
     /**

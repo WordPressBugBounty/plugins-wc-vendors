@@ -395,12 +395,13 @@ class WCV_Emails {
      */
     public function vendor_customer_details( $order, $sent_to_admin, $plain_text ) {
 
-        $show_customer_billing_name  = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_name', 'no' ) );
-        $show_customer_shipping_name = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_shipping_name', 'no' ) );
-        $show_customer_email         = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_email', 'no' ) );
-        $show_customer_phone         = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_phone', 'no' ) );
-        $show_billing_address        = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_billing', 'no' ) );
-        $show_shipping_address       = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_shipping', 'no' ) );
+        $capabilities                = wcv_get_customer_info_capabilities();
+        $show_customer_billing_name  = $capabilities['name'];
+        $show_customer_shipping_name = $capabilities['shipping_name'];
+        $show_customer_email         = $capabilities['email'];
+        $show_customer_phone         = $capabilities['phone'];
+        $show_billing_address        = $capabilities['billing'];
+        $show_shipping_address       = $capabilities['shipping'];
         $customer_billing_name       = $show_customer_billing_name ? $order->get_formatted_billing_full_name() : '';
         $customer_shipping_name      = $show_customer_shipping_name ? $order->get_formatted_shipping_full_name() : '';
 
@@ -470,8 +471,9 @@ class WCV_Emails {
      */
     public function add_customer_shipping_address( $needs_shipping_address ) {
 
-        $show_shipping_address       = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_shipping', 'no' ) );
-        $show_customer_shipping_name = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_shipping_name', 'no' ) );
+        $capabilities                = wcv_get_customer_info_capabilities();
+        $show_shipping_address       = $capabilities['shipping'];
+        $show_customer_shipping_name = $capabilities['shipping_name'];
 
         if ( $show_shipping_address || $show_customer_shipping_name ) {
             if ( is_admin() ) {

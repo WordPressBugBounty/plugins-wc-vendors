@@ -34,7 +34,7 @@ $term_label_css_classes  = apply_filters( 'wcvendors_vendor_registration_term_la
             sprintf(
             // translators: %s is the name used to refer to a vendor.
                 __( 'Your account has not yet been approved to become a %s.  When it is, you will receive an email telling you that your account is approved!', 'wc-vendors' ),
-                wcv_get_vendor_name( true, false )
+                wcv_get_vendor_name( true, false, get_current_user_id() )
             )
         );
         ?>
@@ -48,7 +48,7 @@ $term_label_css_classes  = apply_filters( 'wcvendors_vendor_registration_term_la
             sprintf(
             // translators: %s is the name used to refer to a vendor.
                 __( 'Your account is not setup as a %s.', 'wc-vendors' ),
-                wcv_get_vendor_name( true, false )
+                wcv_get_vendor_name( true, false, get_current_user_id() )
             )
         );
     ?>
@@ -73,7 +73,7 @@ $term_label_css_classes  = apply_filters( 'wcvendors_vendor_registration_term_la
                                 sprintf(
                                     // translators: %s is the name used to refer to a vendor.
                                     __( 'Apply to become a %s? ', 'wc-vendors' ),
-                                    wcv_get_vendor_name( true, false )
+                                    wcv_get_vendor_name( true, false, get_current_user_id() )
                                 )
                             )
                         );

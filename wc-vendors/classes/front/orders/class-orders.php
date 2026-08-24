@@ -69,12 +69,14 @@ class WCV_Orders {
      */
     public function __construct() {
 
+        $capabilities = wcv_get_customer_info_capabilities();
+
         $this->can_view_orders        = wc_string_to_bool( get_option( 'wcvendors_capability_orders_enabled', 'no' ) );
         $this->can_export_csv         = wc_string_to_bool( get_option( 'wcvendors_capability_orders_export', 'no' ) );
-        $this->can_view_emails        = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_email', 'no' ) );
-        $this->can_view_name          = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_name', 'no' ) );
-        $this->can_view_shipping_name = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_shipping_name', 'no' ) );
-        $this->can_view_address       = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_shipping' ) );
+        $this->can_view_emails        = $capabilities['email'];
+        $this->can_view_name          = $capabilities['name'];
+        $this->can_view_shipping_name = $capabilities['shipping_name'];
+        $this->can_view_address       = $capabilities['shipping'];
 
         add_action( 'template_redirect', array( $this, 'check_access' ) );
         add_action( 'template_redirect', array( $this, 'process_export_orders' ) );
@@ -113,7 +115,7 @@ class WCV_Orders {
             return sprintf(
                 // translators: %s - Name used to refer to vendor.
                 __( 'You haven\'t selected a product\'s orders to view! Please go back to the %s Dashboard and click Show Orders on the product you\'d like to view.', 'wc-vendors' ),
-                wcv_get_vendor_name()
+                wcv_get_vendor_name( true, true, get_current_user_id() )
             );
 
         } else {
@@ -202,7 +204,7 @@ class WCV_Orders {
             return sprintf(
                 // translators: %s - Name used to refer to vendor.
                 __( 'You haven\'t selected a product\'s orders to view! Please go back to the %s Dashboard and click Show Orders on the product you\'d like to view.', 'wc-vendors' ),
-                wcv_get_vendor_name()
+                wcv_get_vendor_name( true, true, get_current_user_id() )
             );
 
         } else {

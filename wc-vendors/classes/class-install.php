@@ -39,6 +39,10 @@ class WCVendors_Install {
             '2.5.1'  => array(
                 'maybe_create_missing_sub_orders',
             ),
+            '2.7.2'  => array(
+                'wcv_normalize_capability_product_types',
+                'wcv_reset_duplicate_sub_order_cleanup',
+            ),
         );
 
 

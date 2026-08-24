@@ -641,7 +641,7 @@ class WCV_Product_Form {
         $product_type_selector = wcv_get_product_types();
 
         // Disable capabitilies based on settings.
-        $product_type_settings = get_option( 'wcvendors_capability_product_types', array() );
+        $product_type_settings = wcv_get_hidden_product_types();
 
         foreach ( $product_type_settings as $product_type_setting ) {
 

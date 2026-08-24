@@ -299,7 +299,7 @@ class WCV_Product_Controller {
         $product_cat  = isset( $_GET['_wcv_product_category'] ) ? array_map( 'absint', (array) $_GET['_wcv_product_category'] ) : array(); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         $product_type = isset( $_GET['_wcv_product_type'] ) ? array_map( 'sanitize_key', (array) $_GET['_wcv_product_type'] ) : array(); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
-        $hide_product_types = get_option( 'wcvendors_capability_product_types', array() );
+        $hide_product_types = wcv_get_hidden_product_types();
 
         if ( ! empty( $hide_product_types ) ) {
             $args['tax_query'][] = array(
@@ -3222,14 +3222,26 @@ class WCV_Product_Controller {
     /**
      * Filter file uploads to check image dimensions and provide a prefix for iamages.
      *
-     * @param unknow $file - the file being uploaded.
+     * @param array $file - the file being uploaded.
      *
      * @since 1.5.0
+     * @version 2.7.2 - Guard against a missing dashboard page and an empty tmp_name.
+     *
+     * @return array The file being uploaded.
      */
     public function filter_upload( $file ) {
 
+        $referer       = wp_get_referer();
+        $dashboard_url = \WCV_Vendor_Dashboard::get_dashboard_page_url();
+
         // Run the prefix code on the dashboard for all vendor uploaded images.
-        if ( ! str_contains( wp_get_referer(), \WCV_Vendor_Dashboard::get_dashboard_page_url() ) ) {
+        // An empty dashboard url would match every referer, so check it before use.
+        if ( ! $referer || empty( $dashboard_url ) || ! str_contains( $referer, $dashboard_url ) ) {
+            return $file;
+        }
+
+        // A failed upload has no temporary file. Bail before getimagesize() throws a ValueError.
+        if ( empty( $file['tmp_name'] ) ) {
             return $file;
         }
 
@@ -3259,8 +3271,10 @@ class WCV_Product_Controller {
             $file['name'] = $prefix . '-' . $file['name'];
         }
 
+        $product_url = \WCV_Vendor_Dashboard::get_dashboard_page_url( 'product' );
+
         // Only run this on the Pro dashboard page product page.
-        if ( ! str_contains( wp_get_referer(), \WCV_Vendor_Dashboard::get_dashboard_page_url( 'product' ) ) ) {
+        if ( ! str_contains( $referer, $product_url ) ) {
             return $file;
         }
 
@@ -3624,7 +3638,7 @@ class WCV_Product_Controller {
      */
     public function count_products_status() {
         global $wpdb;
-        $hide_product_types = get_option( 'wcvendors_capability_product_types', array() );
+        $hide_product_types = wcv_get_hidden_product_types();
 
         if ( ! empty( $hide_product_types ) ) {
             $taxonomy_ids = $this->get_product_type_taxonomy_ids( $hide_product_types );

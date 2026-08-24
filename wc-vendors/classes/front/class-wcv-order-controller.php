@@ -714,6 +714,9 @@ class WCV_Order_Controller {
             $hide_tracking_number    = $is_pro_active && wc_string_to_bool( get_option( 'wcvendors_hide_order_tracking_number', 'no' ) );
             $hide_mark_shipped       = $is_pro_active && wc_string_to_bool( get_option( 'wcvendors_hide_order_mark_shipped', 'no' ) );
             $allow_update_order_note = wc_string_to_bool( get_option( 'wcvendors_capability_order_update_notes', 'no' ) );
+            $customer_capabilities   = \wcv_get_customer_info_capabilities();
+            $can_view_emails         = $customer_capabilities['email'];
+            $can_view_phone          = $customer_capabilities['phone'];
 
             foreach ( $all_orders as $order_row ) {
 
@@ -977,8 +980,6 @@ class WCV_Order_Controller {
 
                 $new_row = new \stdClass();
 
-                $can_view_emails   = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_email', 'no' ) );
-                $hide_phone        = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_phone', 'no' ) );
                 $override_shipping = wc_string_to_bool( get_option( 'wcvendors_orders_override_empty_shipping', 'no' ) );
                 $customer_address  = get_option( 'wcvendors_order_customer_address', 'shipping' );
                 $customer_details  = '';
@@ -1005,7 +1006,7 @@ class WCV_Order_Controller {
                     $customer_details .= $billing_email . '<br />';
                 }
 
-                if ( $hide_phone ) {
+                if ( $can_view_phone ) {
                     $billing_phone     = $parent_order->get_billing_phone();
                     $customer_details .= $billing_phone;
                 }
@@ -1846,9 +1847,10 @@ class WCV_Order_Controller {
      */
     public function filter_formatted_shipping_address( $address ) {
 
-        $show_shipping_address = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_shipping', 'no' ) );
-        $show_shipping_name    = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_shipping_name', 'no' ) );
-        $show_customer_name    = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_name', 'no' ) );
+        $capabilities          = \wcv_get_customer_info_capabilities();
+        $show_shipping_address = $capabilities['shipping'];
+        $show_shipping_name    = $capabilities['shipping_name'];
+        $show_customer_name    = $capabilities['name'];
 
         if ( ! $show_shipping_name || ! $show_customer_name ) {
             if ( array_key_exists( 'first_name', $address ) ) {
@@ -1905,8 +1907,9 @@ class WCV_Order_Controller {
      */
     public function filter_formatted_billing_address( $address ) {
 
-        $show_name            = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_name', 'no' ) );
-        $show_billing_address = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_billing', 'no' ) );
+        $capabilities         = \wcv_get_customer_info_capabilities();
+        $show_name            = $capabilities['name'];
+        $show_billing_address = $capabilities['billing'];
 
         if ( ! $show_name ) {
             if ( array_key_exists( 'first_name', $address ) ) {
@@ -2369,7 +2372,7 @@ class WCV_Order_Controller {
         // Customer info capabilities gate what a vendor may see. The search must honour them too,
         // otherwise a vendor can confirm a customer's email/phone/name/address placed an order with
         // them via a targeted search even though the value is never displayed. See issue #1849.
-        $customer_caps = $this->get_customer_search_capabilities();
+        $customer_caps = \wcv_get_customer_info_capabilities();
 
         switch ( $this->search_filter ) {
         case 'customer':
@@ -2413,7 +2416,7 @@ class WCV_Order_Controller {
      *
      * @param string     $search_input  The search input.
      * @param array|null $customer_caps Customer info capabilities used to gate which customer
-     *                                  fields may be matched (see get_customer_search_capabilities()).
+     *                                  fields may be matched (see wcv_get_customer_info_capabilities()).
      *                                  Null keeps all fields searchable (backwards compatible).
      * @return array $orders The orders.
      */
@@ -2477,7 +2480,7 @@ class WCV_Order_Controller {
      *
      * @param string     $search_input  The search input.
      * @param array|null $customer_caps Customer info capabilities used to gate which customer
-     *                                  fields may be matched (see get_customer_search_capabilities()).
+     *                                  fields may be matched (see wcv_get_customer_info_capabilities()).
      *                                  Null keeps all fields searchable (backwards compatible).
      * @return array $orders The orders.
      */
@@ -2609,37 +2612,6 @@ class WCV_Order_Controller {
     }
 
     /**
-     * Get the customer info capabilities that gate order search.
-     *
-     * Each flag mirrors a "Capabilities" setting. When a flag is false the matching customer field
-     * must not be discoverable through the order search box.
-     *
-     * @since 2.7.1
-     *
-     * @return array {
-     *     @type bool $name          Customer (billing) name.
-     *     @type bool $shipping_name Customer shipping name.
-     *     @type bool $billing       Customer billing address (incl. company).
-     *     @type bool $shipping      Customer shipping address (incl. company).
-     *     @type bool $email         Customer email.
-     *     @type bool $phone         Customer phone (billing and shipping).
-     * }
-     */
-    protected function get_customer_search_capabilities() {
-        // Default fallbacks match the display side (wcv-dashboard-functions.php, emails, exports),
-        // which all default to 'no'. This keeps search hiding exactly what the dashboard hides when
-        // an option has never been saved, instead of leaving a field discoverable via search.
-        return array(
-            'name'          => wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_name', 'no' ) ),
-            'shipping_name' => wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_shipping_name', 'no' ) ),
-            'billing'       => wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_billing', 'no' ) ),
-            'shipping'      => wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_shipping', 'no' ) ),
-            'email'         => wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_email', 'no' ) ),
-            'phone'         => wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_phone', 'no' ) ),
-        );
-    }
-
-    /**
      * Remove search results that only matched on a customer field the vendor may not view.
      *
      * The order search relies on WooCommerce's address index, which bundles every customer field
@@ -2651,7 +2623,7 @@ class WCV_Order_Controller {
      *
      * @param array      $order_ids          Candidate vendor sub-order IDs from the SQL search.
      * @param string     $search_input       The raw search term.
-     * @param array|null $customer_caps      Capabilities from get_customer_search_capabilities(), or
+     * @param array|null $customer_caps      Capabilities from wcv_get_customer_info_capabilities(), or
      *                                       null to keep every field searchable.
      * @param bool       $match_non_customer Whether product name / order ID matches also keep a
      *                                       candidate (true for the "all" filter).
@@ -2741,7 +2713,7 @@ class WCV_Order_Controller {
      * @since 2.7.1
      *
      * @param \WC_Order $order         The (parent) order carrying the customer details.
-     * @param array     $customer_caps Capabilities from get_customer_search_capabilities().
+     * @param array     $customer_caps Capabilities from wcv_get_customer_info_capabilities().
      * @return string Space separated searchable text.
      */
     protected function build_customer_search_haystack( $order, $customer_caps ) {
@@ -2757,7 +2729,12 @@ class WCV_Order_Controller {
             $parts[] = $order->get_billing_last_name();
         }
 
-        if ( ! empty( $customer_caps['shipping_name'] ) ) {
+        // The shipping name is only DISPLAYED when both the shipping-name and the customer-name
+        // capabilities are enabled (see filter_formatted_shipping_address), so it must only be
+        // SEARCHABLE under the same condition. Gating on 'shipping_name' alone let a vendor confirm a
+        // name they are never shown: with 'name' off and 'shipping_name' on, searching the customer's
+        // name still returned their orders while every surface hid the name itself.
+        if ( ! empty( $customer_caps['shipping_name'] ) && ! empty( $customer_caps['name'] ) ) {
             $parts[] = $order->get_shipping_first_name();
             $parts[] = $order->get_shipping_last_name();
         }

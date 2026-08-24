@@ -247,19 +247,29 @@ function attributes_cmp( $a, $b ) {
 /**
  * Get the order display options.
  *
+ * The KEY NAMES in the returned array are a template contract, not an internal detail. They are
+ * read directly by templates/dashboard/order/order_details.php and
+ * templates/dashboard/order-popup-details.php, both of which sites may override in their theme.
+ * Renaming or removing a key raises an undefined-index fatal on any site running a stale override.
+ * This is why these keys deliberately differ from wcv_get_customer_info_capabilities() - map, never
+ * rename. The 'name' key has no in-repo consumer but is kept for Pro and theme overrides.
+ *
  * @since 2.5.9
- * @version 2.6.9
+ * @version 2.7.2
  *
  * @return array
  */
 function wcv_get_order_details_display_options() {
+
+    $capabilities = \wcv_get_customer_info_capabilities();
+
     return array(
-        'name'             => wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_name', 'no' ) ),
-        'email'            => wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_email', 'no' ) ),
-        'phone'            => wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_phone', 'no' ) ),
-        'shipping_name'    => wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_shipping_name', 'no' ) ),
-        'shipping_address' => wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_shipping', 'no' ) ),
-        'billing_address'  => wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_billing', 'no' ) ),
+        'name'             => $capabilities['name'],
+        'email'            => $capabilities['email'],
+        'phone'            => $capabilities['phone'],
+        'shipping_name'    => $capabilities['shipping_name'],
+        'shipping_address' => $capabilities['shipping'],
+        'billing_address'  => $capabilities['billing'],
         'payment_method'   => wc_string_to_bool( get_option( 'wcvendors_capability_order_payment_method', 'no' ) ),
     );
 }

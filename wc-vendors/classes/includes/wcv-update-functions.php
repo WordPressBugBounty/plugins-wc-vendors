@@ -49,6 +49,11 @@ function wcv_migrate_settings() {
                     $value = 'yes';
                 }
 
+                // The 1.x value is a `type => 0|1` map, or a scalar when it can't be unserialized.
+                if ( 'hide_product_types' === $setting ) {
+                    $value = wcv_normalize_hidden_product_types( $value );
+                }
+
                 update_option( $mappings[ $setting ], $value );
             }
         }
@@ -266,4 +271,54 @@ function maybe_create_missing_sub_orders() {
 
     $synchronizer = new WCV_Order_Data_Synchronizer();
     $synchronizer->maybe_schedule_create_missing_sub_orders();
+}
+
+/**
+ * Normalize the hidden product types option on installs upgraded from WC Vendors 1.x.
+ *
+ * The wcv_migrate_settings() routine copied the 1.x `hide_product_types` value across verbatim, so
+ * affected sites store a scalar string or a `type => 0|1` map instead of a list of
+ * product type slugs. Readers fatal on the former and silently misbehave on the latter.
+ *
+ * @since 2.7.2
+ *
+ * @return void
+ */
+function wcv_normalize_capability_product_types() {
+
+    $stored = get_option( 'wcvendors_capability_product_types', null );
+
+    if ( is_null( $stored ) ) {
+        return;
+    }
+
+    $normalized = wcv_normalize_hidden_product_types( $stored );
+
+    if ( $stored !== $normalized ) {
+        update_option( 'wcvendors_capability_product_types', $normalized );
+    }
+}
+
+/**
+ * Stop a sub-order cleanup that a release before 2.7.2 started.
+ *
+ * The second argument of the wcv_delete_duplicate_sub_orders action was a row offset before 2.7.2,
+ * and is now the order ID to read below. Action Scheduler holds the argument in the database, so a
+ * cleanup that is between batches at update time passes a row count to a scan that reads it as an
+ * order ID. That scan then skips every sub-order above the row count for the rest of the run.
+ *
+ * The routine cancels the pending action and clears the position. The site owner starts the cleanup
+ * again from the WC Tools page or from WP-CLI.
+ *
+ * @since 2.7.2
+ *
+ * @return void
+ */
+function wcv_reset_duplicate_sub_order_cleanup() {
+
+    if ( function_exists( 'as_unschedule_all_actions' ) ) {
+        as_unschedule_all_actions( WCV_Order_CLI::SCHUDULE_HOOK );
+    }
+
+    delete_transient( WCV_Order_CLI::PROGRESS_TRANSIENT );
 }

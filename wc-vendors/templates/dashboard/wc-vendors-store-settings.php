@@ -39,7 +39,7 @@ foreach ( $settings_social as $value ) {
 
                 <div class="wcv-store-setting-section">
                     <h3 class="wcv-store-setting-section-title">
-                        <?php /* translators: %s: vendor name */ printf( esc_html__( '%s Information', 'wc-vendors' ), wcv_get_vendor_name( true ) ); // phpcs:ignore ?>
+                        <?php /* translators: %s: vendor name */ printf( esc_html__( '%s Information', 'wc-vendors' ), esc_html( wcv_get_vendor_name( true, true, get_current_user_id() ) ) ); ?>
                     </h3>
                     <!-- Vendor Name -->
                     <?php WCV_Store_Form::vendor_name(); ?>

@@ -263,7 +263,7 @@ class WCV_Admin_Users {
      */
     public function filter_product_types( $types ) {
 
-        $product_types = (array) get_option( 'wcvendors_capability_product_types', array() );
+        $product_types = wcv_get_hidden_product_types();
         $product_misc  = WCV_Product_Meta::get_product_capabilities();
 
         unset( $product_misc['taxes'] );

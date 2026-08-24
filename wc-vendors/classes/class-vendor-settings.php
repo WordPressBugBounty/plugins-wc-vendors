@@ -77,6 +77,8 @@ class Vendors_Settings {
             'bank_bic'              => 'wcv_bank_bic_swift',
             'stripe_connect_id'     => '_stripe_connect_user_id',
             'store_commission_rate' => 'pv_custom_commission_rate',
+            'vendor_label_singular' => 'wcv_vendor_label_singular',
+            'vendor_label_plural'   => 'wcv_vendor_label_plural',
             'give_tax'              => 'wcv_give_vendor_tax',
             'give_shipping'         => 'wcv_give_vendor_shipping',
             'vendor_status'         => '_wcv_vendor_status',

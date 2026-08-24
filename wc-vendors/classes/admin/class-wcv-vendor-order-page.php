@@ -305,6 +305,8 @@ class WCV_Vendor_Order_Page extends WP_List_Table {
             return $orders;
         }
 
+        $customer_capabilities = wcv_get_customer_info_capabilities();
+
         foreach ( $vendor_product_orders as $current_order ) {
 
             // Check to see that the order hasn't been deleted or in the trash.
@@ -399,10 +401,10 @@ class WCV_Vendor_Order_Page extends WP_List_Table {
 
             $comment_output = '';
 
-            $show_billing_name     = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_name', 'no' ) );
-            $show_shipping_name    = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_shipping_name', 'no' ) );
-            $show_billing_address  = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_billing', 'no' ) );
-            $show_shipping_address = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_shipping', 'no' ) );
+            $show_billing_name     = $customer_capabilities['name'];
+            $show_shipping_name    = $customer_capabilities['shipping_name'];
+            $show_billing_address  = $customer_capabilities['billing'];
+            $show_shipping_address = $customer_capabilities['shipping'];
             $order_date            = $current_order->get_date_created();
 
             $address = $parent_order->get_address( 'billing' );

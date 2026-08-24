@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 ?>
 <div id="message" class="updated wcvendors-message wc-connect is-dismissible">
-    <p><?php esc_html_e( '<strong>WC Vendors Update Required.</strong> &#8211; We need to upgrade your configuration to the latest version.', 'wc-vendors' ); ?></p>
+    <p><strong><?php esc_html_e( 'WC Vendors Update Required.', 'wc-vendors' ); ?></strong> &#8211; <?php esc_html_e( 'We need to upgrade your configuration to the latest version.', 'wc-vendors' ); ?></p>
     <p class="submit"><a class="wcv-update-now button-primary"
                         href="<?php echo esc_url( add_query_arg( 'do_update_wcvendors', 'true', admin_url( 'admin.php?page=wcv-settings' ) ) ); ?>"
                         class="button-primary"><?php esc_html_e( 'Run the update', 'wc-vendors' ); ?></a></p>

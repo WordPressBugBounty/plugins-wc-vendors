@@ -82,9 +82,11 @@
       }
     }
 
-    moveItemsToExtraMenu()
+    if (!menuContainer.hasClass('wcv-show-all-menu-items')) {
+      moveItemsToExtraMenu()
 
-    $(window).on('resize', moveItemsToExtraMenu)
+      $(window).on('resize', moveItemsToExtraMenu)
+    }
 
     const addDividerToNav = function() {
       const breakItem =

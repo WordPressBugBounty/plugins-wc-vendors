@@ -8,11 +8,11 @@
  * Author URI:           https://www.wcvendors.com
  * GitHub Plugin URI:    https://github.com/wcvendors/wcvendors
  *
- * Version:              2.7.1
+ * Version:              2.7.2
  * Requires at least:    5.9
- * Tested up to:         7.0
+ * Tested up to:         7.1
  * WC requires at least: 5.0
- * WC tested up to:      10.9
+ * WC tested up to:      11.0
  *
  * Text Domain:          wc-vendors
  * Domain Path:          /languages/
@@ -145,7 +145,7 @@ class WC_Vendors {
         }
 
         if ( ! defined( 'WCV_VERSION' ) ) {
-            define( 'WCV_VERSION', '2.7.1' );
+            define( 'WCV_VERSION', '2.7.2' );
         }
 
         if ( ! defined( 'WCV_TEMPLATE_BASE' ) ) {
@@ -250,6 +250,11 @@ add_action( 'init', 'wcvendors_check_version' );
  * Since 2.5.6
  */
 function wcvendors_check_version() {
+
+    // Bail if the plugin did not fully boot (for example, WooCommerce is inactive), so WCV_VERSION is undefined.
+    if ( ! defined( 'WCV_VERSION' ) ) {
+        return;
+    }
 
     $db_version = get_option( 'wcvendors_version', 0 );
 

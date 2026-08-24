@@ -98,6 +98,7 @@ class WCV_Vendor_Dashboard {
      *
      * @since 2.5.2
      * @version 2.7.0 Guard wp_enqueue_scripts registration with ! is_admin() to avoid loading front-end assets in admin context.
+     * @version 2.7.2 Register the inactive vendor dashboard lock, which previously only ran on the legacy path.
      */
     public function init_hooks() {
         add_filter( 'query_vars', array( $this, 'add_query_vars' ) );
@@ -126,9 +127,11 @@ class WCV_Vendor_Dashboard {
         }
 
         add_action( 'template_redirect', array( $this, 'redirect_old_slug' ) );
+        add_action( 'template_redirect', 'wcv_lock_inactive_vendor_from_dashboard' );
         add_action( 'wcvendors_after_dashboard_nav', array( $this, 'lock_new_products_notice' ) );
 
         add_filter( 'the_title', array( $this, 'filter_dashboard_page_title' ), 10, 2 );
+        add_filter( 'single_post_title', array( $this, 'filter_dashboard_document_title' ), 10, 2 );
         add_filter( 'get_edit_post_link', array( $this, 'vendor_edit_post_link' ), 10, 2 );
         add_filter( 'user_has_cap', array( $this, 'vendor_has_edit_product_cap' ), 10, 4 );
     }
@@ -136,17 +139,49 @@ class WCV_Vendor_Dashboard {
     /**
      * Filter the dashboard page title
      *
+     * The title uses the current vendor's own label, so it varies per user. Leave it alone
+     * in the admin and in REST responses so that wp-admin keeps the site wide term and
+     * cached representations are not built from one vendor's label. The per-user label is
+     * only used while the dashboard page itself is being viewed, because the_title also
+     * fires for this page in nav menus, widgets and breadcrumbs elsewhere on the front
+     * end, where a cache keyed on the post ID could serve one vendor's label to another.
+     *
      * @param string $title The title of the page.
      * @param int    $id    The ID of the page.
      */
     public function filter_dashboard_page_title( $title, $id ) {
         $dashboard_page_id = get_option( 'wcvendors_vendor_dashboard_page_id', false );
-        if ( (int) $id === (int) $dashboard_page_id ) {
-            /* translators: %s: vendor name */
-            return sprintf( __( '%s Dashboard', 'wc-vendors' ), wcv_get_vendor_name( true ) );
+
+        if ( (int) $id !== (int) $dashboard_page_id ) {
+            return $title;
         }
 
-        return $title;
+        if ( is_admin() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
+            return $title;
+        }
+
+        $vendor_id = is_page( (int) $dashboard_page_id ) ? get_current_user_id() : 0;
+
+        /* translators: %s: vendor name */
+        return sprintf( __( '%s Dashboard', 'wc-vendors' ), wcv_get_vendor_name( true, true, $vendor_id ) );
+    }
+
+    /**
+     * Filter the dashboard document title
+     *
+     * wp_get_document_title() builds the browser title from single_post_title(), which does
+     * not run the_title, so the tab would otherwise keep the raw page title while the
+     * heading shows the vendor's own label.
+     *
+     * @param string  $title The title of the page.
+     * @param WP_Post $post  The post being displayed.
+     *
+     * @since 2.7.2
+     */
+    public function filter_dashboard_document_title( $title, $post = null ) {
+        $post_id = is_a( $post, 'WP_Post' ) ? $post->ID : 0;
+
+        return $this->filter_dashboard_page_title( $title, $post_id );
     }
 
     /**
@@ -950,7 +985,7 @@ class WCV_Vendor_Dashboard {
         $default_notice = sprintf(
             /* translators: %s: vendor name */
             __( 'Your account has not yet been approved to become a %s.  When it is, you will receive an email telling you that your account is approved!', 'wc-vendors' ),
-            wcv_get_vendor_name( true, false )
+            wcv_get_vendor_name( true, false, get_current_user_id() )
         );
         ob_start();
         $vendor_pending_notice = apply_filters( 'wcvendors_vendor_pending_notice', $default_notice );
@@ -1107,6 +1142,7 @@ class WCV_Vendor_Dashboard {
         $settings_disabled   = wc_string_to_bool( get_option( 'wcvendors_settings_management_cap', 'no' ) );
         $show_logout         = wc_string_to_bool( get_option( 'wcvendors_dashboard_show_logout', 'no' ) );
         $vertical_menu       = wc_string_to_bool( get_option( 'wcvendors_use_vertical_menu', 'no' ) );
+        $show_all_menu_items = wc_string_to_bool( get_option( 'wcvendors_dashboard_show_all_menu_items', 'no' ) );
 
         if ( $products_disabled ) {
             unset( $pages['product'] );
@@ -1196,6 +1232,10 @@ class WCV_Vendor_Dashboard {
 
         $pages = array_merge( $pages, $end_items );
 
+        if ( $show_all_menu_items ) {
+            $nav_class = trim( $nav_class . ' wcv-show-all-menu-items' );
+        }
+
         // Move this into a template.
         $menu_wrapper_start = apply_filters(
             'wcv_dashboard_nav_wrapper_start',
@@ -1219,7 +1259,7 @@ class WCV_Vendor_Dashboard {
         }
         echo '</ul>';
 
-        if ( ! $vertical_menu ) {
+        if ( ! $vertical_menu && ! $show_all_menu_items ) {
             wc_get_template(
                 'expand-nav.php',
                 array(),
@@ -1228,7 +1268,9 @@ class WCV_Vendor_Dashboard {
             );
         }
 
-        printf( '<ul class="wcv-dashboard-menu %s black secondary"></ul>', esc_attr( $menu_dir_class ) );
+        if ( ! $show_all_menu_items ) {
+            printf( '<ul class="wcv-dashboard-menu %s black secondary"></ul>', esc_attr( $menu_dir_class ) );
+        }
 
         echo '</nav>';
 
@@ -1440,15 +1482,20 @@ class WCV_Vendor_Dashboard {
      *
      * @since 2.5.2
      * @version 2.5.2
+     * @version 2.7.2 Hide the link from inactive vendors, who are locked out of the dashboard.
      *
      * @param array $items the menu items.
      * @return array $items the menu items.
      */
     public function add_vendor_dashboard_item( $items ) {
+        if ( wcv_is_vendor_inactive( get_current_user_id() ) ) {
+            return $items;
+        }
+
         $vendor_dashboard_page_id = get_option( 'wcvendors_vendor_dashboard_page_id' );
         if ( $vendor_dashboard_page_id ) {
 
-            $vendor_singular = wcv_get_vendor_name( true, true );
+            $vendor_singular = wcv_get_vendor_name( true, true, get_current_user_id() );
             if ( empty( $vendor_singular ) ) {
                 $vendor_singular = __( 'Vendor', 'wc-vendors' );
             }

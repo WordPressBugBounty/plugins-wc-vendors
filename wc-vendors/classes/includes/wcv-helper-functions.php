@@ -479,3 +479,43 @@ if ( ! function_exists( 'wcv_get_vendor_post_status' ) ) {
         return $default_status;
     }
 }
+
+if ( ! function_exists( 'wcv_get_customer_info_capabilities' ) ) {
+
+    /**
+     * Get the customer information capabilities for vendors.
+     *
+     * Single source of truth for the six `wcvendors_capability_order_customer_*` options. Every
+     * consumer - order search, dashboard display, emails, CSV export, admin list table - reads
+     * these flags through this function so the search side and the display side cannot drift.
+     *
+     * Each option falls back to 'no' when the row is missing. Note this deliberately differs from
+     * the 'yes' declared for the same options in WCV_Settings_Capabilities: the declared default is
+     * what WCVendors_Install::create_options() seeds into the database on install, whereas this
+     * fallback only fires when the row is absent. These flags gate customer PII, so an absent row
+     * must hide the field rather than expose it. Do not "align" the two - they serve different
+     * purposes.
+     *
+     * @since 2.7.2
+     *
+     * @return array {
+     *     @type bool $name          Customer (billing) name.
+     *     @type bool $shipping_name Customer shipping name.
+     *     @type bool $billing       Customer billing address (incl. company).
+     *     @type bool $shipping      Customer shipping address (incl. company).
+     *     @type bool $email         Customer email.
+     *     @type bool $phone         Customer phone (billing and shipping).
+     * }
+     */
+    function wcv_get_customer_info_capabilities() {
+
+        return array(
+            'name'          => wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_name', 'no' ) ),
+            'shipping_name' => wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_shipping_name', 'no' ) ),
+            'billing'       => wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_billing', 'no' ) ),
+            'shipping'      => wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_shipping', 'no' ) ),
+            'email'         => wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_email', 'no' ) ),
+            'phone'         => wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_phone', 'no' ) ),
+        );
+    }
+}

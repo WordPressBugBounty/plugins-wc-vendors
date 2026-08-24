@@ -436,7 +436,8 @@ class WCV_Dashboard_Controller {
     public function get_latest_orders( $vendor_shipping_disabled ) {
 
         global $wpdb;
-        $show_customer_name = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_name', 'no' ) );
+        $capabilities       = \wcv_get_customer_info_capabilities();
+        $show_customer_name = $capabilities['name'];
         $commission_rows    = $wpdb->get_results(
             $wpdb->prepare(
                 "SELECT * FROM {$wpdb->prefix}pv_commission WHERE vendor_id = %d ORDER BY order_id DESC LIMIT 7",
@@ -471,7 +472,7 @@ class WCV_Dashboard_Controller {
                 }
             }
             $order_status      = in_array( $this->vendor_id, $shipped, true ) && ! $vendor_shipping_disabled ? __( 'Shipped', 'wc-vendors' ) : $status[ "wc-{$order->get_status()}" ];
-            $detail_popup      = $this->get_order_popup_details( $commission_rows, $order );
+            $detail_popup      = $this->get_order_popup_details( $commission_rows, $order, $capabilities );
             $formated_orders[] = array(
                 'order_id'     => $order->get_id(),
                 'customer'     => $show_customer_name ? $order->get_billing_first_name() . ' ' . $order->get_billing_last_name() : '',
@@ -488,12 +489,14 @@ class WCV_Dashboard_Controller {
     /**
      * Get order popup details
      *
-     * @param array    $commission_rows Commission rows.
-     * @param WC_Order $order           Order.
+     * @param array      $commission_rows Commission rows.
+     * @param WC_Order   $order           Order.
+     * @param array|null $capabilities    Capabilities from wcv_get_customer_info_capabilities(), or
+     *                                    null to read them here. Pass them in when calling in a loop.
      *
      * @return string html for order popup details
      */
-    public function get_order_popup_details( $commission_rows, $order ) {
+    public function get_order_popup_details( $commission_rows, $order, $capabilities = null ) {
         $order_id         = $order->get_id();
         $order_total      = 0;
         $order_shipping   = 0;
@@ -508,9 +511,10 @@ class WCV_Dashboard_Controller {
             }
         );
 
-        $show_customer_name  = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_name', 'no' ) );
-        $show_customer_email = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_email', 'no' ) );
-        $show_customer_phone = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_phone', 'no' ) );
+        $capabilities        = null === $capabilities ? \wcv_get_customer_info_capabilities() : $capabilities;
+        $show_customer_name  = $capabilities['name'];
+        $show_customer_email = $capabilities['email'];
+        $show_customer_phone = $capabilities['phone'];
 
         $billing_address_fields  = $order->get_address( 'billing' );
         $shipping_address_fields = $order->get_address( 'shipping' );

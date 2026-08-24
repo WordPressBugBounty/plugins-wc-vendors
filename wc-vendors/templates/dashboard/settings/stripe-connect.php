@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Stripe connect template
  *
- * @version 2.0.0
+ * @version 2.7.2
  */
 ?>
 
@@ -53,7 +53,26 @@ if ( ! defined( 'ABSPATH' ) ) {
             </span>
         </p>
 
-    <?php else : ?>
+    <?php
+    else :
+        /*
+         * wc-vendors-gateway-stripe-connect owns the disconnect contract - the query argument, the
+         * nonce action and the handler that consumes them - and passes the finished URL in as
+         * $disconnect_url. Do not rebuild it here: a second copy drifts from the handler, which is
+         * what issue #1867 reports.
+         *
+         * The fallback covers extension versions older than 2.2.8, which do not set the variable.
+         * Those versions also do not verify a nonce, so an unsigned URL still works for them. Remove
+         * the fallback once 2.2.8 is the minimum supported extension version.
+         */
+        if ( ! isset( $disconnect_url ) ) {
+            $disconnect_url = add_query_arg(
+                'deauth',
+                $stripe_connect_user_id,
+                get_permalink( get_option( 'wcvendors_shop_settings_page_id' ) )
+            );
+        }
+        ?>
         <h4 style="color: #2bac47; font-size: 1.5em; margin-bottom: 16px; line-height: normal; margin-top: 0;">
             <?php esc_html_e( 'You\'re Connected to Stripe', 'wc-vendors' ); ?>
         </h4>
@@ -61,7 +80,7 @@ if ( ! defined( 'ABSPATH' ) ) {
             <?php esc_html_e( 'and ready to receive hassle-free payouts directly to your bank.', 'wc-vendors' ); ?>
         </p>
         <p style="margin-top: 24px; margin-bottom:11px;">
-            <a href="<?php echo esc_url( get_permalink( get_option( 'wcvendors_shop_settings_page_id' ) ) ); ?>?deauth=<?php echo esc_attr( $stripe_connect_user_id ); ?>" class="<?php echo esc_attr( $button_theme_css ); ?> disconnect">
+            <a href="<?php echo esc_url( $disconnect_url ); ?>" class="<?php echo esc_attr( $button_theme_css ); ?> disconnect">
                 <svg class="wcv-icon wcv-icon-md wcv-icon-middle">
                     <use xlink:href="<?php echo esc_attr( WCV_ASSETS_URL ); ?>svg/wcv-icons.svg#wcv-icon-stripe"></use>
                 </svg>

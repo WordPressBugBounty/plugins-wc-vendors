@@ -426,7 +426,7 @@ class WCV_Vendor_Dashboard_Legacy {
         $providers      = $shipping_providers->get_providers();
         $provider_array = $shipping_providers->get_provider_url_list();
 
-        $can_view_address = wc_string_to_bool( get_option( 'wcvendors_capability_order_customer_shipping', 'yes' ) );
+        $can_view_address = wcv_get_customer_info_capabilities()['shipping'];
 
         do_action( 'wcvendors_before_dashboard' );
 
@@ -806,33 +806,9 @@ class WCV_Vendor_Dashboard_Legacy {
      *
      * @since 2.4.8
      * @version 2.4.8
+     * @version 2.7.2 Delegate to wcv_lock_inactive_vendor_from_dashboard() so the current plugin path enforces the same lock.
      */
     public function lock_inactive_vendor_from_dashboard() {
-
-        if ( ! is_user_logged_in() ) {
-            return;
-        }
-
-        $current_user = wp_get_current_user();
-        $user_id      = $current_user->ID;
-        $user_roles   = $current_user->roles;
-
-        if ( ! in_array( 'vendor', $user_roles, true ) ) {
-            return;
-        }
-
-        $page_id                = get_queried_object_id();
-        $pro_dashboard_page_id  = (array) get_option( 'wcvendors_dashboard_page_id', array() );
-        $pro_dashboard_page_id  = array_map( 'intval', $pro_dashboard_page_id );
-        $free_dashboard_page_id = (int) get_option( 'wcvendors_vendor_dashboard_page_id' );
-
-        if ( in_array( $page_id, $pro_dashboard_page_id, true ) || $page_id === $free_dashboard_page_id ) {
-            $vendor_status = get_user_meta( $user_id, '_wcv_vendor_status', true );
-            if ( 'active' !== $vendor_status && in_array( 'vendor', $user_roles, true ) ) {
-                wp_safe_redirect( get_permalink( wc_get_page_id( 'myaccount' ) ) );
-                wc_add_notice( __( 'Your store is currently inactive. Please contact support if you feel this is a mistake.', 'wc-vendors' ), 'notice' );
-                exit;
-            }
-        }
+        wcv_lock_inactive_vendor_from_dashboard();
     }
 }

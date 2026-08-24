@@ -2,8 +2,8 @@
 Contributors: jkohlbach, RymeraWebCo, Rymera01, smub
 Tags: multivendor, marketplace, multi vendor, product vendors, woocommerce commissions
 Requires at least: 5.9
-Tested up to: 7.0
-Stable tag: 2.7.1
+Tested up to: 7.1
+Stable tag: 2.7.2
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -298,6 +298,17 @@ You can report security bugs through the Patchstack Vulnerability Disclosure Pro
 12. Email notifications for admins, customers and vendors
 
 == Changelog ==
+
+= Version 2.7.2 - 17th August 2026 =
+ * Feature: Add Show All Menu Items setting to control the vendor dashboard navigation
+ * Feature: Add per-vendor label overrides for the Vendor term
+ * Improvement: Centralise customer info capability checks into one shared helper
+ * Bug Fix: Fatal TypeError when the hidden product types option is not a list
+ * Bug Fix: Deactivated vendors could still reach the vendor dashboard on the current plugin path
+ * Bug Fix: Vendor Stripe disconnect link was not nonce-signed
+ * Bug Fix: Critical error on vendor product image upload when the upload fails on PHP 8.1+
+ * Bug Fix: Invalid SQL, wrong HPOS table and missing rollback in sub-order cleanup
+ * Bug Fix: Update Required admin notice rendered its HTML tags as literal text
 
 = Version 2.7.1 - 30th July 2026 =
  * Improvement: Add Total Refunded Sales row and calculate vendor commission on net sales

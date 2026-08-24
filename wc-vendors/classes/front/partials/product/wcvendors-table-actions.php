@@ -74,7 +74,7 @@ use function WC_Vendors\Classes\Includes\wcv_get_product_types;
                 $product_types = wcv_get_product_types();
                 $product_types = array( '' => esc_html__( 'None', 'wc-vendors' ) ) + $product_types;
 
-                $hide_product_types = get_option( 'wcvendors_capability_product_types', array() );
+                $hide_product_types = wcv_get_hidden_product_types();
 
                 foreach ( $hide_product_types as $product_type ) {
                     if ( isset( $product_types[ $product_type ] ) ) {

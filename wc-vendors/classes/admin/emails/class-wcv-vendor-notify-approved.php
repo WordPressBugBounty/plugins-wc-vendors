@@ -81,7 +81,9 @@ if ( ! class_exists( 'WCVendors_Vendor_Notify_Approved' ) ) :
             $this->template_plain = 'emails/plain/vendor-notify-approved.php';
             $this->template_base  = dirname( dirname( dirname( __DIR__ ) ) ) . '/templates/';
             $this->placeholders   = array(
-                '{site_title}' => $this->get_blogname(),
+                '{site_title}'         => $this->get_blogname(),
+                '{vendor_label}'       => wcv_get_vendor_name( true, false ),
+                '{vendor_label_title}' => wcv_get_vendor_name(),
             );
             $this->recipient      = '';
 
@@ -97,11 +99,7 @@ if ( ! class_exists( 'WCVendors_Vendor_Notify_Approved' ) ) :
          */
         public function get_default_subject() {
 
-            return sprintf(
-                /* translators: %s vendor name */
-                __( '[{site_title}] Your %s application has been approved', 'wc-vendors' ),
-                wcv_get_vendor_name( true, false )
-            );
+            return __( '[{site_title}] Your {vendor_label} application has been approved', 'wc-vendors' );
         }
 
         /**
@@ -112,11 +110,7 @@ if ( ! class_exists( 'WCVendors_Vendor_Notify_Approved' ) ) :
          */
         public function get_default_heading() {
 
-            return sprintf(
-                /* translators: %s vendor name */
-                __( '%s Application Approved', 'wc-vendors' ),
-                wcv_get_vendor_name()
-            );
+            return __( '{vendor_label_title} Application Approved', 'wc-vendors' );
         }
 
         /**
@@ -127,10 +121,12 @@ if ( ! class_exists( 'WCVendors_Vendor_Notify_Approved' ) ) :
          */
         public function get_default_content() {
 
+            $vendor_id = isset( $this->user->ID ) ? $this->user->ID : 0;
+
             return sprintf(
                 /* translators: %s vendor name */
                 __( 'Your application to become a %s has been approved.', 'wc-vendors' ),
-                wcv_get_vendor_name( true, false )
+                wcv_get_vendor_name( true, false, $vendor_id )
             );
         }
 
@@ -162,6 +158,10 @@ if ( ! class_exists( 'WCVendors_Vendor_Notify_Approved' ) ) :
         $this->custom_message     = sanitize_textarea_field( wp_unslash( $custom_message ) );
         $this->use_custom_message = (bool) $use_custom_message;
         $this->status             = $status;
+
+        // Use this vendor's own label so the subject, heading and body all agree.
+        $this->placeholders['{vendor_label}']       = wcv_get_vendor_name( true, false, $this->user->ID );
+        $this->placeholders['{vendor_label_title}'] = wcv_get_vendor_name( true, true, $this->user->ID );
 
         /**
          * Use custom message if requested and provided, otherwise use default content.
@@ -244,7 +244,7 @@ if ( ! class_exists( 'WCVendors_Vendor_Notify_Approved' ) ) :
                     'type'        => 'text',
                     'desc_tip'    => true,
                     /* translators: %s: list of placeholders */
-                    'description' => sprintf( __( 'Available placeholders: %s', 'wc-vendors' ), '<code>{site_title}</code>' ),
+                    'description' => sprintf( __( 'Available placeholders: %s', 'wc-vendors' ), '<code>{site_title}</code>, <code>{vendor_label}</code>, <code>{vendor_label_title}</code>' ),
                     'placeholder' => $this->get_default_subject(),
                     'default'     => '',
                 ),
@@ -266,7 +266,7 @@ if ( ! class_exists( 'WCVendors_Vendor_Notify_Approved' ) ) :
                     'type'        => 'text',
                     'desc_tip'    => true,
                     /* translators: %s: list of placeholders */
-                    'description' => sprintf( __( 'Available placeholders: %s', 'wc-vendors' ), '<code>{site_title}</code>' ),
+                    'description' => sprintf( __( 'Available placeholders: %s', 'wc-vendors' ), '<code>{site_title}</code>, <code>{vendor_label}</code>, <code>{vendor_label_title}</code>' ),
                     'placeholder' => $this->get_default_heading(),
                     'default'     => '',
                 ),

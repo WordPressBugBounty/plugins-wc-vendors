@@ -76,18 +76,36 @@ if ( ! function_exists( 'wcv_get_select2_script_handle' ) ) {
 /**
  * This function gets the vendor name used throughout the interface on the front and backend
  *
- * @param boolean $singluar  Singluar or not.
+ * When a vendor ID is passed, that vendor's own label override is used if they have one
+ * set. Otherwise the global term is used. Admin screens always pass no vendor ID so that
+ * wp-admin keeps a single consistent term.
+ *
+ * The $vendor_singular and $vendor_plural arguments passed to the
+ * wcvendors_vendor_display_name filter are always the site wide option values, even when
+ * a per-vendor override is in effect. Compare against the returned label, not against
+ * those two arguments, when you need to know which term was used.
+ *
+ * @param boolean $singluar   Singular or not.
  * @param boolean $upper_case Upper case or not.
+ * @param int     $vendor_id  Optional. Vendor to read the label override from. Default 0 for the global term.
+ *
+ * @since 2.7.2 Added the $vendor_id parameter and the per-vendor label override.
  */
-function wcv_get_vendor_name( $singluar = true, $upper_case = true ) {
+function wcv_get_vendor_name( $singluar = true, $upper_case = true, $vendor_id = 0 ) {
 
     $vendor_singular = get_option( 'wcvendors_vendor_singular', __( 'Vendor', 'wc-vendors' ) );
     $vendor_plural   = get_option( 'wcvendors_vendor_plural', __( 'Vendors', 'wc-vendors' ) );
 
-    $vendor_label = $singluar ?
-        __( $vendor_singular, 'wc-vendors' ) : // phpcs:ignore
-        __( $vendor_plural, 'wc-vendors' ); // phpcs:ignore
-    $vendor_label = $upper_case ? ucfirst( $vendor_label ) : lcfirst( $vendor_label );
+    // Per-vendor overrides are admin entered free text, so they are never translated.
+    $vendor_label = wcv_get_vendor_label_override( $vendor_id, $singluar );
+
+    if ( '' === $vendor_label ) {
+        $vendor_label = $singluar ?
+            __( $vendor_singular, 'wc-vendors' ) : // phpcs:ignore
+            __( $vendor_plural, 'wc-vendors' ); // phpcs:ignore
+    }
+
+    $vendor_label = wcv_set_label_first_case( $vendor_label, $upper_case );
 
     $vendor_label = apply_filters_deprecated(
         'wcv_vendor_display_name',
@@ -102,8 +120,82 @@ function wcv_get_vendor_name( $singluar = true, $upper_case = true ) {
         $vendor_singular,
         $vendor_plural,
         $singluar,
-        $upper_case
+        $upper_case,
+        $vendor_id
     );
+}
+
+if ( ! function_exists( 'wcv_get_vendor_label_override' ) ) {
+    /**
+     * Get a vendor's own label override.
+     *
+     * The stored meta is the source of truth, so this deliberately does not check the
+     * user's current role. The label has to survive a role transition: deny_vendor()
+     * removes the pending_vendor role before firing wcvendors_deny_vendor, so a role
+     * check here would drop the override from the denied email. Only an admin can set
+     * the meta, so a user who has one is one the store deliberately named.
+     *
+     * @param int     $vendor_id The vendor ID.
+     * @param boolean $singular  Singular or not.
+     *
+     * @since 2.7.2
+     *
+     * @return string The vendor's label, or an empty string when they have not set one.
+     */
+    function wcv_get_vendor_label_override( $vendor_id, $singular = true ) {
+
+        static $labels = array();
+
+        $vendor_id = absint( $vendor_id );
+
+        if ( 0 === $vendor_id ) {
+            return '';
+        }
+
+        $cache_key = $vendor_id . ':' . (int) $singular;
+
+        if ( isset( $labels[ $cache_key ] ) ) {
+            return $labels[ $cache_key ];
+        }
+
+        $meta_key = $singular ? 'wcv_vendor_label_singular' : 'wcv_vendor_label_plural';
+
+        $labels[ $cache_key ] = trim( (string) get_user_meta( $vendor_id, $meta_key, true ) );
+
+        return $labels[ $cache_key ];
+    }
+}
+
+if ( ! function_exists( 'wcv_set_label_first_case' ) ) {
+    /**
+     * Upper or lower case the first character of a vendor label.
+     *
+     * ucfirst() and lcfirst() operate on bytes, so they silently do nothing to a label
+     * that starts with a multibyte character. Custom vendor labels are often non English,
+     * so use the multibyte functions when they are available.
+     *
+     * @param string  $label      The label to change.
+     * @param boolean $upper_case Upper case the first character, otherwise lower case it.
+     *
+     * @since 2.7.2
+     *
+     * @return string The label with its first character cased.
+     */
+    function wcv_set_label_first_case( $label, $upper_case = true ) {
+
+        if ( '' === $label ) {
+            return $label;
+        }
+
+        if ( ! function_exists( 'mb_substr' ) ) {
+            return $upper_case ? ucfirst( $label ) : lcfirst( $label );
+        }
+
+        $first = mb_substr( $label, 0, 1 );
+        $first = $upper_case ? mb_strtoupper( $first ) : mb_strtolower( $first );
+
+        return $first . mb_substr( $label, 1 );
+    }
 }
 
 /**
@@ -751,6 +843,51 @@ if ( ! function_exists( 'maybe_load_new_dashboard' ) ) {
 }
 
 
+if ( ! function_exists( 'wcv_normalize_hidden_product_types' ) ) {
+    /**
+     * Normalize a stored hidden product types value into a list of product type slugs.
+     *
+     * Installs upgraded from WC Vendors 1.x can hold a scalar string or a legacy
+     * `type => 0|1` map, because wcv_migrate_settings() copied the 1.x value across
+     * without normalising it. Both shapes break the array operations callers perform.
+     *
+     * A legacy map is discarded rather than converted: its values (0/1) never matched a
+     * product type slug, so those sites have effectively been hiding nothing, and turning
+     * the map back into a list would silently start hiding types on a live store.
+     *
+     * @since 2.7.2
+     *
+     * @param mixed $value The stored value.
+     *
+     * @return array List of product type slugs.
+     */
+    function wcv_normalize_hidden_product_types( $value ) {
+        if ( ! is_array( $value ) ) {
+            return array();
+        }
+
+        // A legacy 1.x map is keyed by product type; a valid value is a plain list.
+        if ( array_values( $value ) !== $value ) {
+            return array();
+        }
+
+        return array_values( array_filter( $value, 'is_string' ) );
+    }
+}
+
+if ( ! function_exists( 'wcv_get_hidden_product_types' ) ) {
+    /**
+     * Get the product types hidden from vendors.
+     *
+     * @since 2.7.2
+     *
+     * @return array List of product type slugs.
+     */
+    function wcv_get_hidden_product_types() {
+        return wcv_normalize_hidden_product_types( get_option( 'wcvendors_capability_product_types', array() ) );
+    }
+}
+
 if ( ! function_exists( 'wcv_is_all_product_types_hidden' ) ) {
     /**
      * Check if all product types are hidden.
@@ -758,7 +895,7 @@ if ( ! function_exists( 'wcv_is_all_product_types_hidden' ) ) {
      * @return bool
      */
     function wcv_is_all_product_types_hidden() {
-        $hidden_product_types = get_option( 'wcvendors_capability_product_types', array() );
+        $hidden_product_types = wcv_get_hidden_product_types();
         $wc_product_types     = array_keys( wc_get_product_types() );
         return empty( array_diff( $wc_product_types, $hidden_product_types ) );
     }

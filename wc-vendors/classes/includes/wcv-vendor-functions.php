@@ -381,3 +381,69 @@ if ( ! function_exists( 'wcv_update_apply_date' ) ) {
         update_user_meta( $vendor_id, '_wcv_apply_date', $apply_date );
     }
 }
+
+if ( ! function_exists( 'wcv_is_vendor_inactive' ) ) {
+    /**
+     * Check whether a vendor has been deactivated.
+     *
+     * A vendor with no stored status is treated as active, matching the backfill
+     * routine that defaults existing vendors to active.
+     *
+     * @since 2.7.2
+     *
+     * @param int $vendor_id The vendor user ID.
+     * @return bool True when the vendor status is inactive.
+     */
+    function wcv_is_vendor_inactive( $vendor_id ) {
+        return 'inactive' === get_user_meta( $vendor_id, '_wcv_vendor_status', true );
+    }
+}
+
+if ( ! function_exists( 'wcv_lock_inactive_vendor_from_dashboard' ) ) {
+    /**
+     * Redirect inactive vendors away from the vendor dashboard.
+     *
+     * Shared by the current and legacy plugin paths so both enforce the same
+     * _wcv_vendor_status gate the store page, shop loop and cart already apply.
+     *
+     * Hooked on template_redirect, which does not run in the admin, so no
+     * is_admin() guard is required.
+     *
+     * @since 2.7.2
+     * @return void
+     */
+    function wcv_lock_inactive_vendor_from_dashboard() {
+
+        if ( ! is_user_logged_in() ) {
+            return;
+        }
+
+        $current_user = wp_get_current_user();
+
+        if ( ! in_array( 'vendor', (array) $current_user->roles, true ) ) {
+            return;
+        }
+
+        $page_id = (int) get_queried_object_id();
+
+        // Guard against 0 matching an unset dashboard page option on 404s and archives.
+        if ( ! $page_id ) {
+            return;
+        }
+
+        $pro_dashboard_page_ids = array_map( 'intval', (array) get_option( 'wcvendors_dashboard_page_id', array() ) );
+        $free_dashboard_page_id = (int) get_option( 'wcvendors_vendor_dashboard_page_id' );
+
+        if ( ! in_array( $page_id, $pro_dashboard_page_ids, true ) && $page_id !== $free_dashboard_page_id ) {
+            return;
+        }
+
+        if ( ! wcv_is_vendor_inactive( $current_user->ID ) ) {
+            return;
+        }
+
+        wc_add_notice( __( 'Your store is currently inactive. Please contact support if you feel this is a mistake.', 'wc-vendors' ), 'notice' );
+        wp_safe_redirect( get_permalink( wc_get_page_id( 'myaccount' ) ) );
+        exit;
+    }
+}

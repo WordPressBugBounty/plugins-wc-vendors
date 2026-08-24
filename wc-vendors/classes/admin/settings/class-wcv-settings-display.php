@@ -168,6 +168,13 @@ if ( ! class_exists( 'WCVendors_Settings_Display', false ) ) :
                             'type'    => 'checkbox',
                         ),
                         array(
+                            'title'   => __( 'Show All Menu Items', 'wc-vendors' ),
+                            'desc'    => __( 'Always show all dashboard navigation items in the main menu bar instead of collapsing extra items into a burger menu.', 'wc-vendors' ),
+                            'id'      => 'wcvendors_dashboard_show_all_menu_items',
+                            'default' => 'no',
+                            'type'    => 'checkbox',
+                        ),
+                        array(
                             'type' => 'sectionend',
                             'id'   => 'advanced_options',
                         ),

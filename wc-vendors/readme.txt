@@ -3,7 +3,7 @@ Contributors: jkohlbach, RymeraWebCo, Rymera01, smub
 Tags: multivendor, marketplace, multi vendor, product vendors, woocommerce commissions
 Requires at least: 5.9
 Tested up to: 7.1
-Stable tag: 2.7.2
+Stable tag: 2.7.2.1
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -298,6 +298,11 @@ You can report security bugs through the Patchstack Vulnerability Disclosure Pro
 12. Email notifications for admins, customers and vendors
 
 == Changelog ==
+
+= Version 2.7.2.1 - 28th August 2026 =
+ * Bug Fix: Cross-vendor variation and arbitrary post modification via IDOR in save_variations (reported by Usama Arshad via WPScan)
+ * Bug Fix: CSRF on vendor mark shipped and unshipped order actions (reported by Usama Arshad via WPScan)
+ * Bug Fix: Cross-vendor order shipment status change via IDOR in the [wcv_orders] shortcode (reported by Bhaveshkumar Parmar via WPScan)
 
 = Version 2.7.2 - 17th August 2026 =
  * Feature: Add Show All Menu Items setting to control the vendor dashboard navigation

@@ -1,5 +1,11 @@
 Changelog for WC Vendors Marketplace
 
+Version 2.7.2.1 - 28th August 2026
+
+ * Bug Fix: Cross-vendor variation and arbitrary post modification via IDOR in save_variations (reported by Usama Arshad via WPScan)
+ * Bug Fix: CSRF on vendor mark shipped and unshipped order actions (reported by Usama Arshad via WPScan)
+ * Bug Fix: Cross-vendor order shipment status change via IDOR in the [wcv_orders] shortcode (reported by Bhaveshkumar Parmar via WPScan)
+
 Version 2.7.2 - 17th August 2026
 
  * Feature: Add Show All Menu Items setting to control the vendor dashboard navigation

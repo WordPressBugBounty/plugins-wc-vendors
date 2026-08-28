@@ -703,6 +703,47 @@ class WCV_Vendor_Dashboard {
     }
 
     /**
+     * Get an order the current vendor is permitted to access, or null.
+     *
+     * Loads the order once and checks ownership, so callers can reuse the
+     * loaded object instead of loading it again.
+     *
+     * @since 2.7.2.1
+     *
+     * @param int $order_id The order id to check.
+     * @return WC_Order|WC_Order_Refund|null The order when permitted, otherwise null.
+     */
+    public static function get_permitted_order( $order_id ) {
+
+        $order = wc_get_order( $order_id );
+
+        if ( ! $order ) {
+            return null;
+        }
+
+        if ( 'shop_order_vendor' === $order->get_type() ) {
+            $order_owner = (int) $order->get_meta( 'wcv_vendor_id' );
+
+            return ( get_current_user_id() === $order_owner ) ? $order : null;
+        }
+
+        if ( 'shop_order' === $order->get_type() ) {
+            $vendors_ids = (array) $order->get_meta( 'wcv_vendor_ids' );
+
+            // Only allow access if vendor_ids meta exists and contains current user.
+            if ( ! empty( $vendors_ids ) && in_array( get_current_user_id(), $vendors_ids, true ) ) {
+                return $order;
+            }
+
+            // Missing meta or vendor not listed - deny access.
+            return null;
+        }
+
+        // Unknown order type - deny access.
+        return null;
+    }
+
+    /**
      * Check object permission to see if the vendor owns the object (this is to stop people messing with URLs)
      *
      * @since  2.5.2
@@ -717,33 +758,9 @@ class WCV_Vendor_Dashboard {
         $post_status   = get_post_status( $object_id );
         $can_edit      = in_array( $post_status, $edit_status, true );
 
-        $order      = null;
         $post_owner = 0;
         if ( 'order' === $object ) {
-            $order = wc_get_order( $object_id );
-
-            if ( ! $order ) {
-                return false;
-            }
-
-            if ( 'shop_order_vendor' === $order->get_type() ) {
-                $order_owner = (int) $order->get_meta( 'wcv_vendor_id' );
-
-                return ( get_current_user_id() === $order_owner );
-            } elseif ( 'shop_order' === $order->get_type() ) {
-                $vendors_ids = (array) $order->get_meta( 'wcv_vendor_ids' );
-
-                // Only allow access if vendor_ids meta exists and contains current user.
-                if ( ! empty( $vendors_ids ) ) {
-                    return in_array( get_current_user_id(), $vendors_ids, true );
-                }
-
-                // If wcv_vendor_ids meta is missing, deny access for security.
-                return false;
-            }
-
-            // Unknown order type - deny access.
-            return false;
+            return (bool) self::get_permitted_order( $object_id );
         } else {
             $post_owner = get_post_field( 'post_author', $object_id );
         }

@@ -267,12 +267,15 @@ class WCV_Orders {
         }
 
         if ( isset( $_POST['mark_shipped'] ) ) {
-            $order_id      = (int) $_POST['order_id'];
-            $product_id    = (int) $_POST['product_id'];
-            $shipped_order = wc_get_order( $order_id );
-            wcv_mark_vendor_shipped( $shipped_order, get_post_field( 'post_author', $product_id ) );
+            $order_id = (int) $_POST['order_id'];
 
-            wc_add_notice( __( 'Order marked shipped', 'wc-vendors' ) );
+            // Security check: the current vendor must own this order.
+            $shipped_order = WCV_Vendor_Dashboard::get_permitted_order( $order_id );
+            if ( $shipped_order ) {
+                wcv_mark_vendor_shipped( $shipped_order, get_current_user_id() );
+
+                wc_add_notice( __( 'Order marked shipped', 'wc-vendors' ) );
+            }
         }
 
         $headers = self::get_headers();

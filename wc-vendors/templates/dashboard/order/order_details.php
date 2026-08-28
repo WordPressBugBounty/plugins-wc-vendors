@@ -510,12 +510,12 @@ $allow_add_order_note = wc_string_to_bool( get_option( 'wcvendors_capability_ord
                 <div class="all-100 wcv-button-group">
                     <?php if ( ! $_order->hide_mark_shipped ) : ?>
                         <?php if ( true === $shipped && ! $vendor_shipping_disabled ) : ?>
-                            <a href="?wcv_mark_unshipped=<?php echo esc_attr( $order_id ); ?>" class="mark-order-unshipped wcv-button wcv-button-outline text-blue">
+                            <a href="<?php echo esc_url( wp_nonce_url( '?wcv_mark_unshipped=' . $order_id, 'wcv_mark_unshipped_' . $order_id ) ); ?>" class="mark-order-unshipped wcv-button wcv-button-outline text-blue">
                                 <span><?php echo esc_attr( __( 'Mark Unshipped', 'wc-vendors' ) ); ?></span>
                             </a>
                         <?php endif; ?>
                         <?php if ( false === $shipped && ! $vendor_shipping_disabled ) : ?>
-                            <a href="?wcv_mark_shipped=<?php echo esc_attr( $order_id ); ?>" class="mark-order-shipped wcv-button">
+                            <a href="<?php echo esc_url( wp_nonce_url( '?wcv_mark_shipped=' . $order_id, 'wcv_mark_shipped_' . $order_id ) ); ?>" class="mark-order-shipped wcv-button">
                                 <span><?php echo esc_attr( __( 'Mark Shipped', 'wc-vendors' ) ); ?></span>
                             </a>
                         <?php endif; ?>

@@ -432,24 +432,34 @@ class WCV_Order_Controller {
 
         if ( isset( $_GET['wcv_mark_shipped'] ) ) {
 
-            if ( ! \WCV_Vendor_Dashboard::check_object_permission( 'order', absint( $_GET['wcv_mark_shipped'] ) ) ) { // phpcs:ignore
+            $order_id = absint( $_GET['wcv_mark_shipped'] );
+
+            if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_GET['_wpnonce'] ) ), 'wcv_mark_shipped_' . $order_id ) ) {
+                return false;
+            }
+
+            if ( ! \WCV_Vendor_Dashboard::check_object_permission( 'order', $order_id ) ) {
                 return false;
             }
 
             $vendor_id = get_current_user_id();
-            $order_id  = $_GET['wcv_mark_shipped']; // phpcs:ignore
 
             self::mark_shipped( $vendor_id, $order_id );
         }
 
         if ( isset( $_GET['wcv_mark_unshipped'] ) ) {
 
-            if ( ! \WCV_Vendor_Dashboard::check_object_permission( 'order', absint( $_GET['wcv_mark_unshipped'] ) ) ) { // phpcs:ignore
+            $order_id = absint( $_GET['wcv_mark_unshipped'] );
+
+            if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_GET['_wpnonce'] ) ), 'wcv_mark_unshipped_' . $order_id ) ) {
+                return false;
+            }
+
+            if ( ! \WCV_Vendor_Dashboard::check_object_permission( 'order', $order_id ) ) {
                 return false;
             }
 
             $vendor_id = get_current_user_id();
-            $order_id  = $_GET['wcv_mark_unshipped']; // phpcs:ignore
             $order     = wc_get_order( $order_id );
             wcv_mark_vendor_unshipped( $order, $vendor_id );
             wc_add_notice( __( 'Order marked as unshipped', 'wc-vendors' ) );
@@ -874,7 +884,7 @@ class WCV_Order_Controller {
                 if ( ! in_array( get_current_user_id(), $shippers, true ) ) {
                     $row_actions['mark_shipped'] = array(
                         'label'  => __( 'Mark shipped', 'wc-vendors' ),
-                        'url'    => '?wcv_mark_shipped=' . $parent_order->get_id(),
+                        'url'    => wp_nonce_url( '?wcv_mark_shipped=' . $parent_order->get_id(), 'wcv_mark_shipped_' . $parent_order->get_id() ),
                         'custom' => array(
                             'class' => 'mark-order-shipped',
                         ),
@@ -887,7 +897,7 @@ class WCV_Order_Controller {
                 if ( in_array( get_current_user_id(), $shippers, true ) && $can_mark_unshipped ) {
                     $row_actions['mark_unshipped'] = array(
                         'label'  => __( 'Mark Unshipped', 'wc-vendors' ),
-                        'url'    => '?wcv_mark_unshipped=' . $parent_order->get_id(),
+                        'url'    => wp_nonce_url( '?wcv_mark_unshipped=' . $parent_order->get_id(), 'wcv_mark_unshipped_' . $parent_order->get_id() ),
                         'custom' => array(
                             'class' => 'mark-order-unshipped',
                         ),
@@ -901,7 +911,7 @@ class WCV_Order_Controller {
                 if ( in_array( get_current_user_id(), $shippers, true ) && $can_mark_unshipped ) {
                     $row_actions['mark_unshipped'] = array(
                         'label'  => __( 'Mark Unshipped', 'wc-vendors' ),
-                        'url'    => '?wcv_mark_unshipped=' . $parent_order->get_id(),
+                        'url'    => wp_nonce_url( '?wcv_mark_unshipped=' . $parent_order->get_id(), 'wcv_mark_unshipped_' . $parent_order->get_id() ),
                         'custom' => array(
                             'class' => 'mark-order-unshipped',
                         ),

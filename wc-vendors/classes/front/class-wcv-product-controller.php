@@ -1639,6 +1639,18 @@ class WCV_Product_Controller {
 
             $variation_id = absint( $variable_post_id[ $i ] );
 
+            // Security check: only update a variation the vendor owns on this product.
+            if ( $variation_id ) {
+                $post_type   = get_post_type( $variation_id );
+                $post_parent = wp_get_post_parent_id( $variation_id );
+
+                if ( ! \WCV_Vendor_Dashboard::check_object_permission( 'product', $post_id )
+                    || 'product_variation' !== $post_type
+                    || $post_parent !== $post_id ) {
+                    continue;
+                }
+            }
+
             // Checkboxes.
             $is_virtual      = isset( $variable_is_virtual[ $i ] ) ? 'yes' : 'no';
             $is_downloadable = isset( $variable_is_downloadable[ $i ] ) ? 'yes' : 'no';

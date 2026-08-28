@@ -8,7 +8,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Language-Team: WC Vendors <translate@wcvendors.com>\n"
 "Last-Translator: Jamie Madden <translate@wcvendors.com>\n"
-"POT-Creation-Date: 2026-08-17 01:30+0000\n"
+"POT-Creation-Date: 2026-08-28 06:35+0000\n"
 "Report-Msgid-Bugs-To: https://www.wcvendors.com\n"
 "X-Poedit-Basepath: ..\n"
 "X-Poedit-KeywordsList: __;_e;_ex:1,2c;_n:1,2;_n_noop:1,2;_nx:1,2,4c;_nx_noop:1,2,3c;_x:1,2c;esc_attr__;esc_attr_e;esc_attr_x:1,2c;esc_html__;esc_html_e;esc_html_x:1,2c\n"
@@ -386,7 +386,7 @@ msgstr ""
 msgid "Product Price"
 msgstr ""
 
-#: classes/class-vendor-settings.php:736, classes/front/class-wcv-product-controller.php:3705, classes/includes/wcv-all-vendors-page-i18n.php:14, classes/includes/api/admin/class-wcv-admin-api.php:847
+#: classes/class-vendor-settings.php:736, classes/front/class-wcv-product-controller.php:3717, classes/includes/wcv-all-vendors-page-i18n.php:14, classes/includes/api/admin/class-wcv-admin-api.php:847
 msgid "Pending"
 msgstr ""
 
@@ -484,7 +484,7 @@ msgstr ""
 msgid "WC Vendors"
 msgstr ""
 
-#: classes/admin/class-admin-menus.php:124, classes/admin/class-admin-menus.php:125, classes/admin/settings/class-wcv-settings-display.php:67, classes/admin/settings/class-wcv-settings-display.php:365, classes/front/dashboard/class-vendor-dashboard.php:405, classes/front/dashboard/class-vendor-dashboard.php:1170, classes/front/dashboard/class-vendor-dashboard.php:1503
+#: classes/admin/class-admin-menus.php:124, classes/admin/class-admin-menus.php:125, classes/admin/settings/class-wcv-settings-display.php:67, classes/admin/settings/class-wcv-settings-display.php:365, classes/front/dashboard/class-vendor-dashboard.php:405, classes/front/dashboard/class-vendor-dashboard.php:1187, classes/front/dashboard/class-vendor-dashboard.php:1520
 msgid "Dashboard"
 msgstr ""
 
@@ -601,7 +601,7 @@ msgstr ""
 msgid "You do not have permission to view this report."
 msgstr ""
 
-#: classes/admin/class-admin-reports.php:96, classes/admin/class-setup-wizard.php:132, classes/admin/class-setup-wizard.php:142, classes/front/class-wcv-order-controller.php:1620
+#: classes/admin/class-admin-reports.php:96, classes/admin/class-setup-wizard.php:132, classes/admin/class-setup-wizard.php:142, classes/front/class-wcv-order-controller.php:1630
 msgid "Security check failed. Please refresh the page and try again."
 msgstr ""
 
@@ -641,15 +641,15 @@ msgstr ""
 msgid "No commission yet"
 msgstr ""
 
-#: classes/admin/class-admin-reports.php:234, classes/front/class-wcv-export-helper.php:284, classes/front/class-wcv-order-controller.php:610, templates/dashboard/dashboard-tab-content-orders.php:47, templates/dashboard/dashboard-tab-content-orders.php:99, templates/dashboard/orders.php:56, classes/front/orders/class-orders.php:319
+#: classes/admin/class-admin-reports.php:234, classes/front/class-wcv-export-helper.php:284, classes/front/class-wcv-order-controller.php:620, templates/dashboard/dashboard-tab-content-orders.php:47, templates/dashboard/dashboard-tab-content-orders.php:99, templates/dashboard/orders.php:56, classes/front/orders/class-orders.php:322
 msgid "Order"
 msgstr ""
 
-#: classes/admin/class-admin-reports.php:235, classes/admin/class-admin-reports.php:701, classes/admin/class-wcv-commissions-csv-exporter.php:53, classes/admin/class-wcv-commissions-page.php:218, classes/front/class-wcv-product-controller.php:3132, classes/includes/wcv-dashboard-functions.php:34, templates/dashboard/reports.php:42, templates/emails/notify-vendor-shipped.php:32, templates/emails/vendor-notify-out-of-stock.php:44, templates/emails/vendor-order-details.php:40, classes/admin/emails/class-wcv-vendor-notify-cancelled-order.php:264, classes/admin/emails/class-wcv-vendor-notify-order.php:354, classes/admin/settings/class-wcv-settings-form.php:35, templates/dashboard/order/shipping-label.php:137, classes/front/partials/order/wcvendors-order-table-actions.php:142
+#: classes/admin/class-admin-reports.php:235, classes/admin/class-admin-reports.php:701, classes/admin/class-wcv-commissions-csv-exporter.php:53, classes/admin/class-wcv-commissions-page.php:218, classes/front/class-wcv-product-controller.php:3144, classes/includes/wcv-dashboard-functions.php:34, templates/dashboard/reports.php:42, templates/emails/notify-vendor-shipped.php:32, templates/emails/vendor-notify-out-of-stock.php:44, templates/emails/vendor-order-details.php:40, classes/admin/emails/class-wcv-vendor-notify-cancelled-order.php:264, classes/admin/emails/class-wcv-vendor-notify-order.php:354, classes/admin/settings/class-wcv-settings-form.php:35, templates/dashboard/order/shipping-label.php:137, classes/front/partials/order/wcvendors-order-table-actions.php:142
 msgid "Product"
 msgstr ""
 
-#: classes/admin/class-admin-reports.php:237, classes/admin/class-admin-reports.php:630, classes/admin/class-admin-reports.php:772, classes/admin/class-wcv-commissions-csv-exporter.php:58, classes/admin/class-wcv-commissions-page.php:223, classes/admin/class-wcv-commissions-sum-csv-exporter.php:49, classes/admin/class-wcv-vendor-order-page.php:160, classes/front/class-wcv-order-controller.php:622, templates/dashboard/orders.php:60, templates/dashboard/order/order_details.php:219
+#: classes/admin/class-admin-reports.php:237, classes/admin/class-admin-reports.php:630, classes/admin/class-admin-reports.php:772, classes/admin/class-wcv-commissions-csv-exporter.php:58, classes/admin/class-wcv-commissions-page.php:223, classes/admin/class-wcv-commissions-sum-csv-exporter.php:49, classes/admin/class-wcv-vendor-order-page.php:160, classes/front/class-wcv-order-controller.php:632, templates/dashboard/orders.php:60, templates/dashboard/order/order_details.php:219
 msgid "Total"
 msgstr ""
 
@@ -726,7 +726,7 @@ msgstr ""
 msgid "No commission data found"
 msgstr ""
 
-#: classes/admin/class-admin-reports.php:700, classes/admin/class-wcv-commissions-csv-exporter.php:61, classes/admin/class-wcv-commissions-page.php:226, classes/admin/class-wcv-vendor-order-page.php:161, classes/front/class-wcv-export-helper.php:298, templates/dashboard/orders.php:61, classes/front/orders/class-orders.php:328
+#: classes/admin/class-admin-reports.php:700, classes/admin/class-wcv-commissions-csv-exporter.php:61, classes/admin/class-wcv-commissions-page.php:226, classes/admin/class-wcv-vendor-order-page.php:161, classes/front/class-wcv-export-helper.php:298, templates/dashboard/orders.php:61, classes/front/orders/class-orders.php:331
 msgid "Date"
 msgstr ""
 
@@ -783,7 +783,7 @@ msgstr ""
 msgid "Product Name"
 msgstr ""
 
-#: classes/admin/class-admin-vendor-product.php:93, classes/admin/class-setup-wizard.php:106, classes/includes/class-functions.php:96, classes/includes/wcv-all-vendors-page-i18n.php:16, classes/includes/wcv-marketplace-dashboard-i18n.php:37, classes/front/dashboard/class-vendor-dashboard.php:1500
+#: classes/admin/class-admin-vendor-product.php:93, classes/admin/class-setup-wizard.php:106, classes/includes/class-functions.php:96, classes/includes/wcv-all-vendors-page-i18n.php:16, classes/includes/wcv-marketplace-dashboard-i18n.php:37, classes/front/dashboard/class-vendor-dashboard.php:1517
 msgid "Vendor"
 msgstr ""
 
@@ -847,7 +847,7 @@ msgstr ""
 msgid "Failed to approve product"
 msgstr ""
 
-#: classes/admin/class-admin-vendor-product.php:110, classes/front/class-wcv-order-controller.php:634, classes/front/class-wcv-product-controller.php:2170, classes/includes/wcv-all-vendors-page-i18n.php:23, templates/dashboard/dashboard-tab-content-orders.php:52, classes/front/forms/partials/wcvendors-downloadable-files.php:33
+#: classes/admin/class-admin-vendor-product.php:110, classes/front/class-wcv-order-controller.php:644, classes/front/class-wcv-product-controller.php:2182, classes/includes/wcv-all-vendors-page-i18n.php:23, templates/dashboard/dashboard-tab-content-orders.php:52, classes/front/forms/partials/wcvendors-downloadable-files.php:33
 msgid "Actions"
 msgstr ""
 
@@ -855,11 +855,11 @@ msgstr ""
 msgid "Request Change"
 msgstr ""
 
-#: classes/admin/class-admin-vendor-product.php:112, classes/front/class-wcv-product-controller.php:2231, classes/front/class-wcv-table-helper.php:236, classes/includes/wcv-all-vendors-page-i18n.php:25, templates/dashboard/dashboard-tab-content-orders.php:71
+#: classes/admin/class-admin-vendor-product.php:112, classes/front/class-wcv-product-controller.php:2243, classes/front/class-wcv-table-helper.php:236, classes/includes/wcv-all-vendors-page-i18n.php:25, templates/dashboard/dashboard-tab-content-orders.php:71
 msgid "View"
 msgstr ""
 
-#: classes/admin/class-admin-vendor-product.php:113, classes/front/class-wcv-product-controller.php:2222, classes/front/class-wcv-table-helper.php:228, classes/includes/wcv-all-vendors-page-i18n.php:24
+#: classes/admin/class-admin-vendor-product.php:113, classes/front/class-wcv-product-controller.php:2234, classes/front/class-wcv-table-helper.php:228, classes/includes/wcv-all-vendors-page-i18n.php:24
 msgid "Edit"
 msgstr ""
 
@@ -1199,7 +1199,7 @@ msgstr ""
 msgid "Mark Shipped"
 msgstr ""
 
-#: classes/admin/class-wcv-admin-orders.php:98, classes/admin/class-wcv-admin-orders.php:110, classes/admin/class-wcv-vendor-order-page.php:199, classes/front/class-wcv-order-controller.php:876, classes/includes/wcv-vendor-functions.php:259, templates/dashboard/orders.php:161, templates/orders/shipping/shipping-form.php:44
+#: classes/admin/class-wcv-admin-orders.php:98, classes/admin/class-wcv-admin-orders.php:110, classes/admin/class-wcv-vendor-order-page.php:199, classes/front/class-wcv-order-controller.php:886, classes/includes/wcv-vendor-functions.php:259, templates/dashboard/orders.php:161, templates/orders/shipping/shipping-form.php:44
 msgid "Mark shipped"
 msgstr ""
 
@@ -1254,7 +1254,7 @@ msgstr ""
 msgid "Choose a country&hellip;"
 msgstr ""
 
-#: classes/admin/class-wcv-admin-settings.php:569, classes/admin/class-wcv-admin-settings.php:598, classes/front/class-wcv-order-controller.php:326, classes/front/class-wcv-order-controller.php:389, classes/includes/wcv-all-vendors-page-i18n.php:81, classes/front/orders/class-orders.php:325
+#: classes/admin/class-wcv-admin-settings.php:569, classes/admin/class-wcv-admin-settings.php:598, classes/front/class-wcv-order-controller.php:326, classes/front/class-wcv-order-controller.php:389, classes/includes/wcv-all-vendors-page-i18n.php:81, classes/front/orders/class-orders.php:328
 msgid "Country"
 msgstr ""
 
@@ -1431,7 +1431,7 @@ msgstr ""
 msgid "QTY"
 msgstr ""
 
-#: classes/admin/class-wcv-commissions-csv-exporter.php:56, classes/admin/class-wcv-commissions-page.php:221, classes/front/class-wcv-order-controller.php:628, classes/includes/wcv-all-vendors-page-setting-fields.php:974, templates/dashboard/order-popup-details.php:157, templates/dashboard/order-popup-details.php:294, templates/dashboard/orders.php:58, templates/orders/orders.php:180, classes/admin/settings/class-wcv-settings-capabilities.php:135, classes/admin/settings/class-wcv-settings-form.php:426, classes/front/forms/class-wcv-product-form.php:1978, templates/dashboard/order/order_details.php:288, templates/dashboard/order/order_details.php:427, templates/dashboard/reports/overview.php:61, templates/dashboard/reports/overview.php:92, classes/front/forms/partials/wcvendors-product-variations.php:73
+#: classes/admin/class-wcv-commissions-csv-exporter.php:56, classes/admin/class-wcv-commissions-page.php:221, classes/front/class-wcv-order-controller.php:638, classes/includes/wcv-all-vendors-page-setting-fields.php:974, templates/dashboard/order-popup-details.php:157, templates/dashboard/order-popup-details.php:294, templates/dashboard/orders.php:58, templates/orders/orders.php:180, classes/admin/settings/class-wcv-settings-capabilities.php:135, classes/admin/settings/class-wcv-settings-form.php:426, classes/front/forms/class-wcv-product-form.php:1978, templates/dashboard/order/order_details.php:288, templates/dashboard/order/order_details.php:427, templates/dashboard/reports/overview.php:61, templates/dashboard/reports/overview.php:92, classes/front/forms/partials/wcvendors-product-variations.php:73
 msgid "Shipping"
 msgstr ""
 
@@ -1439,7 +1439,7 @@ msgstr ""
 msgid "Tax"
 msgstr ""
 
-#: classes/admin/class-wcv-commissions-csv-exporter.php:59, classes/admin/class-wcv-commissions-page.php:225, classes/admin/class-wcv-vendor-order-page.php:162, classes/front/class-wcv-dashboard-controller.php:474, classes/front/class-wcv-export-helper.php:297, classes/front/class-wcv-order-controller.php:806, templates/dashboard/orders.php:168, classes/front/partials/order/wcvendors-order-table-actions.php:95
+#: classes/admin/class-wcv-commissions-csv-exporter.php:59, classes/admin/class-wcv-commissions-page.php:225, classes/admin/class-wcv-vendor-order-page.php:162, classes/front/class-wcv-dashboard-controller.php:474, classes/front/class-wcv-export-helper.php:297, classes/front/class-wcv-order-controller.php:816, templates/dashboard/orders.php:168, classes/front/partials/order/wcvendors-order-table-actions.php:95
 msgid "Shipped"
 msgstr ""
 
@@ -1459,7 +1459,7 @@ msgstr ""
 msgid "Mark reversed"
 msgstr ""
 
-#: classes/admin/class-wcv-commissions-page.php:277, classes/front/class-wcv-product-controller.php:2250, classes/front/class-wcv-table-helper.php:232, classes/includes/wcv-all-vendors-page-i18n.php:30
+#: classes/admin/class-wcv-commissions-page.php:277, classes/front/class-wcv-product-controller.php:2262, classes/front/class-wcv-table-helper.php:232, classes/includes/wcv-all-vendors-page-i18n.php:30
 msgid "Delete"
 msgstr ""
 
@@ -1507,7 +1507,7 @@ msgstr ""
 msgid "Commission(s) deleted."
 msgstr ""
 
-#: classes/admin/class-wcv-commissions-page.php:746, classes/front/class-wcv-order-controller.php:2163, classes/front/class-wcv-product-controller.php:3701, classes/front/partials/order/wcvendors-order-table-actions.php:136, classes/front/partials/order/wcvendors-order-table-actions.php:140
+#: classes/admin/class-wcv-commissions-page.php:746, classes/front/class-wcv-order-controller.php:2173, classes/front/class-wcv-product-controller.php:3713, classes/front/partials/order/wcvendors-order-table-actions.php:136, classes/front/partials/order/wcvendors-order-table-actions.php:140
 msgid "All"
 msgstr ""
 
@@ -1781,7 +1781,7 @@ msgstr ""
 msgid "orders"
 msgstr ""
 
-#: classes/admin/class-wcv-vendor-order-page.php:158, classes/front/class-wcv-order-controller.php:616, templates/dashboard/dashboard-tab-content-orders.php:49, templates/dashboard/dashboard-tab-content-orders.php:100, classes/front/partials/order/wcvendors-order-table-actions.php:141
+#: classes/admin/class-wcv-vendor-order-page.php:158, classes/front/class-wcv-order-controller.php:626, templates/dashboard/dashboard-tab-content-orders.php:49, templates/dashboard/dashboard-tab-content-orders.php:100, classes/front/partials/order/wcvendors-order-table-actions.php:141
 msgid "Customer"
 msgstr ""
 
@@ -1845,15 +1845,15 @@ msgstr ""
 msgid "Sales Report: This month"
 msgstr ""
 
-#: classes/front/class-wcv-export-helper.php:285, classes/front/orders/class-orders.php:320
+#: classes/front/class-wcv-export-helper.php:285, classes/front/orders/class-orders.php:323
 msgid "Product Title"
 msgstr ""
 
-#: classes/front/class-wcv-export-helper.php:287, classes/front/orders/class-orders.php:321
+#: classes/front/class-wcv-export-helper.php:287, classes/front/orders/class-orders.php:324
 msgid "Full name"
 msgstr ""
 
-#: classes/front/class-wcv-export-helper.php:288, classes/includes/wcv-all-vendors-page-i18n.php:125, templates/dashboard/order-popup-details.php:61, templates/dashboard/order-popup-details.php:80, classes/front/orders/class-orders.php:322, templates/dashboard/order/order_details.php:79, templates/dashboard/order/order_details.php:73, templates/dashboard/order/order_details.php:154, templates/dashboard/order/order_details.php:148
+#: classes/front/class-wcv-export-helper.php:288, classes/includes/wcv-all-vendors-page-i18n.php:125, templates/dashboard/order-popup-details.php:61, templates/dashboard/order-popup-details.php:80, classes/front/orders/class-orders.php:325, templates/dashboard/order/order_details.php:79, templates/dashboard/order/order_details.php:73, templates/dashboard/order/order_details.php:154, templates/dashboard/order/order_details.php:148
 msgid "Address"
 msgstr ""
 
@@ -1861,19 +1861,19 @@ msgstr ""
 msgid "Address 2"
 msgstr ""
 
-#: classes/front/class-wcv-export-helper.php:290, classes/front/class-wcv-order-controller.php:318, classes/front/class-wcv-order-controller.php:381, classes/includes/wcv-all-vendors-page-i18n.php:83, classes/front/orders/class-orders.php:323
+#: classes/front/class-wcv-export-helper.php:290, classes/front/class-wcv-order-controller.php:318, classes/front/class-wcv-order-controller.php:381, classes/includes/wcv-all-vendors-page-i18n.php:83, classes/front/orders/class-orders.php:326
 msgid "City"
 msgstr ""
 
-#: classes/front/class-wcv-export-helper.php:291, classes/includes/wcv-all-vendors-page-i18n.php:82, classes/front/orders/class-orders.php:324
+#: classes/front/class-wcv-export-helper.php:291, classes/includes/wcv-all-vendors-page-i18n.php:82, classes/front/orders/class-orders.php:327
 msgid "State"
 msgstr ""
 
-#: classes/front/class-wcv-export-helper.php:292, classes/front/orders/class-orders.php:326
+#: classes/front/class-wcv-export-helper.php:292, classes/front/orders/class-orders.php:329
 msgid "Zip"
 msgstr ""
 
-#: classes/front/class-wcv-export-helper.php:293, classes/front/orders/class-orders.php:327
+#: classes/front/class-wcv-export-helper.php:293, classes/front/orders/class-orders.php:330
 msgid "Email address"
 msgstr ""
 
@@ -1973,125 +1973,125 @@ msgstr ""
 msgid "Last name"
 msgstr ""
 
-#: classes/front/class-wcv-order-controller.php:455
+#: classes/front/class-wcv-order-controller.php:465
 msgid "Order marked as unshipped"
 msgstr ""
 
-#: classes/front/class-wcv-order-controller.php:492
+#: classes/front/class-wcv-order-controller.php:502
 msgid "You need type something in the note field"
 msgstr ""
 
-#: classes/front/class-wcv-order-controller.php:606, classes/front/class-wcv-product-controller.php:2150, classes/front/class-wcv-table-helper.php:214
+#: classes/front/class-wcv-order-controller.php:616, classes/front/class-wcv-product-controller.php:2162, classes/front/class-wcv-table-helper.php:214
 msgid "ID"
 msgstr ""
 
 #. translators: %1$s: Product SKU, %2$s: HTML Line break.
-#: classes/front/class-wcv-order-controller.php:779
+#: classes/front/class-wcv-order-controller.php:789
 msgid "SKU: %1$s %2$s"
 msgstr ""
 
-#: classes/front/class-wcv-order-controller.php:798, classes/front/class-wcv-order-controller.php:2183, templates/dashboard/order-popup-details.php:216, templates/dashboard/order-popup-details.php:263, templates/dashboard/order-popup-details.php:328, templates/dashboard/order/order_details.php:347, templates/dashboard/order/order_details.php:469
+#: classes/front/class-wcv-order-controller.php:808, classes/front/class-wcv-order-controller.php:2193, templates/dashboard/order-popup-details.php:216, templates/dashboard/order-popup-details.php:263, templates/dashboard/order-popup-details.php:328, templates/dashboard/order/order_details.php:347, templates/dashboard/order/order_details.php:469
 msgid "Refunded"
 msgstr ""
 
-#: classes/front/class-wcv-order-controller.php:795
+#: classes/front/class-wcv-order-controller.php:805
 msgid "Partially Refunded"
 msgstr ""
 
-#: classes/front/class-wcv-order-controller.php:807, classes/front/class-wcv-order-controller.php:2167
+#: classes/front/class-wcv-order-controller.php:817, classes/front/class-wcv-order-controller.php:2177
 msgid "Awaiting Shipping"
 msgstr ""
 
-#: classes/front/class-wcv-order-controller.php:808
+#: classes/front/class-wcv-order-controller.php:818
 msgid "NA"
 msgstr ""
 
-#: classes/front/class-wcv-order-controller.php:817
+#: classes/front/class-wcv-order-controller.php:827
 msgid "View Order"
 msgstr ""
 
-#: classes/front/class-wcv-order-controller.php:827
+#: classes/front/class-wcv-order-controller.php:837
 msgid "Show Shipping Label"
 msgstr ""
 
-#: classes/front/class-wcv-order-controller.php:835, templates/dashboard/order/order_details.php:525, templates/dashboard/order/order_note_form.php:61
+#: classes/front/class-wcv-order-controller.php:845, templates/dashboard/order/order_details.php:525, templates/dashboard/order/order_note_form.php:61
 msgid "Add Note"
 msgstr ""
 
-#: classes/front/class-wcv-order-controller.php:845
+#: classes/front/class-wcv-order-controller.php:855
 msgid "Add Tracking Number"
 msgstr ""
 
-#: classes/front/class-wcv-order-controller.php:889, classes/front/class-wcv-order-controller.php:903, templates/dashboard/order/order_details.php:514
+#: classes/front/class-wcv-order-controller.php:899, classes/front/class-wcv-order-controller.php:913, templates/dashboard/order/order_details.php:514
 msgid "Mark Unshipped"
 msgstr ""
 
-#: classes/front/class-wcv-order-controller.php:975
+#: classes/front/class-wcv-order-controller.php:985
 msgid "Refunded: "
 msgstr ""
 
-#: classes/front/class-wcv-order-controller.php:979
+#: classes/front/class-wcv-order-controller.php:989
 msgid "Full Commission: "
 msgstr ""
 
-#: classes/front/class-wcv-order-controller.php:979
+#: classes/front/class-wcv-order-controller.php:989
 msgid "Commission Due: "
 msgstr ""
 
-#: classes/front/class-wcv-order-controller.php:979
+#: classes/front/class-wcv-order-controller.php:989
 msgid "Product: "
 msgstr ""
 
-#: classes/front/class-wcv-order-controller.php:979
+#: classes/front/class-wcv-order-controller.php:989
 msgid "Shipping: "
 msgstr ""
 
-#: classes/front/class-wcv-order-controller.php:979
+#: classes/front/class-wcv-order-controller.php:989
 msgid "Tax: "
 msgstr ""
 
-#: classes/front/class-wcv-order-controller.php:1125
+#: classes/front/class-wcv-order-controller.php:1135
 msgid "No orders found."
 msgstr ""
 
-#: classes/front/class-wcv-order-controller.php:1160, classes/front/dashboard/class-vendor-dashboard-legacy.php:102
+#: classes/front/class-wcv-order-controller.php:1170, classes/front/dashboard/class-vendor-dashboard-legacy.php:102
 msgid "Order marked shipped."
 msgstr ""
 
-#: classes/front/class-wcv-order-controller.php:1210
+#: classes/front/class-wcv-order-controller.php:1220
 msgid "The customer has been notified."
 msgstr ""
 
-#: classes/front/class-wcv-order-controller.php:1299, classes/front/class-wcv-product-controller.php:2589, classes/front/class-wcv-product-controller.php:2785, classes/front/class-wcv-product-controller.php:2963, classes/front/forms/class-wcv-product-form.php:1331
+#: classes/front/class-wcv-order-controller.php:1309, classes/front/class-wcv-product-controller.php:2601, classes/front/class-wcv-product-controller.php:2797, classes/front/class-wcv-product-controller.php:2975, classes/front/forms/class-wcv-product-form.php:1331
 msgid "Standard"
 msgstr ""
 
-#: classes/front/class-wcv-order-controller.php:1395, templates/orders/customer-note/customer-note.php:25
+#: classes/front/class-wcv-order-controller.php:1405, templates/orders/customer-note/customer-note.php:25
 msgid "No customer notes."
 msgstr ""
 
 #. translators: %s is the name of the store.
-#: classes/front/class-wcv-order-controller.php:1670
+#: classes/front/class-wcv-order-controller.php:1680
 msgid "%s has added a tracking number to your order. You can track this at the following url. "
 msgstr ""
 
-#: classes/front/class-wcv-order-controller.php:1676
+#: classes/front/class-wcv-order-controller.php:1686
 msgid "Tracking Number:"
 msgstr ""
 
-#: classes/front/class-wcv-order-controller.php:2171
+#: classes/front/class-wcv-order-controller.php:2181
 msgid "Processing"
 msgstr ""
 
-#: classes/front/class-wcv-order-controller.php:2175
+#: classes/front/class-wcv-order-controller.php:2185
 msgid "On Hold"
 msgstr ""
 
-#: classes/front/class-wcv-order-controller.php:2179, classes/admin/settings/class-wcv-settings-capabilities.php:608, classes/front/partials/order/wcvendors-order-table-actions.php:112
+#: classes/front/class-wcv-order-controller.php:2189, classes/admin/settings/class-wcv-settings-capabilities.php:608, classes/front/partials/order/wcvendors-order-table-actions.php:112
 msgid "Completed"
 msgstr ""
 
-#: classes/front/class-wcv-order-controller.php:2187
+#: classes/front/class-wcv-order-controller.php:2197
 msgid "Cancelled"
 msgstr ""
 
@@ -2186,178 +2186,178 @@ msgid "Product SKU must be unique."
 msgstr ""
 
 #. translators: %1$s: variation id %2$s: product title
-#: classes/front/class-wcv-product-controller.php:1651
+#: classes/front/class-wcv-product-controller.php:1663
 msgid "Variation #%1$s of %2$s"
 msgstr ""
 
 #. translators: %s: variation id
-#: classes/front/class-wcv-product-controller.php:1714
+#: classes/front/class-wcv-product-controller.php:1726
 msgid "#%s &ndash; Variation SKU must be unique."
 msgstr ""
 
 #. translators: %1$s: variation id %2$s: file name %3$s: allowed file types
-#: classes/front/class-wcv-product-controller.php:1858
+#: classes/front/class-wcv-product-controller.php:1870
 msgid "#%1$s &ndash; The downloadable file %2$s cannot be used as it does not have an allowed file type. Allowed types include: %3$s"
 msgstr ""
 
 #. translators: %1$s: variation id %2$s: file url
-#: classes/front/class-wcv-product-controller.php:1873
+#: classes/front/class-wcv-product-controller.php:1885
 msgid "#%1$s &ndash; The downloadable file %2$s cannot be used as it does not exist on the server."
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:2123
+#: classes/front/class-wcv-product-controller.php:2135
 msgid "Online"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:2124
+#: classes/front/class-wcv-product-controller.php:2136
 msgid "Scheduled"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:2125, classes/front/class-wcv-product-controller.php:3703
+#: classes/front/class-wcv-product-controller.php:2137, classes/front/class-wcv-product-controller.php:3715
 msgid "Draft"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:2126, classes/includes/wcv-all-vendors-page-i18n.php:13
+#: classes/front/class-wcv-product-controller.php:2138, classes/includes/wcv-all-vendors-page-i18n.php:13
 msgid "Pending Approval"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:2127
+#: classes/front/class-wcv-product-controller.php:2139
 msgid "Admin Only"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:2128, classes/front/class-wcv-product-controller.php:3707
+#: classes/front/class-wcv-product-controller.php:2140, classes/front/class-wcv-product-controller.php:3719
 msgid "Trash"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:2153
+#: classes/front/class-wcv-product-controller.php:2165
 msgid "Thumbnail"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:2159, templates/dashboard/order-popup-details.php:41
+#: classes/front/class-wcv-product-controller.php:2171, templates/dashboard/order-popup-details.php:41
 msgid "Details"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:2165, templates/emails/notify-vendor-shipped.php:34, templates/emails/vendor-order-details.php:49, classes/admin/settings/class-wcv-settings-form.php:525
+#: classes/front/class-wcv-product-controller.php:2177, templates/emails/notify-vendor-shipped.php:34, templates/emails/vendor-order-details.php:49, classes/admin/settings/class-wcv-settings-form.php:525
 msgid "Price"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:2241
+#: classes/front/class-wcv-product-controller.php:2253
 msgid "Duplicate"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:2253
+#: classes/front/class-wcv-product-controller.php:2265
 msgid "Delete product?"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:2289
+#: classes/front/class-wcv-product-controller.php:2301
 msgid "Restore"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:2304
+#: classes/front/class-wcv-product-controller.php:2316
 msgid "Delete Permanently"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:2307
+#: classes/front/class-wcv-product-controller.php:2319
 msgid "Permanently delete this product? This cannot be undone."
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:2326
+#: classes/front/class-wcv-product-controller.php:2338
 msgid "Sale"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:2341
+#: classes/front/class-wcv-product-controller.php:2353
 msgid "Date Published:"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:2456
+#: classes/front/class-wcv-product-controller.php:2468
 msgid "No products found."
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:2540
+#: classes/front/class-wcv-product-controller.php:2552
 msgid "No permission to add attributes. "
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:2599, classes/front/class-wcv-product-controller.php:2795, classes/front/class-wcv-product-controller.php:2973, classes/front/forms/class-wcv-product-form.php:1494, classes/admin/views/notices/html-notice-usage-tracking.php:34
+#: classes/front/class-wcv-product-controller.php:2611, classes/front/class-wcv-product-controller.php:2807, classes/front/class-wcv-product-controller.php:2985, classes/front/forms/class-wcv-product-form.php:1494, classes/admin/views/notices/html-notice-usage-tracking.php:34
 msgid "Do not allow"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:2600, classes/front/class-wcv-product-controller.php:2796, classes/front/class-wcv-product-controller.php:2974, classes/front/forms/class-wcv-product-form.php:1495
+#: classes/front/class-wcv-product-controller.php:2612, classes/front/class-wcv-product-controller.php:2808, classes/front/class-wcv-product-controller.php:2986, classes/front/forms/class-wcv-product-form.php:1495
 msgid "Allow, but notify customer"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:2601, classes/front/class-wcv-product-controller.php:2797, classes/front/class-wcv-product-controller.php:2975, classes/front/forms/class-wcv-product-form.php:1496
+#: classes/front/class-wcv-product-controller.php:2613, classes/front/class-wcv-product-controller.php:2809, classes/front/class-wcv-product-controller.php:2987, classes/front/forms/class-wcv-product-form.php:1496
 msgid "Allow"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:2606, classes/front/class-wcv-product-controller.php:2802, classes/front/class-wcv-product-controller.php:2980, classes/front/class-wcv-product-controller.php:3509, classes/front/class-wcv-product-controller.php:3708, classes/front/forms/class-wcv-product-form.php:1536
+#: classes/front/class-wcv-product-controller.php:2618, classes/front/class-wcv-product-controller.php:2814, classes/front/class-wcv-product-controller.php:2992, classes/front/class-wcv-product-controller.php:3521, classes/front/class-wcv-product-controller.php:3720, classes/front/forms/class-wcv-product-form.php:1536
 msgid "In stock"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:2607, classes/front/class-wcv-product-controller.php:2803, classes/front/class-wcv-product-controller.php:2981, classes/front/class-wcv-product-controller.php:3517, classes/front/class-wcv-product-controller.php:3709, classes/front/forms/class-wcv-product-form.php:1537
+#: classes/front/class-wcv-product-controller.php:2619, classes/front/class-wcv-product-controller.php:2815, classes/front/class-wcv-product-controller.php:2993, classes/front/class-wcv-product-controller.php:3529, classes/front/class-wcv-product-controller.php:3721, classes/front/forms/class-wcv-product-form.php:1537
 msgid "Out of stock"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:3034
+#: classes/front/class-wcv-product-controller.php:3046
 msgid "Unauthorized."
 msgstr ""
 
 #. translators: %s: max image width
-#: classes/front/class-wcv-product-controller.php:3289
+#: classes/front/class-wcv-product-controller.php:3301
 msgid "The image file uploaded exceeds the maximum width allowed. Maximium width is %spx"
 msgstr ""
 
 #. translators: %s: max image height
-#: classes/front/class-wcv-product-controller.php:3297
+#: classes/front/class-wcv-product-controller.php:3309
 msgid "The image file uploaded exceeds the maximum height allowed. Maximum height is %spx"
 msgstr ""
 
 #. translators: %s: min image width
-#: classes/front/class-wcv-product-controller.php:3305
+#: classes/front/class-wcv-product-controller.php:3317
 msgid "The image file uploaded does not meet the minimum width required. Minimum image width is %spx"
 msgstr ""
 
 #. translators: %s: min image height
-#: classes/front/class-wcv-product-controller.php:3313
+#: classes/front/class-wcv-product-controller.php:3325
 msgid "The image file uploaded does not meet the minimum height required. Minimum image height is %spx."
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:3512
+#: classes/front/class-wcv-product-controller.php:3524
 msgid "Low stock"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:3521, classes/front/class-wcv-product-controller.php:3710
+#: classes/front/class-wcv-product-controller.php:3533, classes/front/class-wcv-product-controller.php:3722
 msgid "On backorder"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:3702
+#: classes/front/class-wcv-product-controller.php:3714
 msgid "Published"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:3704
+#: classes/front/class-wcv-product-controller.php:3716
 msgid "Auto Draft"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:3706
+#: classes/front/class-wcv-product-controller.php:3718
 msgid "Private"
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:3788
+#: classes/front/class-wcv-product-controller.php:3800
 msgid "This product is not available for purchase due to the vendor being inactive."
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:3796
+#: classes/front/class-wcv-product-controller.php:3808
 msgid "You cannot purchase your own products."
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:3835
+#: classes/front/class-wcv-product-controller.php:3847
 msgid "Some products have been removed from your cart as the vendor is inactive."
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:3839
+#: classes/front/class-wcv-product-controller.php:3851
 msgid "You cannot purchase your own products. These items have been removed from your cart."
 msgstr ""
 
-#: classes/front/class-wcv-product-controller.php:3862
+#: classes/front/class-wcv-product-controller.php:3874
 msgid "You cannot review your own product."
 msgstr ""
 
@@ -4898,7 +4898,7 @@ msgid "Submit"
 msgstr ""
 
 #. translators: %s: vendor name
-#: templates/dashboard/denied.php:36, classes/front/dashboard/class-vendor-dashboard.php:987
+#: templates/dashboard/denied.php:36, classes/front/dashboard/class-vendor-dashboard.php:1004
 msgid "Your account has not yet been approved to become a %s.  When it is, you will receive an email telling you that your account is approved!"
 msgstr ""
 
@@ -6458,11 +6458,11 @@ msgstr ""
 msgid "The message shown to guests when they try to access the vendor dashboard."
 msgstr ""
 
-#: classes/admin/settings/class-wcv-settings-display.php:654, classes/front/dashboard/class-vendor-dashboard.php:1459
+#: classes/admin/settings/class-wcv-settings-display.php:654, classes/front/dashboard/class-vendor-dashboard.php:1476
 msgid "It looks like you're trying to access the Vendor Dashboard. This feature is available exclusively to registered vendors."
 msgstr ""
 
-#: classes/admin/settings/class-wcv-settings-display.php:655, classes/front/dashboard/class-vendor-dashboard.php:1460
+#: classes/admin/settings/class-wcv-settings-display.php:655, classes/front/dashboard/class-vendor-dashboard.php:1477
 msgid "Join our marketplace and start selling your products to a wide audience. Click the link below to register and become a vendor today!"
 msgstr ""
 
@@ -6474,7 +6474,7 @@ msgstr ""
 msgid "Button Text"
 msgstr ""
 
-#: classes/admin/settings/class-wcv-settings-display.php:670, classes/front/dashboard/class-vendor-dashboard.php:1462
+#: classes/admin/settings/class-wcv-settings-display.php:670, classes/front/dashboard/class-vendor-dashboard.php:1479
 msgid "Register as a Vendor"
 msgstr ""
 
@@ -7578,15 +7578,15 @@ msgid "View store"
 msgstr ""
 
 #. translators: %s the label for vendors.
-#: classes/front/dashboard/class-vendor-dashboard.php:796
+#: classes/front/dashboard/class-vendor-dashboard.php:813
 msgid "Please contact the website administrator and instruct them that in order for the %s Dashboard to work for logged out users, they must have their My Account page configured and set properly in their WooCommerce settings."
 msgstr ""
 
-#: classes/front/dashboard/class-vendor-dashboard.php:901
+#: classes/front/dashboard/class-vendor-dashboard.php:918
 msgid "Admin cannot apply to be a vendor."
 msgstr ""
 
-#: classes/front/dashboard/class-vendor-dashboard.php:1196
+#: classes/front/dashboard/class-vendor-dashboard.php:1213
 msgid "Logout"
 msgstr ""
 
@@ -8126,7 +8126,7 @@ msgstr ""
 msgid "You don't have permission to view orders."
 msgstr ""
 
-#: classes/front/orders/class-orders.php:275
+#: classes/front/orders/class-orders.php:277
 msgid "Order marked shipped"
 msgstr ""
 

@@ -2,7 +2,7 @@
 /**
  * Handles commission CSV export.
  *
- * @version 2.6.5 - Fix security issues.
+ * @version 2.7.2.2 - Fix security issues.
  *
  * @since   2.0.0
  *
@@ -67,9 +67,12 @@ class WCV_Commissions_CSV_Export extends WC_CSV_Exporter {
      * Prepare data for export.
      *
      * @since 1.9.14
+     * @since 2.7.2.2 Add an orderby allowlist and a manage_options guard.
      */
     public function prepare_data_to_export() {
-      // phpcs:disable
+      // phpcs:disable Universal.WhiteSpace.PrecisionAlignment, Squiz.Strings.DoubleQuoteUsage, Generic.Formatting.MultipleStatementAlignment, PSR2.ControlStructures.SwitchDeclaration, Squiz.WhiteSpace.SuperfluousWhitespace, WordPress.Security.NonceVerification, WordPress.PHP.StrictInArray
+      // The sniffs above cover this method's historic 2-space style and its upstream-verified nonce.
+      // WordPress.DB.PreparedSQL stays live so a future unprepared query in this method is flagged.
 
       global $wpdb;
 
@@ -79,8 +82,29 @@ class WCV_Commissions_CSV_Export extends WC_CSV_Exporter {
           return;
       }
 
+      // SECURITY: this list is interpolated into the ORDER BY clause below.
+      // It stays closed on purpose. Add a value only if it is a real pv_commission column.
+      // Any other value falls back to time.
+      $allowed_orderby = array(
+          'id',
+          'product_id',
+          'order_id',
+          'vendor_id',
+          'total_due',
+          'qty',
+          'total_shipping',
+          'tax',
+          'status',
+          'time',
+      );
+
       $order      = ( ! empty( $_REQUEST['order'] ) && 'asc' === $_REQUEST['order'] ) ? 'ASC' : 'DESC';
       $orderby    = ! empty( $_REQUEST['orderby'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['orderby'] ) ) : 'time';
+
+      if ( ! in_array( $orderby, $allowed_orderby, true ) ) {
+          $orderby = 'time';
+      }
+
       $com_status = ! empty( $_REQUEST['com_status'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['com_status'] ) ) : '';
       $vendor_id  = ! empty( $_REQUEST['vendor_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['vendor_id'] ) ) : '';
       $status_sql = '';
@@ -97,7 +121,7 @@ class WCV_Commissions_CSV_Export extends WC_CSV_Exporter {
         $from_date = $from_date . ' 00:00:00';
         $to_date   = $to_date . ' 23:59:59';
         $time_sql  = " WHERE time BETWEEN %s AND %s";
-        $time_sql  = $wpdb->prepare( $time_sql, $from_date, $to_date );
+        $time_sql  = $wpdb->prepare( $time_sql, $from_date, $to_date ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- literal query with %s placeholders.
         $sql .= $time_sql;
       }
 
@@ -109,7 +133,7 @@ class WCV_Commissions_CSV_Export extends WC_CSV_Exporter {
           $status_sql = " AND status = %s";
         }
 
-        $status_sql = $wpdb->prepare( $status_sql, $com_status );
+        $status_sql = $wpdb->prepare( $status_sql, $com_status ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- literal query with %s placeholders.
         $sql .= $status_sql;
       }
 
@@ -121,7 +145,7 @@ class WCV_Commissions_CSV_Export extends WC_CSV_Exporter {
           $vendor_sql = " AND vendor_id = %s";
         }
 
-        $vendor_sql = $wpdb->prepare( $vendor_sql, $vendor_id );
+        $vendor_sql = $wpdb->prepare( $vendor_sql, $vendor_id ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- literal query with %s placeholders.
         $sql .= $vendor_sql;
       }
 
@@ -141,6 +165,7 @@ class WCV_Commissions_CSV_Export extends WC_CSV_Exporter {
         $sql .= $vendor_sql;
       }
 
+      // SECURITY: the allowlist above (not these backticks) makes $orderby safe here.
       $sql .= " ORDER BY `{$orderby}` {$order}";
 
       $commissions = $wpdb->get_results( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
@@ -195,5 +220,6 @@ class WCV_Commissions_CSV_Export extends WC_CSV_Exporter {
         $row              = apply_filters_deprecated( 'wcv_commissions_export_row_data', array( $row, $commission ), '2.3.0', 'wcvendors_commissions_export_row_data' );
         $this->row_data[] = apply_filters( 'wcvendors_commissions_export_row_data', $row, $commission );
       }
+      // phpcs:enable
     }
 }

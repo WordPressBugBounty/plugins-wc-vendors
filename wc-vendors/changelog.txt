@@ -1,5 +1,30 @@
 Changelog for WC Vendors Marketplace
 
+Version 2.7.3 - 16th October 2026
+
+ * Feature: Add commission REST read endpoints for the store owner and vendors
+ * Feature: Add vendor order REST endpoints
+ * Feature: Add commission rate REST writes for the global and per-vendor rate
+ * Feature: Add vendor sales summary REST endpoints
+ * Feature: Add marketplace webhook topics
+ * Feature: Add marketplace abilities for the WordPress Abilities API
+ * Feature: Add marketplace write abilities for vendor approval, product approval and store profile
+ * Improvement: Support price, popularity and rating sorting in product listing shortcodes
+ * Improvement: Show vendor dashboard usage stats as text instead of a button
+ * Improvement: Add marketplace counts to the usage check-in and fix the hardcoded usermeta table prefix
+ * Bug Fix: Duplicate commission rows written to pv_commission on concurrent order status transitions
+ * Bug Fix: Missing nonce and capability check on the WC Vendors database update action
+ * Bug Fix: Commission not reversed when a sub-order is trashed or deleted, or on HPOS stores
+ * Bug Fix: Infinite Action Scheduler resync loop when the order vendor cannot be found during HPOS sync
+ * Bug Fix: Vendor approved email showed an empty content body in preview and test send
+ * Bug Fix: License key field on the Licenses page was not masked
+ * Bug Fix: Vendor Statement gross revenue did not match its royalty figure
+ * Bug Fix: Usage check-in skipped every second week
+ * Bug Fix: Critical error on the Become a Vendor signup
+ * Bug Fix: OnTrac tracking link pointed to a removed URL
+ * Bug Fix: PHP deprecated notice in wcv_get_user_role() when a guest views the shop page
+ * Bug Fix: WooCommerce shipping methods loaded on every front-end page, not only the vendor dashboard
+
 Version 2.7.2.2 - 14th September 2026
 
  * Security Fix: Hardened the commission CSV export (reported by Ananda Dhakal via Patchstack)

@@ -11,6 +11,7 @@ namespace WC_Vendors\Classes\Front;
 
 use WC_Vendors;
 
+use function WC_Vendors\Classes\Includes\wcv_is_dashboard_page;
 use function WC_Vendors\Classes\Includes\wcv_is_vendors_shipping_enabled;
 /**
  * Hanldes the public assets
@@ -142,19 +143,23 @@ class WCV_Public_Assets {
      * Enqueue scripts
      *
      * @since 2.6.7 - Changed from get_option to wcv_get_pro_option.
+     * @version 2.7.3 - Build product form data only on dashboard pages.
      */
     public static function enqueue_scripts() {
         global $post;
-        $file_display            = wcv_get_pro_option( 'wcvendors_file_display', '' );
-        $category_limit          = wcv_get_pro_option( 'wcvendors_category_limit', '' );
-        $tag_limit               = wcv_get_pro_option( 'wcvendors_tag_limit', '' );
-        $tag_separator           = wcv_get_pro_option( 'wcvendors_tag_separator', '' );
-        $shipping_method_enabled = wcv_is_vendors_shipping_enabled();
-        $select2_handle          = wcv_get_select2_script_handle();
+        $file_display   = wcv_get_pro_option( 'wcvendors_file_display', '' );
+        $category_limit = wcv_get_pro_option( 'wcvendors_category_limit', '' );
+        $tag_limit      = wcv_get_pro_option( 'wcvendors_tag_limit', '' );
+        $tag_separator  = wcv_get_pro_option( 'wcvendors_tag_separator', '' );
+        $select2_handle = wcv_get_select2_script_handle();
 
         $is_dashboard_page = ( is_a( $post, 'WP_Post' ) && has_shortcode( $post->post_content, 'wcv_dashboard_nav' ) ) || ( is_a( $post, 'WP_Post' ) && has_shortcode( $post->post_content, 'wcv_vendor_dashboard' ) )
         || ( is_a( $post, 'WP_Post' ) && has_shortcode( $post->post_content, 'wcv_pro_dashboard_nav' ) ) || ( is_a( $post, 'WP_Post' ) && has_shortcode( $post->post_content, 'wcv_pro_dashboard' ) );
         $is_dashboard_page = apply_filters( 'wcvendors_enqueue_script_is_dashboard_page', $is_dashboard_page );
+
+        // Build product form data only where the form can load.
+        $load_form_data = $is_dashboard_page || wcv_is_dashboard_page();
+
         // Parsley JS - http://parsleyjs.org/.
         wcv_enqueue_script(
             'parsley',
@@ -254,158 +259,162 @@ class WCV_Public_Assets {
         );
 
         // Product Edit.
-        $product_params = array(
-            'ajax_url'                       => admin_url( 'admin-ajax.php' ),
-            'assets_url'                     => WCV_ASSETS_URL,
-            'product_types'                  => array_map(
-                'sanitize_title',
-                get_terms(
-                    array(
-                        'taxonomy'   => 'product_type',
-                        'hide_empty' => false,
-                        'fields'     => 'names',
+        if ( $load_form_data ) {
+            $product_params = array(
+                'ajax_url'                       => admin_url( 'admin-ajax.php' ),
+                'assets_url'                     => WCV_ASSETS_URL,
+                'product_types'                  => array_map(
+                    'sanitize_title',
+                    get_terms(
+                        array(
+                            'taxonomy'   => 'product_type',
+                            'hide_empty' => false,
+                            'fields'     => 'names',
+                        )
                     )
-                )
-            ),
-            'wcv_add_attribute_nonce'        => wp_create_nonce( 'wcv-add-attribute' ),
-            'wcv_add_new_attribute_nonce'    => wp_create_nonce( 'wcv-add-new-attribute' ),
-            'remove_attribute'               => __( 'Remove this attribute?', 'wc-vendors' ),
-            'name_label'                     => __( 'Name', 'wc-vendors' ),
-            'remove_label'                   => __( 'Remove', 'wc-vendors' ),
-            'click_to_toggle'                => __( 'Click to toggle', 'wc-vendors' ),
-            'values_label'                   => __( 'Value(s)', 'wc-vendors' ),
-            'text_attribute_tip'             => __( 'Enter some text, or some attributes by pipe (|) separating values.', 'wc-vendors' ),
-            'visible_label'                  => __( 'Visible on the product page', 'wc-vendors' ),
-            'used_for_variations_label'      => __( 'Used for variations', 'wc-vendors' ),
-            'new_attribute_prompt'           => __( 'Enter a name for the new attribute term:', 'wc-vendors' ),
-            'wc_deliminator'                 => \WC_DELIMITER,
-            'wcv_file_display'               => $file_display,
-            'mime_types'                     => array_keys( wp_get_mime_types() ),
-            'category_limit'                 => $category_limit,
-            'tag_limit'                      => $tag_limit,
-            'category_limit_msg'             => apply_filters(
-                'wcv_category_limit_msg',
-                sprintf(
-                // translators: %s is the max number of categories the user can select.
+                ),
+                'wcv_add_attribute_nonce'        => wp_create_nonce( 'wcv-add-attribute' ),
+                'wcv_add_new_attribute_nonce'    => wp_create_nonce( 'wcv-add-new-attribute' ),
+                'remove_attribute'               => __( 'Remove this attribute?', 'wc-vendors' ),
+                'name_label'                     => __( 'Name', 'wc-vendors' ),
+                'remove_label'                   => __( 'Remove', 'wc-vendors' ),
+                'click_to_toggle'                => __( 'Click to toggle', 'wc-vendors' ),
+                'values_label'                   => __( 'Value(s)', 'wc-vendors' ),
+                'text_attribute_tip'             => __( 'Enter some text, or some attributes by pipe (|) separating values.', 'wc-vendors' ),
+                'visible_label'                  => __( 'Visible on the product page', 'wc-vendors' ),
+                'used_for_variations_label'      => __( 'Used for variations', 'wc-vendors' ),
+                'new_attribute_prompt'           => __( 'Enter a name for the new attribute term:', 'wc-vendors' ),
+                'wc_deliminator'                 => \WC_DELIMITER,
+                'wcv_file_display'               => $file_display,
+                'mime_types'                     => array_keys( wp_get_mime_types() ),
+                'category_limit'                 => $category_limit,
+                'tag_limit'                      => $tag_limit,
+                'category_limit_msg'             => apply_filters(
+                    'wcv_category_limit_msg',
+                    sprintf(
+                    // translators: %s is the max number of categories the user can select.
+                        __( 'You can only select %s categories', 'wc-vendors' ),
+                        $category_limit
+                    )
+                ),
+                'require_featured_image'         => wc_string_to_bool( get_option( 'wcvendors_required_product_media_featured', 'no' ) ),
+                'require_featured_image_msg'     => apply_filters( 'wcv_require_featured_image_msg', __( 'Featured image is required.', 'wc-vendors' ) ),
+                'require_gallery_image'          => wc_string_to_bool( get_option( 'wcvendors_required_product_media_gallery', 'no' ) ),
+                'require_gallery_image_msg'      => apply_filters( 'wcv_require_featured_image_msg', __( 'A gallery image is required.', 'wc-vendors' ) ),
+                'require_category'               => wc_string_to_bool( get_option( 'wcvendors_required_product_basic_categories', 'no' ) ),
+                'require_category_msg'           => apply_filters( 'wcv_require_category_msg', __( 'A category is required.', 'wc-vendors' ) ),
+                'require_download_file'          => wc_string_to_bool( get_option( 'wcvendors_required_product_general_download_files', 'no' ) ),
+                'require_download_file_msg'      => apply_filters( 'wcv_required_download_file_msg', __( 'A download file is required.', 'wc-vendors' ) ),
+                'require_attributes'             => wc_string_to_bool( get_option( 'wcvendors_required_product_basic_attributes', 'no' ) ),
+                'require_attributes_msg'         => apply_filters( 'wcv_require_attributes_msg', __( 'An attribute is required.', 'wc-vendors' ) ),
+                'select2_errorLoading'           => __( 'The results could not be loaded.', 'wc-vendors' ),
+                'select2_loadingMore'            => __( 'Loading more results…', 'wc-vendors' ),
+                'select2_maximumSelected_single' => sprintf(
+                    // translators: %s is the minimum number of categories the user can select.
+                    __( 'You can only select %s category', 'wc-vendors' ),
+                    $category_limit
+                ),
+                'select2_maximumSelected_plural' => sprintf(
+                    // translators: %s is the maximum number of categories the user can select.
                     __( 'You can only select %s categories', 'wc-vendors' ),
                     $category_limit
-                )
-            ),
-            'require_featured_image'         => wc_string_to_bool( get_option( 'wcvendors_required_product_media_featured', 'no' ) ),
-            'require_featured_image_msg'     => apply_filters( 'wcv_require_featured_image_msg', __( 'Featured image is required.', 'wc-vendors' ) ),
-            'require_gallery_image'          => wc_string_to_bool( get_option( 'wcvendors_required_product_media_gallery', 'no' ) ),
-            'require_gallery_image_msg'      => apply_filters( 'wcv_require_featured_image_msg', __( 'A gallery image is required.', 'wc-vendors' ) ),
-            'require_category'               => wc_string_to_bool( get_option( 'wcvendors_required_product_basic_categories', 'no' ) ),
-            'require_category_msg'           => apply_filters( 'wcv_require_category_msg', __( 'A category is required.', 'wc-vendors' ) ),
-            'require_download_file'          => wc_string_to_bool( get_option( 'wcvendors_required_product_general_download_files', 'no' ) ),
-            'require_download_file_msg'      => apply_filters( 'wcv_required_download_file_msg', __( 'A download file is required.', 'wc-vendors' ) ),
-            'require_attributes'             => wc_string_to_bool( get_option( 'wcvendors_required_product_basic_attributes', 'no' ) ),
-            'require_attributes_msg'         => apply_filters( 'wcv_require_attributes_msg', __( 'An attribute is required.', 'wc-vendors' ) ),
-            'select2_errorLoading'           => __( 'The results could not be loaded.', 'wc-vendors' ),
-            'select2_loadingMore'            => __( 'Loading more results…', 'wc-vendors' ),
-            'select2_maximumSelected_single' => sprintf(
-                // translators: %s is the minimum number of categories the user can select.
-                __( 'You can only select %s category', 'wc-vendors' ),
-                $category_limit
-            ),
-            'select2_maximumSelected_plural' => sprintf(
-                // translators: %s is the maximum number of categories the user can select.
-                __( 'You can only select %s categories', 'wc-vendors' ),
-                $category_limit
-            ),
-            'select2_noResults'              => __( 'No results found', 'wc-vendors' ),
-            'select2_searching'              => __( 'Searching…', 'wc-vendors' ),
-            'select2_removeAllItems'         => __( 'Remove all items', 'wc-vendors' ),
-            'shipping_system_enabled'        => ! is_wcv_pro_active() ? true : $shipping_method_enabled,
-            'is_demensions_required'         => wc_string_to_bool( get_option( 'wcvendors_required_product_shipping_dimensions', 'no' ) ),
-        );
+                ),
+                'select2_noResults'              => __( 'No results found', 'wc-vendors' ),
+                'select2_searching'              => __( 'Searching…', 'wc-vendors' ),
+                'select2_removeAllItems'         => __( 'Remove all items', 'wc-vendors' ),
+                'shipping_system_enabled'        => ! is_wcv_pro_active() || wcv_is_vendors_shipping_enabled(),
+                'is_demensions_required'         => wc_string_to_bool( get_option( 'wcvendors_required_product_shipping_dimensions', 'no' ) ),
+            );
+        }
 
-        wcv_enqueue_script( 'wcv-frontend-product', self::$base_url . '/js/product' . self::$suffix . '.js', array( 'jquery-ui-core', $select2_handle ), WCV_VERSION, true, array( 'wcv_frontend_product' => $product_params ), $is_dashboard_page );
+        wcv_enqueue_script( 'wcv-frontend-product', self::$base_url . '/js/product' . self::$suffix . '.js', array( 'jquery-ui-core', $select2_handle ), WCV_VERSION, true, $load_form_data ? array( 'wcv_frontend_product' => $product_params ) : array(), $is_dashboard_page );
         // Product Variation.
-        $product_variation_params = array(
-            'ajax_url'                            => admin_url( 'admin-ajax.php' ),
-            'wcv_add_variation_nonce'             => wp_create_nonce( 'wcv-add-variation' ),
-            'wcv_link_variation_nonce'            => wp_create_nonce( 'wcv-link-variations' ),
-            'wcv_delete_variations_nonce'         => wp_create_nonce( 'wcv-delete-variations' ),
-            'wcv_json_link_all_variations_nonce'  => wp_create_nonce( 'wcv-link-all-variations' ),
-            'wcv_load_variations_nonce'           => wp_create_nonce( 'wcv-load-variations' ),
-            'wcv_bulk_edit_variations_nonce'      => wp_create_nonce( 'wcv-bulk-edit-variations' ),
-            'wcv_woocommerce_placeholder_img_src' => wc_placeholder_img_src(),
-            'wc_deliminator'                      => \WC_DELIMITER,
-            'i18n_link_all_variations'            => esc_js( __( 'Are you sure you want to link all variations? This will create a new variation for each and every possible combination of variation attributes (max 50 per run).', 'wc-vendors' ) ),
-            'i18n_enter_a_value'                  => esc_js( __( 'Enter a value', 'wc-vendors' ) ),
-            'i18n_enter_menu_order'               => esc_js( __( 'Variation menu order (determines position in the list of variations)', 'wc-vendors' ) ),
-            'i18n_enter_a_value_fixed_or_percent' => esc_js( __( 'Enter a value (fixed or %)', 'wc-vendors' ) ),
-            'i18n_delete_all_variations'          => esc_js( __( 'Are you sure you want to delete all variations? This cannot be undone.', 'wc-vendors' ) ),
-            'i18n_last_warning'                   => esc_js( __( 'Last warning, are you sure?', 'wc-vendors' ) ),
-            'i18n_choose_image'                   => esc_js( __( 'Choose an image', 'wc-vendors' ) ),
-            'i18n_set_image'                      => esc_js( __( 'Set variation image', 'wc-vendors' ) ),
-            'i18n_variation_added'                => esc_js( __( 'variation added', 'wc-vendors' ) ),
-            'i18n_variations_added'               => esc_js( __( 'variations added', 'wc-vendors' ) ),
-            'i18n_no_variations_added'            => esc_js( __( 'No variations added', 'wc-vendors' ) ),
-            'i18n_remove_variation'               => esc_js( __( 'Are you sure you want to remove this variation?', 'wc-vendors' ) ),
-            'i18n_scheduled_sale_start'           => esc_js( __( 'Sale start date (YYYY-MM-DD format or leave blank)', 'wc-vendors' ) ),
-            'i18n_scheduled_sale_end'             => esc_js( __( 'Sale end date (YYYY-MM-DD format or leave blank)', 'wc-vendors' ) ),
-            'i18n_edited_variations'              => esc_js( __( 'Save changes before changing page?', 'wc-vendors' ) ),
-            'i18n_variation_count_single'         => esc_js( __( '%qty% variation', 'wc-vendors' ) ),
-            'i18n_variation_count_plural'         => esc_js( __( '%qty% variations', 'wc-vendors' ) ),
-            'i18n_any_label'                      => esc_js( __( 'Any', 'wc-vendors' ) ),
-            'variations_per_page'                 => absint( apply_filters( 'woocommerce_admin_meta_boxes_variations_per_page', 15 ) ),
-            'variation_actions_placeholder'       => esc_js( __( 'Select action', 'wc-vendors' ) ),
-        );
+        if ( $load_form_data ) {
+            $product_variation_params = array(
+                'ajax_url'                            => admin_url( 'admin-ajax.php' ),
+                'wcv_add_variation_nonce'             => wp_create_nonce( 'wcv-add-variation' ),
+                'wcv_link_variation_nonce'            => wp_create_nonce( 'wcv-link-variations' ),
+                'wcv_delete_variations_nonce'         => wp_create_nonce( 'wcv-delete-variations' ),
+                'wcv_json_link_all_variations_nonce'  => wp_create_nonce( 'wcv-link-all-variations' ),
+                'wcv_load_variations_nonce'           => wp_create_nonce( 'wcv-load-variations' ),
+                'wcv_bulk_edit_variations_nonce'      => wp_create_nonce( 'wcv-bulk-edit-variations' ),
+                'wcv_woocommerce_placeholder_img_src' => wc_placeholder_img_src(),
+                'wc_deliminator'                      => \WC_DELIMITER,
+                'i18n_link_all_variations'            => esc_js( __( 'Are you sure you want to link all variations? This will create a new variation for each and every possible combination of variation attributes (max 50 per run).', 'wc-vendors' ) ),
+                'i18n_enter_a_value'                  => esc_js( __( 'Enter a value', 'wc-vendors' ) ),
+                'i18n_enter_menu_order'               => esc_js( __( 'Variation menu order (determines position in the list of variations)', 'wc-vendors' ) ),
+                'i18n_enter_a_value_fixed_or_percent' => esc_js( __( 'Enter a value (fixed or %)', 'wc-vendors' ) ),
+                'i18n_delete_all_variations'          => esc_js( __( 'Are you sure you want to delete all variations? This cannot be undone.', 'wc-vendors' ) ),
+                'i18n_last_warning'                   => esc_js( __( 'Last warning, are you sure?', 'wc-vendors' ) ),
+                'i18n_choose_image'                   => esc_js( __( 'Choose an image', 'wc-vendors' ) ),
+                'i18n_set_image'                      => esc_js( __( 'Set variation image', 'wc-vendors' ) ),
+                'i18n_variation_added'                => esc_js( __( 'variation added', 'wc-vendors' ) ),
+                'i18n_variations_added'               => esc_js( __( 'variations added', 'wc-vendors' ) ),
+                'i18n_no_variations_added'            => esc_js( __( 'No variations added', 'wc-vendors' ) ),
+                'i18n_remove_variation'               => esc_js( __( 'Are you sure you want to remove this variation?', 'wc-vendors' ) ),
+                'i18n_scheduled_sale_start'           => esc_js( __( 'Sale start date (YYYY-MM-DD format or leave blank)', 'wc-vendors' ) ),
+                'i18n_scheduled_sale_end'             => esc_js( __( 'Sale end date (YYYY-MM-DD format or leave blank)', 'wc-vendors' ) ),
+                'i18n_edited_variations'              => esc_js( __( 'Save changes before changing page?', 'wc-vendors' ) ),
+                'i18n_variation_count_single'         => esc_js( __( '%qty% variation', 'wc-vendors' ) ),
+                'i18n_variation_count_plural'         => esc_js( __( '%qty% variations', 'wc-vendors' ) ),
+                'i18n_any_label'                      => esc_js( __( 'Any', 'wc-vendors' ) ),
+                'variations_per_page'                 => absint( apply_filters( 'woocommerce_admin_meta_boxes_variations_per_page', 15 ) ),
+                'variation_actions_placeholder'       => esc_js( __( 'Select action', 'wc-vendors' ) ),
+            );
 
-        $product_id = get_query_var( 'object_id' );
+            $product_id = get_query_var( 'object_id' );
 
-        if ( $product_id ) {
-            $product = wc_get_product( $product_id );
-            if ( is_a( $product, 'WC_Product' ) && 'variable' === $product->get_type() ) {
-                $product_attrs   = $product->get_attributes( 'edit' );
-                $formatted_attrs = array();
+            if ( $product_id ) {
+                $product = wc_get_product( $product_id );
+                if ( is_a( $product, 'WC_Product' ) && 'variable' === $product->get_type() ) {
+                    $product_attrs   = $product->get_attributes( 'edit' );
+                    $formatted_attrs = array();
 
-                foreach ( $product_attrs as $attribute ) {
-                    if ( $attribute->is_taxonomy() ) {
-                        $taxonomy = $attribute->get_taxonomy_object();
-                        $terms    = wp_get_post_terms( $product_id, $attribute->get_name(), array( 'fields' => 'all' ) );
+                    foreach ( $product_attrs as $attribute ) {
+                        if ( $attribute->is_taxonomy() ) {
+                            $taxonomy = $attribute->get_taxonomy_object();
+                            $terms    = wp_get_post_terms( $product_id, $attribute->get_name(), array( 'fields' => 'all' ) );
 
-                        $values = array();
-                        foreach ( $terms as $term ) {
-                            $values[ $term->slug ] = $term->name;
-                        }
-
-                        $label = isset( $taxonomy->labels->singular_name ) ? $taxonomy->labels->singular_name : $attribute->get_name();
-
-                        $formatted_attrs[ $attribute->get_name() ] = array(
-                            'values'   => $values,
-                            'position' => $attribute->get_position(),
-                            'name'     => $attribute->get_name(),
-                            'label'    => $label,
-                        );
-                    } else {
-                        $values = $attribute->get_options();
-                        if ( is_array( $values ) ) {
-                            $formatted_values = array();
-                            foreach ( $values as $value ) {
-                                $value                                        = trim( $value );
-                                $formatted_values[ sanitize_title( $value ) ] = $value;
+                            $values = array();
+                            foreach ( $terms as $term ) {
+                                $values[ $term->slug ] = $term->name;
                             }
+
+                            $label = isset( $taxonomy->labels->singular_name ) ? $taxonomy->labels->singular_name : $attribute->get_name();
+
+                            $formatted_attrs[ $attribute->get_name() ] = array(
+                                'values'   => $values,
+                                'position' => $attribute->get_position(),
+                                'name'     => $attribute->get_name(),
+                                'label'    => $label,
+                            );
                         } else {
-                            $values           = array_map( 'trim', explode( '|', $values ) );
-                            $formatted_values = array();
-                            foreach ( $values as $value ) {
-                                $formatted_values[ sanitize_title( $value ) ] = $value;
+                            $values = $attribute->get_options();
+                            if ( is_array( $values ) ) {
+                                $formatted_values = array();
+                                foreach ( $values as $value ) {
+                                    $value                                        = trim( $value );
+                                    $formatted_values[ sanitize_title( $value ) ] = $value;
+                                }
+                            } else {
+                                $values           = array_map( 'trim', explode( '|', $values ) );
+                                $formatted_values = array();
+                                foreach ( $values as $value ) {
+                                    $formatted_values[ sanitize_title( $value ) ] = $value;
+                                }
                             }
+
+                            $formatted_attrs[ $attribute->get_name() ] = array(
+                                'values'   => $formatted_values,
+                                'position' => $attribute->get_position(),
+                                'name'     => $attribute->get_name(),
+                                'label'    => $attribute->get_name(),
+                            );
                         }
-
-                        $formatted_attrs[ $attribute->get_name() ] = array(
-                            'values'   => $formatted_values,
-                            'position' => $attribute->get_position(),
-                            'name'     => $attribute->get_name(),
-                            'label'    => $attribute->get_name(),
-                        );
                     }
-                }
 
-                $product_variation_params['product_attrs'] = $formatted_attrs;
+                    $product_variation_params['product_attrs'] = $formatted_attrs;
+                }
             }
         }
 
@@ -420,7 +429,7 @@ class WCV_Public_Assets {
             ),
             WCV_VERSION,
             true,
-            array( 'wcv_product_variation' => $product_variation_params ),
+            $load_form_data ? array( 'wcv_product_variation' => $product_variation_params ) : array(),
             $is_dashboard_page
         );
 
@@ -581,7 +590,7 @@ class WCV_Public_Assets {
                     'mark_unshipped_confirm' => __( 'Are you sure the item was unshipped?', 'wc-vendors' ),
                     'option_none_text'       => __( 'None', 'wc-vendors' ),
                     'countries_phone_codes'  => require WCV_PLUGIN_DIR . 'classes/includes/wcv-countries-phone-code.php',
-                    'product_meta_tabs'      => \WC_Vendors\Classes\Front\Forms\WCV_Product_Form::get_product_meta_tabs(),
+                    'product_meta_tabs'      => $load_form_data ? \WC_Vendors\Classes\Front\Forms\WCV_Product_Form::get_product_meta_tabs() : array(),
                     'icon_url'               => WCV_ASSETS_URL . 'svg/wcv-icons.svg',
                     'dashboard_nonce'        => wp_create_nonce( 'wcv_dashboard' ),
                     'ajax_url'               => admin_url( 'admin-ajax.php' ),

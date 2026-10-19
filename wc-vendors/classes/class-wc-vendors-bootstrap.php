@@ -369,10 +369,15 @@ class WC_Vendors_Bootstrap {
         include_once WCV_PLUGIN_DIR . 'classes/front/forms/class-wcv-tracking-number-form.php';
         include_once WCV_PLUGIN_DIR . 'classes/front/forms/class-wcv-store-form.php';
         include_once WCV_PLUGIN_DIR . 'classes/front/dashboard/class-vendor-dashboard.php';
+        include_once WCV_PLUGIN_DIR . 'classes/front/dashboard/class-wcv-vendor-api-credentials.php';
         include_once WCV_PLUGIN_DIR . 'classes/front/class-wcv-table-helper.php';
         include_once WCV_PLUGIN_DIR . 'classes/front/class-wcv-dashboard-controller.php';
         include_once WCV_PLUGIN_DIR . 'classes/includes/class-wcv-reports.php';
         include_once WCV_PLUGIN_DIR . 'classes/includes/class-wcv-reports-cache.php';
+
+        // Public `wcvendors/v1` REST API. Separate from the `wcv-api/v1`
+        // namespace loaded above.
+        include_once WCV_PLUGIN_DIR . 'classes/rest-api/class-wcv-rest-api-loader.php';
 
         if ( is_admin() ) {
 
@@ -433,6 +438,7 @@ class WC_Vendors_Bootstrap {
         }
 
         new WCV_Vendor_Dashboard();
+        new WCV_Vendor_API_Credentials();
         new WCV_Shipping();
         new WCV_Commission();
         new WCV_Vendors();

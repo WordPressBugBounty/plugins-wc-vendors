@@ -322,3 +322,254 @@ function wcv_reset_duplicate_sub_order_cleanup() {
 
     delete_transient( WCV_Order_CLI::PROGRESS_TRANSIENT );
 }
+
+/**
+ * Clear the report cache that a release before 2.7.3 wrote.
+ *
+ * Cached top vendors rows from before the update sum revenue the old way, so the
+ * Top Vendors widget mixes two formulas. Clear the cache so it rebuilds.
+ *
+ * @since 2.7.3
+ *
+ * @return void
+ */
+function wcv_clear_reports_cache() {
+    global $wpdb;
+
+    $wpdb->query( "TRUNCATE TABLE {$wpdb->prefix}wcv_reports_cache" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
+
+    WCV_Activate::maybe_create_marketplace_report_cache();
+}
+
+/**
+ * Remove duplicate commission rows, then add the unique key that blocks new ones.
+ *
+ * Runs one page of duplicates per call and returns true while rows were removed, so the
+ * background updater runs it again and applies its time and memory limits between pages.
+ * Deleted rows are copied to {prefix}pv_commission_dupe_backup first, so a wrong dedupe
+ * stays recoverable. Safe to run again: it returns early when the key is already there.
+ *
+ * @since 2.7.3
+ *
+ * @return bool True when more duplicate rows may remain, false when the update is finished.
+ */
+function wcv_dedupe_commission_rows() {
+
+    global $wpdb;
+
+    $table  = $wpdb->prefix . 'pv_commission';
+    $logger = wc_get_logger();
+    $source = array( 'source' => 'wcvendors_db_updates' );
+
+    // The key makes duplicates impossible, so this also skips the scan on a re-run.
+    $key_exists = $wpdb->get_var( $wpdb->prepare( 'SHOW INDEX FROM %i WHERE Key_name = %s', $table, 'unique_commission' ) );
+
+    if ( ! empty( $key_exists ) ) {
+        delete_option( 'wcvendors_commission_dedupe_failed' );
+        delete_option( 'wcvendors_commission_dedupe_conflicts' );
+        return false;
+    }
+
+    $removed = wcv_remove_duplicate_commission_rows();
+
+    if ( false === $removed ) {
+        update_option( 'wcvendors_commission_dedupe_failed', 'yes' );
+        return false;
+    }
+
+    if ( $removed > 0 ) {
+        $logger->info( sprintf( 'Moved %d duplicate commission rows to %s', $removed, $table . '_dupe_backup' ), $source );
+        return true;
+    }
+
+    // Rows that hold different amounts are not a plain race. Leave them for the admin to check.
+    //
+    // The unique_commission key is added only after this returns clean, so an upgrading store
+    // with amount-conflicts does not get the key until an admin reconciles the listed orders.
+    // The guarantee against the #1901 race (two requests pass the SELECT id check before either
+    // inserts) is contingent on that key. Fresh installs get it at CREATE TABLE.
+    $conflicts = wcv_get_conflicting_commission_orders();
+
+    if ( ! empty( $conflicts ) ) {
+        update_option( 'wcvendors_commission_dedupe_conflicts', $conflicts );
+        update_option( 'wcvendors_commission_dedupe_failed', 'yes' );
+        $logger->error(
+            sprintf( 'Duplicate commission rows with different amounts exist for orders %s. Remove the wrong rows, then run the update again.', implode( ', ', $conflicts ) ),
+            $source
+        );
+        return false;
+    }
+
+    delete_option( 'wcvendors_commission_dedupe_conflicts' );
+
+    $added = $wpdb->query( $wpdb->prepare( 'ALTER TABLE %i ADD UNIQUE KEY unique_commission (order_id, product_id, vendor_id, qty)', $table ) );
+
+    if ( false !== $added ) {
+        $logger->info( 'Added the unique_commission key to the commission table', $source );
+        delete_option( 'wcvendors_commission_dedupe_failed' );
+        return false;
+    }
+
+    // Capture the ALTER error now: the re-scan below runs its own queries and overwrites last_error.
+    $alter_error = $wpdb->last_error;
+
+    // A row written between the scan and the ALTER can fail it. Run again when that removed something.
+    $removed = wcv_remove_duplicate_commission_rows();
+
+    if ( false === $removed ) {
+        $logger->error( sprintf( 'Could not re-scan for duplicate commission rows: %s', $wpdb->last_error ), $source );
+        update_option( 'wcvendors_commission_dedupe_failed', 'yes' );
+        return false;
+    }
+
+    if ( $removed > 0 ) {
+        $logger->info( sprintf( 'Moved %d duplicate commission rows to %s', $removed, $table . '_dupe_backup' ), $source );
+        return true;
+    }
+
+    update_option( 'wcvendors_commission_dedupe_failed', 'yes' );
+
+    $logger->error(
+        sprintf( 'Could not add the unique_commission key to the commission table: %s', $alter_error ),
+        $source
+    );
+
+    return false;
+}
+
+/**
+ * Back up and delete one page of duplicate commission rows.
+ *
+ * Only groups whose rows share one total_due are touched. Keeps one row per
+ * (order_id, product_id, vendor_id, qty) group: the row with the most important status
+ * (paid, then due, then an unknown custom status, then reversed), and the highest id on a tie.
+ * A batch that fails to back up is not deleted.
+ *
+ * @since 2.7.3
+ *
+ * @return int|false The number of rows deleted, or false when a query failed.
+ */
+function wcv_remove_duplicate_commission_rows() {
+
+    global $wpdb;
+
+    $table  = $wpdb->prefix . 'pv_commission';
+    $backup = $table . '_dupe_backup';
+    $logger = wc_get_logger();
+    $source = array( 'source' => 'wcvendors_db_updates' );
+
+    // An unknown status is a custom one added through the wcvendors_commission_status filter.
+    // Rank it below the core statuses but above reversed, so the dedupe never drops it for one.
+    $priority = array(
+        'paid'     => 4,
+        'due'      => 3,
+        'reversed' => 1,
+    );
+
+    $groups_per_run = 200;
+
+    // The LIMIT sits inside the derived table, so a page holds whole groups only.
+    $rows = $wpdb->get_results(
+        $wpdb->prepare(
+            'SELECT c.id, c.status, c.order_id, c.product_id, c.vendor_id, c.qty
+            FROM %i c
+            INNER JOIN (
+                SELECT order_id, product_id, vendor_id, qty FROM %i
+                GROUP BY order_id, product_id, vendor_id, qty
+                HAVING COUNT(*) > 1 AND COUNT(DISTINCT total_due) = 1
+                LIMIT %d
+            ) d ON c.order_id = d.order_id AND c.product_id = d.product_id
+                AND c.vendor_id = d.vendor_id AND c.qty = d.qty
+            ORDER BY c.id ASC',
+            $table,
+            $table,
+            $groups_per_run
+        ),
+        ARRAY_A
+    );
+
+    if ( empty( $rows ) ) {
+        return 0;
+    }
+
+    $created = $wpdb->query( $wpdb->prepare( 'CREATE TABLE IF NOT EXISTS %i LIKE %i', $backup, $table ) );
+
+    if ( false === $created ) {
+        $logger->error( sprintf( 'Could not create the commission backup table: %s', $wpdb->last_error ), $source );
+        return false;
+    }
+
+    $keepers = array();
+    $ranks   = array();
+
+    // Rows arrive ordered by id, and >= keeps the last one seen, so the highest id wins a tie.
+    foreach ( $rows as $row ) {
+        $group = $row['order_id'] . '-' . $row['product_id'] . '-' . $row['vendor_id'] . '-' . $row['qty'];
+        $rank  = isset( $priority[ $row['status'] ] ) ? $priority[ $row['status'] ] : 2;
+
+        if ( ! isset( $ranks[ $group ] ) || $rank >= $ranks[ $group ] ) {
+            $ranks[ $group ]   = $rank;
+            $keepers[ $group ] = (int) $row['id'];
+        }
+    }
+
+    $losers = array();
+
+    foreach ( $rows as $row ) {
+        $group = $row['order_id'] . '-' . $row['product_id'] . '-' . $row['vendor_id'] . '-' . $row['qty'];
+
+        if ( (int) $row['id'] !== $keepers[ $group ] ) {
+            $losers[] = (int) $row['id'];
+        }
+    }
+
+    $deleted = 0;
+
+    // The id lists are cast with absint(), and the table names come from $wpdb->prefix.
+    foreach ( array_chunk( $losers, 500 ) as $batch ) {
+        $ids = implode( ',', array_map( 'absint', $batch ) );
+
+        $backed_up = $wpdb->query( "REPLACE INTO {$backup} SELECT * FROM {$table} WHERE id IN ({$ids})" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+
+        if ( false === $backed_up ) {
+            $logger->error( sprintf( 'Could not back up commission rows, so none were deleted: %s', $wpdb->last_error ), $source );
+            return false;
+        }
+
+        $removed_now = $wpdb->query( "DELETE FROM {$table} WHERE id IN ({$ids})" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+
+        if ( false === $removed_now ) {
+            $logger->error( sprintf( 'Could not delete duplicate commission rows: %s', $wpdb->last_error ), $source );
+            return false;
+        }
+
+        $deleted += (int) $removed_now;
+    }
+
+    return $deleted;
+}
+
+/**
+ * Find the orders that have duplicate commission rows with different amounts.
+ *
+ * @since 2.7.3
+ *
+ * @return int[] Order ids, sorted.
+ */
+function wcv_get_conflicting_commission_orders() {
+
+    global $wpdb;
+
+    $order_ids = $wpdb->get_col(
+        $wpdb->prepare(
+            'SELECT DISTINCT order_id FROM (
+                SELECT order_id FROM %i
+                GROUP BY order_id, product_id, vendor_id, qty
+                HAVING COUNT(*) > 1 AND COUNT(DISTINCT total_due) > 1
+            ) d ORDER BY order_id ASC',
+            $wpdb->prefix . 'pv_commission'
+        )
+    );
+
+    return array_map( 'absint', (array) $order_ids );
+}

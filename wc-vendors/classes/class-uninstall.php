@@ -96,6 +96,9 @@ class WCVendors_Uninstall {
         $table_name = esc_sql( $wpdb->prefix . 'pv_commission' );
         $sql        = $wpdb->prepare( 'DROP TABLE %s', $table_name );
         $wpdb->query( $sql ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
+
+        $backup_table = $wpdb->prefix . 'pv_commission_dupe_backup';
+        $wpdb->query( $wpdb->prepare( 'DROP TABLE IF EXISTS %i', $backup_table ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
     }
 
     /**
@@ -129,6 +132,8 @@ class WCVendors_Uninstall {
         delete_option( 'wcvendors_admin_notices' );
         delete_option( 'wcvendors_wizard_complete' );
         delete_option( 'wcvendors_admin_notice_email_updates' );
+        delete_option( 'wcvendors_commission_dedupe_failed' );
+        delete_option( 'wcvendors_commission_dedupe_conflicts' );
     }
 
     /**

@@ -89,6 +89,9 @@ if ( ! class_exists( 'WCVendors_Vendor_Notify_Approved' ) ) :
 
             // Call parent constructor.
             parent::__construct();
+
+            // Populate content so previews and test sends render it without trigger().
+            $this->content = $this->get_option( 'content', $this->get_default_content() );
         }
 
         /**

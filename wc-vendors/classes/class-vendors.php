@@ -376,14 +376,16 @@ class WCV_Vendors {
 
             } else {
                 $item_keys[]                 = $key;
+                $commission_base             = WCV_Commission::get_commission_base( $order_item['line_subtotal'], $product_id, $order, $order_item['qty'], $order_item );
                 $receiver[ $author ][ $key ] = array(
-                    'vendor_id'  => (int) $author,
-                    'product_id' => $product_id,
-                    'commission' => (float) $commission,
-                    'shipping'   => $give_shipping ? (float) $shipping : 0,
-                    'tax'        => $give_tax ? (float) $total_tax : 0,
-                    'qty'        => (int) $order_item['qty'],
-                    'total'      => ( $give_shipping ? (float) $shipping : 0 ) + (float) $commission + ( $give_tax ? (float) $total_tax : 0 ),
+                    'vendor_id'       => (int) $author,
+                    'product_id'      => $product_id,
+                    'commission'      => (float) $commission,
+                    'commission_base' => (float) $commission_base,
+                    'shipping'        => $give_shipping ? (float) $shipping : 0,
+                    'tax'             => $give_tax ? (float) $total_tax : 0,
+                    'qty'             => (int) $order_item['qty'],
+                    'total'           => ( $give_shipping ? (float) $shipping : 0 ) + (float) $commission + ( $give_tax ? (float) $total_tax : 0 ),
                 );
 
             }

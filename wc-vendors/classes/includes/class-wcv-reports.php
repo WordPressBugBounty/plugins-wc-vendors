@@ -190,65 +190,82 @@ class WCV_Reports {
     }
 
     /**
-     * Get product totals by orders
+     * Get product totals by orders.
      *
+     * @deprecated 2.7.3 Revenue now comes from the commission rows.
      * @param array $order_ids Array of order IDs.
-     * @return array Array of product totals.
+     * @return array Always an empty array. The old query did not match line items to products, so its totals were wrong.
      */
-    public function get_product_totals_by_orders( $order_ids ) {
+    public function get_product_totals_by_orders( $order_ids ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found
+        _deprecated_function( __METHOD__, '2.7.3' );
+
+        return array();
+    }
+
+    /**
+     * Sum line revenue for the commission rows in the period, keyed by vendor.
+     *
+     * Uses the stored commission base of each row. Rows from before 2.7.3 have
+     * no base, so they fall back to the `_line_subtotal` of their own order line
+     * items. Tax and shipping are not included; the caller adds them separately.
+     *
+     * @since 2.7.3
+     * @param string $start_date Period start datetime.
+     * @param string $end_date   Period end datetime.
+     * @param array  $vendor_ids Vendor IDs to limit the query to.
+     * @return array Revenue totals keyed by vendor ID.
+     */
+    private function get_commission_line_revenue( $start_date, $end_date, $vendor_ids ) {
         global $wpdb;
 
-        if ( empty( $order_ids ) ) {
+        $vendor_ids = array_filter( array_map( 'absint', $vendor_ids ) );
+
+        if ( empty( $vendor_ids ) ) {
             return array();
         }
 
-        // Sanitize all order IDs as integers for security.
-        $order_ids = array_map( 'intval', $order_ids );
-
-        if ( empty( $order_ids ) ) {
-            return array();
-        }
-
-        $placeholders = implode( ',', array_fill( 0, count( $order_ids ), '%d' ) );
+        $placeholders = implode( ',', array_fill( 0, count( $vendor_ids ), '%d' ) );
+        $params       = array_merge( array( $start_date, $end_date ), $vendor_ids );
 
         // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-        // The query is safe because $order_ids_string is sanitized with intval.
-        $query = "
-            SELECT 
-                COALESCE(NULLIF(woim_variation.meta_value, 0), woim_product.meta_value) AS product_id,
-                SUM(CAST(woim_total.meta_value AS DECIMAL(10,2))) AS total
-            FROM 
-                {$wpdb->prefix}woocommerce_order_items AS woi
-            LEFT JOIN 
-                {$wpdb->prefix}woocommerce_order_itemmeta AS woim_product 
+        // The vendor IDs are sanitized with absint before they reach the query.
+        $line_revenue = "(
+            SELECT SUM(woim_subtotal.meta_value)
+            FROM {$wpdb->prefix}woocommerce_order_items AS woi
+            LEFT JOIN {$wpdb->prefix}woocommerce_order_itemmeta AS woim_product
                 ON woi.order_item_id = woim_product.order_item_id AND woim_product.meta_key = '_product_id'
-            LEFT JOIN 
-                {$wpdb->prefix}woocommerce_order_itemmeta AS woim_variation 
+            LEFT JOIN {$wpdb->prefix}woocommerce_order_itemmeta AS woim_variation
                 ON woi.order_item_id = woim_variation.order_item_id AND woim_variation.meta_key = '_variation_id'
-            LEFT JOIN 
-                {$wpdb->prefix}woocommerce_order_itemmeta AS woim_total 
-                ON woi.order_item_id = woim_total.order_item_id AND woim_total.meta_key = '_line_total'
-            WHERE 
-                woi.order_id IN ({$placeholders})
-                AND woi.order_item_type = 'line_item'
-            GROUP BY 
-                product_id
-        ";
+            LEFT JOIN {$wpdb->prefix}woocommerce_order_itemmeta AS woim_subtotal
+                ON woi.order_item_id = woim_subtotal.order_item_id AND woim_subtotal.meta_key = '_line_subtotal'
+            WHERE woi.order_id = c.order_id
+            AND woi.order_item_type = 'line_item'
+            AND (
+                woim_product.meta_value = c.product_id
+                OR ( woim_variation.meta_value != 0 AND woim_variation.meta_value = c.product_id )
+            )
+        )";
 
+        $row_revenue = WCV_Commission::has_commission_base_column() ? "COALESCE( c.commission_base, {$line_revenue} )" : $line_revenue;
+
+        $query = "
+            SELECT c.vendor_id, SUM( {$row_revenue} ) AS revenue
+            FROM {$wpdb->prefix}pv_commission AS c
+            WHERE c.time BETWEEN %s AND %s
+            AND c.status != 'reversed'
+            AND c.vendor_id IN ({$placeholders})
+            GROUP BY c.vendor_id
+        ";
         // phpcs:enable
 
-        $results = $wpdb->get_results( $wpdb->prepare( $query, $order_ids ) ); // phpcs:ignore
+        $results = $wpdb->get_results( $wpdb->prepare( $query, $params ) ); // phpcs:ignore
 
-        if ( empty( $results ) ) {
-            return array();
-        }
-
-        $product_totals = array();
+        $revenue = array();
         foreach ( $results as $result ) {
-            $product_totals[ $result->product_id ] = (float) $result->total;
+            $revenue[ (int) $result->vendor_id ] = (float) $result->revenue;
         }
 
-        return $product_totals;
+        return $revenue;
     }
 
     /**
@@ -266,14 +283,12 @@ class WCV_Reports {
 
         // Case for specific vendor.
         if ( $this->vendor_id ) {
-            // Single SQL query to get commission total and associated order/product ids.
+            // Single SQL query to get the commission totals.
             $query = $wpdb->prepare(
-                "SELECT 
+                "SELECT
                     SUM(total_due) as total_commission,
                     SUM(tax) as total_tax,
-                    SUM(total_shipping) as total_shipping,
-                    GROUP_CONCAT(DISTINCT product_id) as product_ids,
-                    GROUP_CONCAT(DISTINCT order_id) as order_ids
+                    SUM(total_shipping) as total_shipping
                 FROM {$wpdb->prefix}pv_commission
                 WHERE time BETWEEN %s AND %s
                 AND status != 'reversed'
@@ -292,77 +307,11 @@ class WCV_Reports {
                 );
             }
 
-            $product_ids = $result->product_ids ? explode( ',', $result->product_ids ) : array();
-            $order_ids   = $result->order_ids ? explode( ',', $result->order_ids ) : array();
-
-            if ( empty( $order_ids ) || empty( $product_ids ) ) {
-                return array(
-                    'commissions' => $result->total_commission ? $result->total_commission : 0,
-                    'revenue'     => 0,
-                );
-            }
-
-            // Create a temporary table or use a subquery for the large IN clause.
-            $temp_table_name = $wpdb->prefix . 'temp_order_product_ids';
-
-            // Drop temporary table if it exists.
-            $wpdb->query( "DROP TEMPORARY TABLE IF EXISTS {$temp_table_name}" ); // phpcs:ignore
-
-            // Create temporary table.
-            // phpcs:disable WordPress.DB.DirectDatabaseQuery.SchemaChange
-            $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-                $wpdb->prepare(
-                    'CREATE TEMPORARY TABLE %i (
-                order_id bigint(20),
-                product_id bigint(20)
-            )',
-                    $temp_table_name
-                )
-            );
-            // phpcs:enable WordPress.DB.DirectDatabaseQuery.SchemaChange
-
-            // Insert order and product pairs into temp table.
-            $insert_values = array();
-            foreach ( $order_ids as $order_id ) {
-                foreach ( $product_ids as $product_id ) {
-                    $insert_values[] = $wpdb->prepare( '(%d, %d)', $order_id, $product_id );
-                }
-            }
-
-            // Insert in efficient batches if needed.
-            $batch_size     = 1000;
-            $batched_values = array_chunk( $insert_values, $batch_size );
-
-            foreach ( $batched_values as $batch ) {
-                $values_sql = implode( ',', $batch );
-                $wpdb->query( "INSERT INTO {$temp_table_name} (order_id, product_id) VALUES {$values_sql}" ); // phpcs:ignore
-            }
-
-            // Now use the temp table for efficient joining.
-            $revenue_query = "
-                SELECT SUM(woim_total.meta_value) as product_revenue
-                FROM {$wpdb->prefix}woocommerce_order_items as woi
-                JOIN {$temp_table_name} as t ON woi.order_id = t.order_id
-                LEFT JOIN {$wpdb->prefix}woocommerce_order_itemmeta as woim_product 
-                    ON woi.order_item_id = woim_product.order_item_id AND woim_product.meta_key = '_product_id'
-                LEFT JOIN {$wpdb->prefix}woocommerce_order_itemmeta as woim_variation 
-                    ON woi.order_item_id = woim_variation.order_item_id AND woim_variation.meta_key = '_variation_id'
-                LEFT JOIN {$wpdb->prefix}woocommerce_order_itemmeta as woim_total 
-                    ON woi.order_item_id = woim_total.order_item_id AND woim_total.meta_key = '_line_total'
-                WHERE woi.order_item_type = 'line_item'
-                AND (
-                    woim_product.meta_value = t.product_id
-                    OR (woim_variation.meta_value != 0 AND woim_variation.meta_value = t.product_id)
-                )";
-
-            $revenue_result = $wpdb->get_var( $revenue_query ); // phpcs:ignore
-            $revenue_total  = $revenue_result ? floatval( $revenue_result ) : 0;
+            $revenue       = $this->get_commission_line_revenue( $period['start_date'], $period['end_date'], array( $this->vendor_id ) );
+            $revenue_total = $revenue[ (int) $this->vendor_id ] ?? 0;
 
             // Add tax and shipping to revenue.
             $revenue_total += $result->total_tax + $result->total_shipping;
-
-            // Drop temporary table.
-            $wpdb->query( "DROP TEMPORARY TABLE IF EXISTS {$temp_table_name}" ); // phpcs:ignore
 
             return array(
                 'commissions' => $result->total_commission ? $result->total_commission : 0,
@@ -534,9 +483,7 @@ class WCV_Reports {
                 COUNT(DISTINCT c.order_id) as total_orders,
                 SUM(c.total_due) as total_commission,
                 SUM(c.tax) as total_tax,
-                SUM(c.total_shipping) as total_shipping,
-                GROUP_CONCAT(DISTINCT c.product_id) as product_ids,
-                GROUP_CONCAT(DISTINCT c.order_id) as order_ids
+                SUM(c.total_shipping) as total_shipping
             FROM {$wpdb->prefix}pv_commission c
             WHERE c.time BETWEEN %s AND %s
             AND c.status != 'reversed'
@@ -555,17 +502,7 @@ class WCV_Reports {
 
         $vendor_ids = wp_list_pluck( $commission_results, 'vendor_id' );
 
-        $order_ids = array_reduce(
-            $commission_results,
-            function ( $carry, $item ) {
-                return array_merge( $carry, explode( ',', $item->order_ids ) );
-            },
-            array()
-        );
-
-        $order_ids = array_unique( $order_ids );
-
-        $product_totals = $this->get_product_totals_by_orders( $order_ids );
+        $vendor_revenue = $this->get_commission_line_revenue( $period['start_date'], $period['end_date'], $vendor_ids );
 
         $is_rating_active = is_wcv_pro_active() && ! wc_string_to_bool( get_option( 'wcvendors_ratings_management_cap', 'no' ) );
 
@@ -588,15 +525,7 @@ class WCV_Reports {
             }
         }
         foreach ( $commission_results as $commission ) {
-            // Initialize total_revenue.
-            $commission->total_revenue = 0;
-
-            $product_ids = explode( ',', $commission->product_ids );
-            foreach ( $product_ids as $product_id ) {
-                if ( isset( $product_totals[ $product_id ] ) ) {
-                    $commission->total_revenue += $product_totals[ $product_id ];
-                }
-            }
+            $commission->total_revenue = $vendor_revenue[ (int) $commission->vendor_id ] ?? 0;
 
             $commission->total_revenue += $commission->total_tax + $commission->total_shipping;
 
@@ -608,8 +537,6 @@ class WCV_Reports {
             $commission->shop_name        = $shop_names[ $commission->vendor_id ]->meta_value ?? '';
             $commission->total_commission = floatval( $commission->total_commission );
             $commission->total_revenue    = floatval( $commission->total_revenue );
-            unset( $commission->product_ids );
-            unset( $commission->order_ids );
         }
 
         return $commission_results;

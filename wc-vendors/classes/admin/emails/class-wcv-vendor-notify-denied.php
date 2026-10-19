@@ -88,6 +88,10 @@ if ( ! class_exists( 'WCVendors_Vendor_Notify_Denied' ) ) :
 
             // Call parent constructor.
             parent::__construct();
+
+            // Populate content and reason so previews and test sends render them without trigger().
+            $this->content = $this->get_option( 'content', $this->get_default_content() );
+            $this->reason  = $this->get_option( 'reason', $this->get_default_reason() );
         }
 
         /**

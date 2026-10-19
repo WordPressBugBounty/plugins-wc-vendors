@@ -108,7 +108,14 @@ class WCVendors_Background_Updater extends WC_Background_Process {
 
         if ( is_callable( $callback ) ) {
             $logger->info( sprintf( 'Running %s callback', $callback ), array( 'source' => 'wcvendors_db_updates' ) );
-            call_user_func( $callback );
+            $again = call_user_func( $callback );
+
+            // A callback that returns true has more work. Keep it queued so the time and memory
+            // limits of the parent process apply between passes.
+            if ( true === $again ) {
+                return $callback;
+            }
+
             $logger->info( sprintf( 'Finished %s callback', $callback ), array( 'source' => 'wcvendors_db_updates' ) );
         } else {
             $logger->notice( sprintf( 'Could not find %s callback', $callback ), array( 'source' => 'wcvendors_db_updates' ) );

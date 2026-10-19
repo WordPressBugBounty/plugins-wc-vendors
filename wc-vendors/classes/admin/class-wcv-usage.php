@@ -239,18 +239,25 @@ class Usage {
         $total_sales  = $total_orders['total_sales'];
         $commission   = $this->_get_commission_data( $start_period, $end_period, $total_sales );
         $vendor       = $this->_get_vendor_data( $start_period, $end_period );
+        $products     = $this->_get_vendor_product_data();
         $updated_at   = ( new DateTime( 'now', $timezone ) )->format( 'Y-m-d H:i:s' );
 
         $data = array_merge(
             $data,
             array(
-                'total_orders'         => $total_orders['total_orders'],
-                'total_sales'          => $total_sales,
-                'admin_commission'     => $commission['admin_commission'],
-                'vendor_commission'    => $commission['vendor_commission'],
-                'total_vendor'         => $vendor['total_vendor'],
-                'total_pending_vendor' => $vendor['total_pending_vendor'],
-                'updated_at'           => $updated_at,
+                'total_orders'          => $total_orders['total_orders'],
+                'total_sales'           => $total_sales,
+                'admin_commission'      => $commission['admin_commission'],
+                'vendor_commission'     => $commission['vendor_commission'],
+                'vendor_orders'         => $commission['vendor_orders'],
+                'vendors_with_sales'    => $commission['vendors_with_sales'],
+                'first_vendor_sale_ts'  => $commission['first_vendor_sale_ts'],
+                'total_vendor'          => $vendor['total_vendor'],
+                'total_pending_vendor'  => $vendor['total_pending_vendor'],
+                'total_vendors'         => $vendor['total_vendors'],
+                'vendor_products'       => $products['vendor_products'],
+                'vendors_with_products' => $products['vendors_with_products'],
+                'updated_at'            => $updated_at,
             )
         );
 
@@ -291,19 +298,21 @@ class Usage {
      * Get commission data for the period.
      *
      * @since 2.5.0
+     * @version 2.7.4 - Add vendor order, vendor sale and first sale data.
      *
      * @param string $start_period Start date of the period.
      * @param string $end_period   End date of the period.
      * @param float  $total_sales  Total sales for the period.
      *
-     * @return array Commission data for the period.
+     * @return array Commission data for the period, and the all-time first sale time.
      */
     private function _get_commission_data( $start_period, $end_period, $total_sales ) {
         global $wpdb;
 
         $commissions = $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
             $wpdb->prepare(
-                "SELECT SUM( total_due ) AS commission, SUM( total_shipping ) as shipping, SUM( tax ) as tax FROM {$wpdb->prefix}pv_commission
+                "SELECT SUM( total_due ) AS commission, SUM( total_shipping ) as shipping, SUM( tax ) as tax,
+                COUNT( DISTINCT order_id ) AS vendor_orders, COUNT( DISTINCT vendor_id ) AS vendors_with_sales FROM {$wpdb->prefix}pv_commission
                 WHERE `status` != 'reversed'
                 AND `time` BETWEEN %s AND %s",
                 $start_period,
@@ -314,22 +323,31 @@ class Usage {
         $vendor_commission = $commissions->commission + $commissions->shipping + $commissions->tax;
         $admin_commission  = $total_sales - $vendor_commission;
 
+        // All time. Null when there is no commission row.
+        $first_sale = $wpdb->get_var( "SELECT MIN( `time` ) FROM {$wpdb->prefix}pv_commission" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+
         return array(
-            'admin_commission'  => $admin_commission,
-            'vendor_commission' => $vendor_commission,
+            'admin_commission'     => $admin_commission,
+            'vendor_commission'    => $vendor_commission,
+            'vendor_orders'        => (int) $commissions->vendor_orders,
+            'vendors_with_sales'   => (int) $commissions->vendors_with_sales,
+            'first_vendor_sale_ts' => $first_sale,
         );
     }
 
     /**
      * Get vendor data for the period.
      *
+     * `total_vendor` and `total_pending_vendor` are approvals and applications in the period, not totals.
+     *
      * @since 2.5.0
      * @version 2.5.4 - Add time period to vendor data.
+     * @version 2.7.4 - Add total vendors. Use the site usermeta table.
      *
      * @param string $start_period Start date of the period.
      * @param string $end_period   End date of the period.
      *
-     * @return array Vendor data for the period.
+     * @return array Vendor data for the period, and the all-time vendor count.
      */
     private function _get_vendor_data( $start_period, $end_period ) {
         global $wpdb;
@@ -355,8 +373,8 @@ class Usage {
                         )
                         THEN umt1.user_id 
                     END) AS pending
-                FROM wp_usermeta umt1
-                LEFT JOIN wp_usermeta umt2 ON umt1.user_id = umt2.user_id;",
+                FROM {$wpdb->usermeta} umt1
+                LEFT JOIN {$wpdb->usermeta} umt2 ON umt1.user_id = umt2.user_id;",
                 $wpdb->prefix . 'capabilities',
                 '%"vendor"%',
                 $start_period,
@@ -368,10 +386,68 @@ class Usage {
             )
         );
 
+        $all_vendors = new WP_User_Query(
+            array(
+                'role__in'    => $this->_get_vendor_roles(),
+                'fields'      => 'ID',
+                'number'      => 1,
+                'count_total' => true,
+            )
+        );
+
         return array(
             'total_vendor'         => $vendors->vendor,
             'total_pending_vendor' => $vendors->pending,
+            'total_vendors'        => (int) $all_vendors->get_total(),
         );
+    }
+
+    /**
+     * Get published product counts for vendor-role users, all time.
+     *
+     * @since 2.7.4
+     *
+     * @return array Vendor product data.
+     */
+    private function _get_vendor_product_data() {
+        global $wpdb;
+
+        $roles = $this->_get_vendor_roles();
+        $likes = implode( ' OR ', array_fill( 0, count( $roles ), 'um.meta_value LIKE %s' ) );
+        $args  = array( $wpdb->prefix . 'capabilities' );
+
+        foreach ( $roles as $role ) {
+            $args[] = '%"' . $wpdb->esc_like( $role ) . '"%';
+        }
+
+        $products = $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+            $wpdb->prepare(
+                "SELECT COUNT( DISTINCT p.ID ) AS products, COUNT( DISTINCT p.post_author ) AS vendors
+                FROM {$wpdb->posts} p
+                INNER JOIN {$wpdb->usermeta} um ON um.user_id = p.post_author AND um.meta_key = %s
+                WHERE p.post_type = 'product' AND p.post_status = 'publish'
+                AND ( {$likes} )", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                $args
+            )
+        );
+
+        return array(
+            'vendor_products'       => $products ? (int) $products->products : 0,
+            'vendors_with_products' => $products ? (int) $products->vendors : 0,
+        );
+    }
+
+    /**
+     * Get the vendor roles. Falls back to `vendor` when the filter returns an empty or non-array value.
+     *
+     * @since 2.7.4
+     *
+     * @return array Vendor role names.
+     */
+    private function _get_vendor_roles() {
+        $roles = apply_filters( 'wcvendors_vendor_roles', array( 'vendor' ) );
+
+        return ( is_array( $roles ) && ! empty( $roles ) ) ? $roles : array( 'vendor' );
     }
 
 
@@ -425,6 +501,20 @@ class Usage {
     }
 
     /**
+     * Check if two timestamps are in the same ISO week in the site timezone.
+     *
+     * @since 2.7.3
+     * @access public
+     *
+     * @param int      $last_send The last check-in timestamp.
+     * @param int|null $now       The timestamp to compare to. Null means the current time.
+     * @return bool Whether both timestamps are in the same week.
+     */
+    public function is_same_checkin_week( $last_send, $now = null ) {
+        return wp_date( 'o-W', $last_send ) === wp_date( 'o-W', $now );
+    }
+
+    /**
      * Send the checkin.
      *
      * @since 2.5.0
@@ -447,7 +537,7 @@ class Usage {
             return false;
         }
 
-        // Send a maximum of once per week.
+        // Send a maximum of once per calendar week. Each send reports the previous week.
         $last_send = get_option( self::USAGE_LAST_CHECKIN );
 
         if ( defined( 'WCV_TESTING_SITE' ) && WCV_TESTING_SITE ) {
@@ -455,7 +545,7 @@ class Usage {
             $ignore_last_checkin = true;
         }
 
-        if ( is_numeric( $last_send ) && $last_send > strtotime( '-1 week' ) && ! $ignore_last_checkin ) {
+        if ( is_numeric( $last_send ) && $this->is_same_checkin_week( (int) $last_send ) && ! $ignore_last_checkin ) {
 
             return false;
         }

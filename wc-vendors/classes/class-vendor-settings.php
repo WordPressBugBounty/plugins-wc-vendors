@@ -480,6 +480,13 @@ class Vendors_Settings {
             }
         }
 
+        // An empty or unchanged store country is allowed.
+        if ( isset( $changes['store_country'] ) && '' !== $changes['store_country']
+            && get_user_meta( $this->vendor_id, '_wcv_store_country', true ) !== $changes['store_country']
+            && ! array_key_exists( $changes['store_country'], WC()->countries->get_countries() ) ) {
+            return new WP_Error( 'store_country_invalid', esc_html__( 'Store country is not a valid country code', 'wc-vendors' ) );
+        }
+
         $media_fields       = $this->get_media_fields();
         $vacation_mode      = isset( $changes['vacation_mode'] ) ? $changes['vacation_mode'] : 'no';
         $lock_new_products  = isset( $changes['lock_new_products'] ) ? $changes['lock_new_products'] : 'no';

@@ -129,7 +129,7 @@ class WCV_Vendor_Signup {
 
         do_action_deprecated(
             'wcvendors_application_submited',
-            array( 'user_id' => $user_id ),
+            array( $user_id ),
             '2.4.7',
             'wcvendors_application_submitted'
         );

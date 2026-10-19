@@ -1,6 +1,12 @@
 <?php
 /**
  * Class Admin API for WC Vendors.
+ *
+ * FROZEN: part of the `wcv-api/v1` namespace, frozen as of 2.7.3. Do not add new
+ * routes here. New endpoints go on the public `wcvendors/v1` base in
+ * `classes/rest-api/`.
+ *
+ * @deprecated 2.7.3 Frozen namespace. Use WCV_REST_Controller for new routes.
  */
 class WCV_Admin_API extends WCV_API {
 
@@ -486,58 +492,36 @@ class WCV_Admin_API extends WCV_API {
     }
 
     /**
-     * Get the computed vendor status value for a given vendor ID.
-     *
-     * @since 2.6.9
-     *
-     * @param int $vendor_id Vendor ID.
-     * @return string Status value: 'active', 'inactive', or 'pending'.
-     */
-    private function get_vendor_status_value( $vendor_id ) {
-        $vendor        = new Vendors_Settings( $vendor_id, true );
-        $vendor_status = $vendor->get_vendor_status();
-        return $vendor_status['value'];
-    }
-
-    /**
      * Action inactive vendor
      *
      * @param int $vendor_id Vendor ID.
      */
     public function set_vendor_inactive( $vendor_id ) {
 
-        $status = $this->get_vendor_status_value( $vendor_id );
-        if ( 'inactive' === $status ) {
-            return new WP_REST_Response(
-                array(
-                    'success' => false,
-                    'message' => __( 'Vendor is already inactive.', 'wc-vendors' ),
-                ),
-                200
-            );
-        }
-        $vendor = new Vendors_Settings( $vendor_id, true );
-        $vendor->set_prop( 'vendor_status', 'inactive' );
-        $result = $vendor->save();
+        $result = wcv_deactivate_vendor( $vendor_id );
 
-        if ( ! is_wp_error( $result ) ) {
-            do_action( 'wcvendors_set_vendor_inactive', $vendor_id );
-            return new WP_REST_Response(
-                array(
-                    'success' => true,
-                    'message' => __( 'Vendor has been deactivated.', 'wc-vendors' ),
-                ),
-                200
-            );
-        } else {
+        if ( is_wp_error( $result ) ) {
+            // Surface the "already in that state" notice; use a generic message for any other save error.
+            $message = WCV_VENDOR_ALREADY_INACTIVE === $result->get_error_code()
+                ? $result->get_error_message()
+                : __( 'An error occurred while deactivating the vendor.', 'wc-vendors' );
+
             return new WP_REST_Response(
                 array(
                     'success' => false,
-                    'message' => $result->get_error_message(),
+                    'message' => $message,
                 ),
                 200
             );
         }
+
+        return new WP_REST_Response(
+            array(
+                'success' => true,
+                'message' => __( 'Vendor has been deactivated.', 'wc-vendors' ),
+            ),
+            200
+        );
     }
 
     /**
@@ -547,37 +531,30 @@ class WCV_Admin_API extends WCV_API {
      */
     public function set_vendor_active( $vendor_id ) {
 
-        $status = $this->get_vendor_status_value( $vendor_id );
-        if ( 'active' === $status ) {
+        $result = wcv_activate_vendor( $vendor_id );
+
+        if ( is_wp_error( $result ) ) {
+            // Surface the "already in that state" notice; use a generic message for any other save error.
+            $message = WCV_VENDOR_ALREADY_ACTIVE === $result->get_error_code()
+                ? $result->get_error_message()
+                : __( 'An error occurred while activating the vendor.', 'wc-vendors' );
+
             return new WP_REST_Response(
                 array(
                     'success' => false,
-                    'message' => __( 'Vendor is already active.', 'wc-vendors' ),
+                    'message' => $message,
                 ),
                 200
             );
         }
-        $vendor = new Vendors_Settings( $vendor_id, true );
-        $vendor->set_prop( 'vendor_status', 'active' );
-        $result = $vendor->save();
-        if ( ! is_wp_error( $result ) ) {
-            do_action( 'wcvendors_set_vendor_active', $vendor_id );
-            return new WP_REST_Response(
-                array(
-                    'success' => true,
-                    'message' => __( 'Vendor has been activated.', 'wc-vendors' ),
-                ),
-                200
-            );
-        } else {
-            return new WP_REST_Response(
-                array(
-                    'success' => false,
-                    'message' => __( 'An error occurred while activating the vendor.', 'wc-vendors' ),
-                ),
-                200
-            );
-        }
+
+        return new WP_REST_Response(
+            array(
+                'success' => true,
+                'message' => __( 'Vendor has been activated.', 'wc-vendors' ),
+            ),
+            200
+        );
     }
 
     /**
@@ -729,23 +706,17 @@ class WCV_Admin_API extends WCV_API {
      * @return WP_REST_Response
      */
     public function approve_vendor( $vendor_id, $custom_message = '', $use_custom_msg = false ) {
-        $vendor = new WP_User( $vendor_id );
-        $roles  = $vendor->roles;
-        if ( ! in_array( 'pending_vendor', $roles, true ) ) {
+        $result = wcv_approve_vendor( $vendor_id, $custom_message, $use_custom_msg );
+
+        if ( is_wp_error( $result ) ) {
             return new WP_REST_Response(
                 array(
                     'success' => false,
-                    'message' => __( 'Vendor cannot be approved. Please make sure the vendor is pending.', 'wc-vendors' ),
+                    'message' => $result->get_error_message(),
                 ),
                 200
             );
         }
-
-        $vendor->remove_role( 'pending_vendor' );
-        wcv_set_primary_vendor_role( $vendor_id, 'vendor', $use_custom_msg, $custom_message );
-        update_user_meta( $vendor_id, '_wcv_vendor_status', 'active' );
-
-        do_action( 'wcvendors_approve_vendor', $vendor );
 
         return new WP_REST_Response(
             array(
@@ -767,27 +738,17 @@ class WCV_Admin_API extends WCV_API {
      * @return WP_REST_Response
      */
     public function deny_vendor( $vendor_id, $custom_message = '', $use_custom_msg = false ) {
+        $result = wcv_deny_vendor( $vendor_id, $custom_message, $use_custom_msg );
 
-        $role   = apply_filters( 'wcvendors_denied_vendor_role', get_option( 'default_role', 'subscriber' ) );
-        $vendor = new WP_User( $vendor_id );
-        $roles  = $vendor->roles;
-        if ( ! in_array( 'pending_vendor', $roles, true ) ) {
+        if ( is_wp_error( $result ) ) {
             return new WP_REST_Response(
                 array(
                     'success' => false,
-                    'message' => __( 'Vendor cannot be denied. Please make sure the vendor is pending.', 'wc-vendors' ),
+                    'message' => $result->get_error_message(),
                 ),
                 200
             );
         }
-        $vendor->remove_role( 'pending_vendor' );
-
-        if ( empty( $vendor->roles ) ) {
-            $vendor->add_role( $role );
-        }
-        delete_user_meta( $vendor_id, '_wcv_vendor_status' );
-
-        do_action( 'wcvendors_deny_vendor', $vendor, $use_custom_msg, $custom_message );
 
         return new WP_REST_Response(
             array(
@@ -1013,46 +974,11 @@ class WCV_Admin_API extends WCV_API {
             );
         }
 
-        $product = wc_get_product( $product_id );
-        if ( ! $product ) {
-            return new WP_REST_Response(
-                array(
-                    'success' => false,
-                    'message' => __( 'Product not found.', 'wc-vendors' ),
-                ),
-                404
-            );
-        }
-
-        $post = get_post( $product_id );
-        if ( 'pending' !== $post->post_status ) {
-            return new WP_REST_Response(
-                array(
-                    'success' => false,
-                    'message' => __( 'Product is not pending approval.', 'wc-vendors' ),
-                ),
-                400
-            );
-        }
-
-        $result = wp_update_post(
-            array(
-                'ID'          => $product_id,
-                'post_status' => 'publish',
-            )
-        );
+        $result = wcv_approve_product( $product_id );
 
         if ( is_wp_error( $result ) ) {
-            return new WP_REST_Response(
-                array(
-                    'success' => false,
-                    'message' => $result->get_error_message(),
-                ),
-                500
-            );
+            return $this->product_error_response( $result, __( 'Product is not pending approval.', 'wc-vendors' ) );
         }
-
-        do_action( 'wcvendors_approve_product', $product_id );
 
         return new WP_REST_Response(
             array(
@@ -1307,83 +1233,20 @@ class WCV_Admin_API extends WCV_API {
             );
         }
 
-        $product = wc_get_product( $product_id );
-        if ( ! $product ) {
-            return new WP_REST_Response(
-                array(
-                    'success' => false,
-                    'message' => __( 'Product not found.', 'wc-vendors' ),
-                ),
-                404
-            );
-        }
-
-        $post = get_post( $product_id );
-        if ( 'pending' !== $post->post_status ) {
-            return new WP_REST_Response(
-                array(
-                    'success' => false,
-                    'message' => __( 'Product is not pending.', 'wc-vendors' ),
-                ),
-                400
-            );
-        }
-
-        $vendor_id = get_post_field( 'post_author', $product_id );
-        $vendor    = get_userdata( $vendor_id );
-
-        if ( ! $vendor ) {
-            return new WP_REST_Response(
-                array(
-                    'success' => false,
-                    'message' => __( 'Vendor not found.', 'wc-vendors' ),
-                ),
-                404
-            );
-        }
-
-        // Save change request message to product meta.
-        if ( ! empty( $message ) ) {
-            $product->update_meta_data( 'wcv_change_request_message', sanitize_textarea_field( $message ) );
-            $product->save_meta_data();
-        }
-
         // Get AI review and extract suggestions only if requested.
         $suggestions = array();
-        if ( $include_suggestions ) {
+        $product     = $include_suggestions ? wc_get_product( $product_id ) : false;
+        if ( $product ) {
             $ai_review_raw = $product->get_meta( '_saai_vendors_product_moderation_result' );
             $ai_review     = $this->format_ai_review( $ai_review_raw );
             $suggestions   = ! empty( $ai_review['suggestions'] ) && is_array( $ai_review['suggestions'] ) ? $ai_review['suggestions'] : array();
-
-            // Set meta key to indicate suggestions should be shown to vendor.
-            if ( ! empty( $suggestions ) ) {
-                $product->update_meta_data( '_wcv_show_ai_suggestions', 'yes' );
-                $product->save_meta_data();
-            }
         }
 
-        // Set product status to draft so vendor can make changes.
-        $result = wp_update_post(
-            array(
-                'ID'          => $product_id,
-                'post_status' => 'draft',
-            )
-        );
+        $result = wcv_request_product_change( $product_id, (string) $message, $suggestions );
 
         if ( is_wp_error( $result ) ) {
-            return new WP_REST_Response(
-                array(
-                    'success' => false,
-                    'message' => $result->get_error_message(),
-                ),
-                500
-            );
+            return $this->product_error_response( $result, __( 'Product is not pending.', 'wc-vendors' ) );
         }
-
-        // Send email to vendor.
-        $this->send_change_request_email( $vendor, $product, $message, $suggestions );
-
-        do_action( 'wcvendors_request_product_change', $product_id, $vendor_id, $message, $suggestions );
 
         return new WP_REST_Response(
             array(
@@ -1395,150 +1258,27 @@ class WCV_Admin_API extends WCV_API {
     }
 
     /**
-     * Send change request email to vendor.
+     * Map a product approval error to a REST response.
      *
-     * @param WP_User    $vendor      Vendor user object.
-     * @param WC_Product $product     Product object.
-     * @param string     $message     Change request message.
-     * @param array      $suggestions Array of suggestions with 'field' and 'suggestion' keys.
+     * @param WP_Error $error           The error from the shared function.
+     * @param string   $pending_message The message for a product that is not pending.
      *
-     * @return void
+     * @return WP_REST_Response
      */
-    private function send_change_request_email( $vendor, $product, $message, $suggestions = array() ) {
-        if ( ! $vendor || ! $product ) {
-            return;
-        }
-
-        $vendor_email = $vendor->user_email;
-        $product_name = $product->get_name();
-        $product_id   = $product->get_id();
-        $product_url  = esc_url( \WCV_Vendor_Dashboard::get_dashboard_page_url( 'product/edit/' . $product_id ) );
-
-        $subject = sprintf(
-            /* translators: %s: product name */
-            __( 'Change Request for Product: %s', 'wc-vendors' ),
-            $product_name
+    private function product_error_response( $error, $pending_message ) {
+        $statuses = array(
+            WCV_PRODUCT_NOT_FOUND   => 404,
+            'wcv_vendor_not_found'  => 404,
+            WCV_PRODUCT_NOT_PENDING => 400,
         );
+        $code     = $error->get_error_code();
 
-        $email_heading = __( 'Product Change Request', 'wc-vendors' );
-
-        // Build email content.
-        ob_start();
-        ?>
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        </head>
-        <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 16px; line-height: 1.6; color: #333333; background-color: #f5f5f5;">
-            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f5f5f5; padding: 20px 0;">
-                <tr>
-                    <td align="center">
-                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="max-width: 600px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                            <!-- Header -->
-                            <tr>
-                                <td style="padding: 30px 30px 20px 30px; border-bottom: 2px solid #e8e8e8;">
-                                    <h1 style="margin: 0; font-size: 24px; font-weight: 600; color: #1a1a1a; line-height: 1.3;">
-                                        <?php echo esc_html( $email_heading ); ?>
-                                    </h1>
-                                </td>
-                            </tr>
-                            
-                            <!-- Content -->
-                            <tr>
-                                <td style="padding: 30px;">
-                                    <!-- Greeting -->
-                                    <p style="margin: 0 0 20px 0; font-size: 16px; color: #333333;">
-                                        <?php
-                                        /* translators: %s: vendor display name */
-                                        printf( esc_html__( 'Hello %s,', 'wc-vendors' ), '<strong style="color: #1a1a1a;">' . esc_html( $vendor->display_name ) . '</strong>' );
-                                        ?>
-                                    </p>
-                                    
-                                    <!-- Introduction -->
-                                    <p style="margin: 0 0 30px 0; font-size: 16px; color: #333333;">
-                                        <?php
-                                        /* translators: %s: product name */
-                                        printf( esc_html__( 'We need some changes to your product "%s".', 'wc-vendors' ), '<strong style="color: #1677ff;">' . esc_html( $product_name ) . '</strong>' );
-                                        ?>
-                                    </p>
-                                    
-                                    <!-- Requested Changes Section -->
-                                    <?php if ( ! empty( $message ) ) : ?>
-                                        <div style="margin: 0 0 25px 0; padding: 20px; background-color: #fff7e6; border-left: 4px solid #faad14; border-radius: 4px;">
-                                            <h2 style="margin: 0 0 12px 0; font-size: 18px; font-weight: 600; color: #1a1a1a;">
-                                                <?php esc_html_e( 'Requested Changes', 'wc-vendors' ); ?>
-                                            </h2>
-                                            <div style="margin: 0; font-size: 15px; color: #333333; line-height: 1.6;">
-                                                <?php echo wp_kses_post( nl2br( $message ) ); ?>
-                                            </div>
-                                        </div>
-                                    <?php endif; ?>
-                                    
-                                    <!-- Suggested Fixes Section -->
-                                    <?php if ( ! empty( $suggestions ) && is_array( $suggestions ) ) : ?>
-                                        <div style="margin: 0 0 25px 0; padding: 20px; background-color: #e6f7ff; border-left: 4px solid #1677ff; border-radius: 4px;">
-                                            <h2 style="margin: 0 0 15px 0; font-size: 18px; font-weight: 600; color: #1a1a1a;">
-                                                <?php esc_html_e( 'Suggested Fixes', 'wc-vendors' ); ?>
-                                            </h2>
-                                            <div style="margin: 0;">
-                                                <?php foreach ( $suggestions as $index => $suggestion ) : ?>
-                                                    <?php if ( ! empty( $suggestion['field'] ) && ! empty( $suggestion['suggestion'] ) ) : ?>
-                                                        <div style="margin: <?php echo $index > 0 ? '15px' : '0'; ?> 0 0 0; padding: 0;">
-                                                            <div style="margin: 0 0 5px 0; font-weight: 600; font-size: 15px; color: #1a1a1a; text-transform: capitalize;">
-                                                                <?php echo esc_html( $suggestion['field'] ); ?>
-                                                            </div>
-                                                            <div style="margin: 0; font-size: 15px; color: #333333; line-height: 1.6; padding-left: 0;">
-                                                                <?php echo wp_kses_post( $suggestion['suggestion'] ); ?>
-                                                            </div>
-                                                        </div>
-                                                    <?php endif; ?>
-                                                <?php endforeach; ?>
-                                            </div>
-                                        </div>
-                                    <?php endif; ?>
-                                    
-                                    <!-- Call to Action Button -->
-                                    <div style="margin: 30px 0; text-align: center;">
-                                        <a href="<?php echo esc_url( $product_url ); ?>" style="display: inline-block; background-color: #1677ff; color: #ffffff !important; padding: 14px 32px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 16px; box-shadow: 0 2px 4px rgba(22, 119, 255, 0.3); transition: background-color 0.2s;">
-                                            <?php esc_html_e( 'Edit Product', 'wc-vendors' ); ?>
-                                        </a>
-                                    </div>
-                                    
-                                    <!-- Closing -->
-                                    <p style="margin: 30px 0 0 0; font-size: 15px; color: #666666; text-align: center;">
-                                        <?php esc_html_e( 'Thank you for your cooperation.', 'wc-vendors' ); ?>
-                                    </p>
-                                </td>
-                            </tr>
-                            
-                            <!-- Footer -->
-                            <tr>
-                                <td style="padding: 20px 30px; background-color: #fafafa; border-top: 1px solid #e8e8e8; border-radius: 0 0 8px 8px;">
-                                    <p style="margin: 0; font-size: 13px; color: #999999; text-align: center;">
-                                        <?php echo esc_html( get_option( 'blogname' ) ); ?>
-                                    </p>
-                                </td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-            </table>
-        </body>
-        </html>
-        <?php
-        $email_content = ob_get_clean();
-
-        // Set email headers.
-        $headers = array( 'Content-Type: text/html; charset=UTF-8' );
-
-        // Send email.
-        wp_mail(
-            $vendor_email,
-            $subject,
-            $email_content,
-            $headers
+        return new WP_REST_Response(
+            array(
+                'success' => false,
+                'message' => WCV_PRODUCT_NOT_PENDING === $code ? $pending_message : $error->get_error_message(),
+            ),
+            isset( $statuses[ $code ] ) ? $statuses[ $code ] : 500
         );
     }
 }

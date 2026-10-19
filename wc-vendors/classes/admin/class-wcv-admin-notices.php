@@ -32,12 +32,13 @@ class WCVendors_Admin_Notices {
      */
     private static $core_notices
         = array(
-            'install'        => 'install_notice',
-            'update'         => 'update_notice',
-            'template_files' => 'template_file_check_notice',
-            'theme_support'  => 'theme_check_notice',
-            'review_request' => 'review_request_notice',
-            'usage_tracking' => 'usage_tracking_notice',
+            'install'                  => 'install_notice',
+            'update'                   => 'update_notice',
+            'template_files'           => 'template_file_check_notice',
+            'theme_support'            => 'theme_check_notice',
+            'review_request'           => 'review_request_notice',
+            'usage_tracking'           => 'usage_tracking_notice',
+            'commission_dedupe_failed' => 'commission_dedupe_failed_notice',
         );
 
     /**
@@ -49,6 +50,13 @@ class WCVendors_Admin_Notices {
 
         $notices       = (array) get_option( 'wcvendors_admin_notices', array() );
         self::$notices = array_filter( $notices );
+
+        // Drive this notice off the option in both directions, so a later success clears it.
+        if ( 'yes' === get_option( 'wcvendors_commission_dedupe_failed' ) ) {
+            self::add_notice( 'commission_dedupe_failed' );
+        } else {
+            self::remove_notice( 'commission_dedupe_failed' );
+        }
         add_action( 'switch_theme', array( __CLASS__, 'reset_admin_notices' ) );
         add_action( 'wcvendors_installed', array( __CLASS__, 'reset_admin_notices' ) );
         add_action( 'wp_loaded', array( __CLASS__, 'hide_notices' ) );
@@ -260,6 +268,17 @@ class WCVendors_Admin_Notices {
                 }
             }
         }
+    }
+
+    /**
+     * Tell the admin that the commission de-duplication update did not finish.
+     *
+     * @since 2.7.3
+     * @return void
+     */
+    public static function commission_dedupe_failed_notice() {
+
+        include 'views/notices/html-notice-commission-dedupe-failed.php';
     }
 
     /**

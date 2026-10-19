@@ -585,6 +585,16 @@ class WCV_Order_Data_Synchronizer {
             }
 
             if ( empty( $sub_orders ) ) {
+                $this->log( 'WC Vendors: No sub orders for order #' . $order->get_id() );
+
+                $vendors_changed = $this->maybe_set_order_meta( $order, 'wcv_vendor_ids', $vendor_ids );
+                $subs_changed    = $this->maybe_set_order_meta( $order, 'wcv_sub_orders', array() );
+
+                if ( $vendors_changed || $subs_changed ) {
+                    $this->save_order_meta_only( $order );
+                }
+
+                $this->update_progress( 1 );
                 continue;
             }
 
@@ -597,16 +607,16 @@ class WCV_Order_Data_Synchronizer {
 
             $sub_order_ids = array_filter( $sub_order_ids );
 
-            if ( ! empty( $vendor_ids ) ) {
-                $order->add_meta_data( 'wcv_vendor_ids', $vendor_ids, true );
-            }
+            $vendors_changed = $this->maybe_set_order_meta( $order, 'wcv_vendor_ids', $vendor_ids );
+            $subs_changed    = $this->maybe_set_order_meta( $order, 'wcv_sub_orders', $sub_order_ids );
 
-            if ( ! empty( $sub_order_ids ) ) {
-                $order->add_meta_data( 'wcv_sub_orders', $sub_order_ids, true );
-            }
+            if ( $vendors_changed || $subs_changed ) {
+                $this->save_order_meta_only( $order );
 
-            if ( ! empty( $vendor_ids ) || ! empty( $sub_order_ids ) ) {
-                $order->save();
+                // Keep the sub order mirror that the removed save() used to trigger.
+                if ( $this->data_sync_is_enabled() ) {
+                    $this->handle_updated_order( $order->get_id() );
+                }
             }
 
             $this->update_progress( 1 );
@@ -1114,6 +1124,59 @@ class WCV_Order_Data_Synchronizer {
      */
 
 
+
+    /**
+     * Queue an order meta write only when the stored value differs.
+     *
+     * @param WC_Order $order The order.
+     * @param string   $key   The meta key.
+     * @param array    $value The list of IDs to store.
+     * @return bool True when a write was queued.
+     * @version 2.7.3
+     * @since   2.7.3
+     */
+    private function maybe_set_order_meta( $order, $key, $value ) {
+        $value = array_values( array_map( 'intval', (array) $value ) );
+
+        if ( $order->meta_exists( $key ) ) {
+            $stored = array_values( array_map( 'intval', (array) $order->get_meta( $key ) ) );
+
+            if ( $stored === $value ) {
+                return false;
+            }
+        }
+
+        $order->add_meta_data( $key, $value, true );
+
+        return true;
+    }
+
+    /**
+     * Save order meta without a full order save, so date_modified is not bumped.
+     *
+     * The filter exists since WC 8.8.0. On older HPOS stores one full save still runs per order.
+     *
+     * @param WC_Order $order The order.
+     * @return void
+     * @version 2.7.3
+     * @since   2.7.3
+     */
+    private function save_order_meta_only( $order ) {
+        $hook  = 'woocommerce_orders_table_datastore_should_save_after_meta_change';
+        $added = ! has_filter( $hook, '__return_false' );
+
+        if ( $added ) {
+            add_filter( $hook, '__return_false' );
+        }
+
+        try {
+            $order->save_meta_data();
+        } finally {
+            if ( $added ) {
+                remove_filter( $hook, '__return_false' );
+            }
+        }
+    }
 
     /**
      * Bulk update post meta for better performance.

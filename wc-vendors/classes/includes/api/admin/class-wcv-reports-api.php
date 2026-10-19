@@ -2,7 +2,13 @@
 /**
  * Class Reports API for WC Vendors.
  *
+ * FROZEN: part of the `wcv-api/v1` namespace, frozen as of 2.7.3. Do not add new
+ * routes here. New endpoints go on the public `wcvendors/v1` base in
+ * `classes/rest-api/`.
+ *
  * @version 2.6.5 - Fix security issues.
+ *
+ * @deprecated 2.7.3 Frozen namespace. Use WCV_REST_Controller for new routes.
  *
  * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
  * @phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery

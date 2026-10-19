@@ -16,9 +16,16 @@ class WCV_Commission {
         add_action( 'init', array( $this, 'check_order_complete' ) );
         add_action( 'init', array( $this, 'check_order_reverse' ) );
 
-        // Reverse the commission if the order is deleted.
-        add_action( 'deleted_post', array( $this, 'commissions_table_sync' ), 10 );
-        add_action( 'wp_trash_post', array( $this, 'commissions_table_sync' ), 10 );
+        // Reverse the commission if the order is trashed or deleted.
+        if ( wcv_cot_enabled() ) {
+            add_action( 'woocommerce_before_trash_order', array( $this, 'commissions_table_sync' ), 10 );
+            add_action( 'woocommerce_before_delete_order', array( $this, 'commissions_table_sync' ), 10 );
+            add_action( 'woocommerce_untrash_order', array( $this, 'commissions_table_restore' ), 10 );
+        } else {
+            add_action( 'wp_trash_post', array( $this, 'commissions_table_sync' ), 10 );
+            add_action( 'before_delete_post', array( $this, 'commissions_table_sync' ), 10 );
+            add_action( 'untrashed_post', array( $this, 'commissions_table_restore' ), 10 );
+        }
         add_action( 'woocommerce_order_partially_refunded', array( $this, 'partial_reversed_commission' ), 10, 2 );
         add_filter( 'option_wcvendors_vendor_commission_rate', array( $this, 'convert_decimal_sep_to_dot' ), 10 );
         add_filter( 'pre_update_option_wcvendors_vendor_commission_rate', array( $this, 'convert_decimal_sep_to_dot' ), 10 );
@@ -95,7 +102,7 @@ class WCV_Commission {
     public function check_order_complete() {
 
         foreach ( $this->get_completed_status() as $completed ) {
-            add_action( 'woocommerce_order_status_' . $completed, array( 'WCV_Commission', 'log_commission_due' ) );
+            add_action( 'woocommerce_order_status_' . $completed, array( 'WCV_Commission', 'log_commission_due' ), 10, 3 );
         }
     }
 
@@ -191,11 +198,21 @@ class WCV_Commission {
     /**
      * Store all commission due for an order
      *
+     * @version 2.7.3
+     *
      * @return void
      *
-     * @param int $order_id The order id.
+     * @param int           $order_id          The order id.
+     * @param WC_Order|null $order             The order. Optional.
+     * @param array         $status_transition The status transition WooCommerce passes. Optional.
      */
-    public static function log_commission_due( $order_id ) {
+    public static function log_commission_due( $order_id, $order = null, $status_transition = array() ) {
+
+        // An untrash restores the rows its trash reversed, so a row reversed before the trash must stay reversed.
+        if ( isset( $status_transition['from'] ) && 'trash' === $status_transition['from'] ) {
+            return;
+        }
+
         $order = wc_get_order( $order_id );
 
         if ( $order->get_parent_id() !== 0 ) {
@@ -224,16 +241,21 @@ class WCV_Commission {
 
                 $product_id = $detail['product_id'];
                 $order_date = $order->get_date_created();
+                $prior_base = isset( $insert_due[ $product_id ] ) ? $insert_due[ $product_id ]['commission_base'] : 0.0;
+
+                // A detail with no base makes the row base unknown. NULL lets the report use the line subtotal.
+                $commission_base = ( isset( $detail['commission_base'] ) && null !== $prior_base ) ? (float) $prior_base + (float) $detail['commission_base'] : null;
 
                 $insert_due[ $product_id ] = array(
-                    'order_id'       => $order_id,
-                    'vendor_id'      => $vendor_id,
-                    'product_id'     => $product_id,
-                    'total_due'      => ! empty( $insert_due[ $product_id ]['total_due'] ) ? ( $detail['commission'] + $insert_due[ $product_id ]['total_due'] ) : $detail['commission'],
-                    'total_shipping' => ! empty( $insert_due[ $product_id ]['total_shipping'] ) ? ( $detail['shipping'] + $insert_due[ $product_id ]['total_shipping'] ) : $detail['shipping'],
-                    'tax'            => ! empty( $insert_due[ $product_id ]['tax'] ) ? ( $detail['tax'] + $insert_due[ $product_id ]['tax'] ) : $detail['tax'],
-                    'qty'            => ! empty( $insert_due[ $product_id ]['qty'] ) ? ( $detail['qty'] + $insert_due[ $product_id ]['qty'] ) : $detail['qty'],
-                    'time'           => gmdate( 'Y-m-d H:i:s', strtotime( $order_date ) ),
+                    'order_id'        => $order_id,
+                    'vendor_id'       => $vendor_id,
+                    'product_id'      => $product_id,
+                    'total_due'       => ! empty( $insert_due[ $product_id ]['total_due'] ) ? ( $detail['commission'] + $insert_due[ $product_id ]['total_due'] ) : $detail['commission'],
+                    'total_shipping'  => ! empty( $insert_due[ $product_id ]['total_shipping'] ) ? ( $detail['shipping'] + $insert_due[ $product_id ]['total_shipping'] ) : $detail['shipping'],
+                    'tax'             => ! empty( $insert_due[ $product_id ]['tax'] ) ? ( $detail['tax'] + $insert_due[ $product_id ]['tax'] ) : $detail['tax'],
+                    'qty'             => ! empty( $insert_due[ $product_id ]['qty'] ) ? ( $detail['qty'] + $insert_due[ $product_id ]['qty'] ) : $detail['qty'],
+                    'time'            => gmdate( 'Y-m-d H:i:s', strtotime( $order_date ) ),
+                    'commission_base' => $commission_base,
                 );
             }
 
@@ -427,6 +449,39 @@ class WCV_Commission {
         return apply_filters( 'wcvendors_commission_rate', $commission, $product_id, $product_price, $order, $qty, $item );
     }
 
+    /**
+     * Get the price that the commission is calculated from.
+     *
+     * @since 2.7.3
+     * @param float         $product_price The product price.
+     * @param int           $product_id    The product id.
+     * @param WC_Order      $order         The WooCommerce order.
+     * @param int           $qty           The product quantity.
+     * @param WC_Order_Item $item          The order item. Optional default null.
+     * @return float
+     */
+    public static function get_commission_base( $product_price, $product_id, $order, $qty, $item = null ) {
+        return (float) apply_filters( 'wcvendors_commission_base', $product_price, $product_id, $order, $qty, $item );
+    }
+
+    /**
+     * Check if the pv_commission table has the commission_base column.
+     *
+     * @since 2.7.3
+     * @return bool
+     */
+    public static function has_commission_base_column() {
+        global $wpdb;
+        static $has_column = array();
+
+        // Keyed by table prefix so a switch_to_blog() call gets its own answer.
+        if ( ! isset( $has_column[ $wpdb->prefix ] ) ) {
+            $has_column[ $wpdb->prefix ] = (bool) $wpdb->get_var( "SHOW COLUMNS FROM {$wpdb->prefix}pv_commission LIKE 'commission_base'" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+        }
+
+        return $has_column[ $wpdb->prefix ];
+    }
+
 
     /**
      * Log commission to the pv_commission table
@@ -455,7 +510,22 @@ class WCV_Commission {
 
         $orders = apply_filters( 'wcvendors_insert_new_commission', $orders );
 
+        $formats = array(
+            'order_id'        => '%d',
+            'vendor_id'       => '%d',
+            'product_id'      => '%d',
+            'total_due'       => '%f',
+            'total_shipping'  => '%f',
+            'tax'             => '%f',
+            'qty'             => '%d',
+            'commission_base' => '%f',
+        );
+
         foreach ( $orders as $key => $order ) {
+
+            if ( ! self::has_commission_base_column() ) {
+                unset( $order['commission_base'] );
+            }
 
             $where = array(
                 'order_id'   => $order['order_id'],
@@ -463,14 +533,64 @@ class WCV_Commission {
                 'vendor_id'  => $order['vendor_id'],
                 'qty'        => $order['qty'],
             );
-            // Is the commission already paid?
-            $count = self::check_commission_status( $order, 'paid' );
 
-            if ( 0 === (int) $count ) {
-                $format = array( '%d', '%d', '%d', '%f', '%f', '%f', '%f', '%s', '%s' );
-                $update = $wpdb->update( $table, $order, $where, $format ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-                if ( ! $update ) {
-                    $wpdb->insert( $table, $order, $format ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+            // One query covers the paid check and the existence check. The paid check ignores qty
+            // on purpose, and $wpdb->update() cannot tell an unchanged row from a missing one.
+            $rows = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+                $wpdb->prepare(
+                    'SELECT id, qty, status FROM %i WHERE order_id = %d AND vendor_id = %d AND product_id = %d',
+                    $table,
+                    $order['order_id'],
+                    $order['vendor_id'],
+                    $order['product_id']
+                ),
+                ARRAY_A
+            );
+
+            $is_paid     = false;
+            $existing_id = 0;
+
+            foreach ( $rows as $row ) {
+                if ( 'paid' === $row['status'] ) {
+                    $is_paid = true;
+                    break;
+                }
+
+                if ( (int) $row['qty'] === (int) $order['qty'] ) {
+                    $existing_id = (int) $row['id'];
+                }
+            }
+
+            if ( $is_paid ) {
+                continue;
+            }
+
+            $format = array();
+            foreach ( array_keys( $order ) as $column ) {
+                $format[] = $formats[ $column ] ?? '%s';
+            }
+
+            if ( $existing_id ) {
+                $wpdb->update( $table, $order, array( 'id' => $existing_id ), $format ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+            } else {
+                $suppress = $wpdb->suppress_errors( true );
+                $inserted = $wpdb->insert( $table, $order, $format ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+                $error    = $wpdb->last_error;
+                $wpdb->suppress_errors( $suppress );
+
+                if ( false !== $inserted ) {
+                    $orders[ $key ]['id'] = (int) $wpdb->insert_id;
+                } else {
+                    // A concurrent request may have won the unique key. Update the row it wrote.
+                    $updated = $wpdb->update( $table, $order, $where, $format ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+
+                    // false is a query error, 0 means the WHERE matched nothing. Both lose the commission.
+                    if ( ! $updated ) {
+                        wc_get_logger()->error(
+                            sprintf( 'Could not log commission for order %d: %s', $order['order_id'], $error ),
+                            array( 'source' => 'wcvendors' )
+                        );
+                    }
                 }
             }
         }
@@ -563,28 +683,158 @@ class WCV_Commission {
     }
 
     /**
-     * If an order is deleted reverse the commissions rows
+     * If an order is trashed or deleted reverse the commission rows it covers
+     *
+     * Records the status each row had as order meta so an untrash can restore it.
+     * Rows already reversed by a refund or a status change are left alone.
      *
      * @since   1.9.2
-     * @version 1.9.13
+     * @version 2.7.3
      * @access  public
      *
      * @param int $order_id the order id.
      *
-     * @return bool|int The number of rows updated or false on failure.
+     * @return bool|int The number of rows updated, or false when there is nothing to reverse.
      */
     public function commissions_table_sync( $order_id ) {
 
         global $wpdb;
 
-        $results = $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-            $wpdb->prepare(
-                "UPDATE `{$wpdb->prefix}pv_commission` SET `status` = 'reversed' WHERE `order_id` = %d",
-                $order_id
-            )
+        $scope = $this->get_commission_scope( $order_id );
+
+        if ( false === $scope ) {
+            return false;
+        }
+
+        $where = $wpdb->prepare( '`order_id` = %d', $scope['order_id'] );
+
+        if ( null !== $scope['vendor_id'] ) {
+            $where .= $wpdb->prepare( ' AND `vendor_id` = %d', $scope['vendor_id'] );
+        }
+
+        $rows = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+            "SELECT `id`, `status` FROM `{$wpdb->prefix}pv_commission` WHERE {$where} AND `status` != 'reversed'" // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
         );
 
-        return $results;
+        if ( empty( $rows ) ) {
+            return false;
+        }
+
+        $statuses = wp_list_pluck( $rows, 'status', 'id' );
+
+        $scope['order']->update_meta_data( '_wcv_reversed_commissions', $statuses );
+        $scope['order']->save_meta_data();
+
+        $ids = escape_array_for_in_operator( array_keys( $statuses ), true );
+
+        return $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+            "UPDATE `{$wpdb->prefix}pv_commission` SET `status` = 'reversed' WHERE `id` IN {$ids}" // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        );
+    }
+
+    /**
+     * If an order is untrashed restore the commission rows its trash reversed
+     *
+     * Each row returns to the status recorded when the order was trashed. Rows
+     * reversed for another reason, such as a refund, stay reversed.
+     *
+     * @since   2.7.3
+     * @access  public
+     *
+     * @param int $order_id the order id.
+     *
+     * @return bool|int The number of rows updated, or false when there is nothing to restore.
+     */
+    public function commissions_table_restore( $order_id ) {
+
+        global $wpdb;
+
+        $scope = $this->get_commission_scope( $order_id );
+
+        if ( false === $scope ) {
+            return false;
+        }
+
+        $statuses = $scope['order']->get_meta( '_wcv_reversed_commissions', true );
+
+        if ( empty( $statuses ) || ! is_array( $statuses ) ) {
+            return false;
+        }
+
+        $updated = 0;
+
+        foreach ( array_unique( $statuses ) as $status ) {
+            $ids = escape_array_for_in_operator( array_keys( $statuses, $status, true ), true );
+
+            $updated += (int) $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+                $wpdb->prepare(
+                    "UPDATE `{$wpdb->prefix}pv_commission` SET `status` = %s WHERE `status` = 'reversed' AND `id` IN {$ids}", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                    $status
+                )
+            );
+        }
+
+        $scope['order']->delete_meta_data( '_wcv_reversed_commissions' );
+        $scope['order']->save_meta_data();
+
+        return $updated;
+    }
+
+    /**
+     * Get the commission rows an order covers
+     *
+     * Commission rows store the parent order id, so a sub order covers its own
+     * vendor's rows on the parent order instead of its own id.
+     *
+     * @since   2.7.3
+     * @access  protected
+     *
+     * @param int $order_id the order id.
+     *
+     * @return array|bool The order object plus the order id and vendor id to match, or false when the id is not an order.
+     */
+    protected function get_commission_scope( $order_id ) {
+
+        $order_types = array( 'shop_order', 'shop_order_vendor' );
+
+        // Cheaper than building an order object for every post trashed or deleted.
+        if ( ! wcv_cot_enabled() && ! in_array( get_post_type( $order_id ), $order_types, true ) ) {
+            return false;
+        }
+
+        $order = wc_get_order( $order_id );
+
+        if ( ! $order || ! in_array( $order->get_type(), $order_types, true ) ) {
+            return false;
+        }
+
+        $parent_id = $order->get_parent_id();
+
+        // A parent order covers every vendor on the order.
+        if ( 0 === $parent_id ) {
+            return array(
+                'order'     => $order,
+                'order_id'  => $order->get_id(),
+                'vendor_id' => null,
+            );
+        }
+
+        // Sub orders created before the vendor id migration only carry the old meta key.
+        $vendor_id = (int) $order->get_meta( 'wcv_vendor_id', true );
+
+        if ( ! $vendor_id ) {
+            $vendor_id = (int) $order->get_meta( '_vendor_id', true );
+        }
+
+        if ( ! $vendor_id ) {
+            return false;
+        }
+
+        return array(
+            'order'     => $order,
+            'order_id'  => $parent_id,
+            'vendor_id' => $vendor_id,
+        );
     }
 
     /**

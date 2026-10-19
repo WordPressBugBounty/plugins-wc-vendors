@@ -34,6 +34,13 @@ class WCV_Shortcodes {
     public static $category_separator = ', ';
 
     /**
+     * Orderby values that use WooCommerce catalog ordering.
+     *
+     * @since 2.7.3
+     */
+    private const CATALOG_ORDERBY = array( 'price', 'popularity', 'rating' );
+
+    /**
      * Initialize shortcodes
      */
     public function __construct() {
@@ -107,6 +114,46 @@ class WCV_Shortcodes {
     }
 
     /**
+     * Check if the orderby value uses WooCommerce catalog ordering.
+     *
+     * @since 2.7.3
+     * @param mixed $orderby Orderby value.
+     * @return bool
+     */
+    private static function is_catalog_orderby( $orderby ) {
+        return is_string( $orderby ) && in_array( strtolower( $orderby ), self::CATALOG_ORDERBY, true );
+    }
+
+    /**
+     * Run the shortcode products query.
+     *
+     * Applies WooCommerce catalog ordering after the query filters run, then removes it.
+     *
+     * @since 2.7.3
+     * @param array $args Query args.
+     * @param array $atts Shortcode attributes.
+     * @return WP_Query
+     */
+    private static function query_products( $args, $atts ) {
+        $args = apply_filters_deprecated( 'wcv_shortcode_products_query', array( $args, $atts ), '2.3.0', 'wcvendors_shortcode_products_query' );
+        $args = apply_filters( 'wcvendors_shortcode_products_query', $args, $atts );
+
+        $uses_catalog_ordering = self::is_catalog_orderby( $args['orderby'] ?? '' );
+        if ( $uses_catalog_ordering ) {
+            $ordering_args = WC()->query->get_catalog_ordering_args( $args['orderby'], $args['order'] ?? '' );
+            $args          = array_merge( $args, array_filter( $ordering_args ) );
+        }
+
+        $products = new WP_Query( $args );
+
+        if ( $uses_catalog_ordering ) {
+            WC()->query->remove_ordering_args();
+        }
+
+        return $products;
+    }
+
+    /**
      * Get recent products based on vendor username, user ID, or slug
      *
      * @param array|string $atts The shortcode attributes.
@@ -158,8 +205,7 @@ class WCV_Shortcodes {
 
         ob_start();
 
-        $args     = apply_filters_deprecated( 'wcv_shortcode_products_query', array( $args, $atts ), '2.3.0', 'wcvendors_shortcode_products_query' );
-        $products = new WP_Query( apply_filters( 'wcvendors_shortcode_products_query', $args, $atts ) );
+        $products = self::query_products( $args, $atts );
 
         $woocommerce_loop['columns'] = esc_attr( $columns );
 
@@ -271,8 +317,7 @@ class WCV_Shortcodes {
 
         ob_start();
 
-        $args     = apply_filters_deprecated( 'wcv_shortcode_products_query', array( $args, $atts ), '2.3.0', 'wcvendors_shortcode_products_query' );
-        $products = new WP_Query( apply_filters( 'wcvendors_shortcode_products_query', $args, $atts ) );
+        $products = self::query_products( $args, $atts );
 
         $woocommerce_loop['columns'] = esc_attr( $columns );
 
@@ -557,8 +602,7 @@ class WCV_Shortcodes {
 
         ob_start();
 
-        $args     = apply_filters_deprecated( 'wcv_shortcode_products_query', array( $args, $atts ), '2.3.0', 'wcvendors_shortcode_products_query' );
-        $products = new WP_Query( apply_filters( 'wcvendors_shortcode_products_query', $args, $atts ) );
+        $products = self::query_products( $args, $atts );
 
         $woocommerce_loop['columns'] = esc_attr( $columns );
 
@@ -660,8 +704,7 @@ class WCV_Shortcodes {
 
         ob_start();
 
-        $args     = apply_filters_deprecated( 'wcv_shortcode_products_query', array( $args, $atts ), '2.3.0', 'wcvendors_shortcode_products_query' );
-        $products = new WP_Query( apply_filters( 'wcvendors_shortcode_products_query', $args, $atts ) );
+        $products = self::query_products( $args, $atts );
 
         $woocommerce_loop['columns'] = esc_attr( $columns );
 

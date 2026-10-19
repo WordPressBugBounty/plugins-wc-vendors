@@ -48,7 +48,7 @@ if ( ! function_exists( 'wcv_get_user_role' ) ) {
         $roles = $user->roles;
         $role  = array_shift( $roles );
 
-        return isset( $wp_roles->role_names[ $role ] ) ? $role : false;
+        return ( $role && isset( $wp_roles->role_names[ $role ] ) ) ? $role : false;
     }
 }
 
@@ -898,5 +898,240 @@ if ( ! function_exists( 'wcv_is_all_product_types_hidden' ) ) {
         $hidden_product_types = wcv_get_hidden_product_types();
         $wc_product_types     = array_keys( wc_get_product_types() );
         return empty( array_diff( $wc_product_types, $hidden_product_types ) );
+    }
+}
+
+if ( ! function_exists( 'wcv_approve_vendor' ) ) {
+    /**
+     * Approve a pending vendor.
+     *
+     * Promotes the pending vendor to the vendor role and marks the account
+     * active. Shared by the admin screen and the REST API.
+     *
+     * @since 2.7.3
+     *
+     * @param int    $vendor_id      Vendor user ID.
+     * @param string $custom_message Custom notification message.
+     * @param bool   $use_custom_msg Whether to use a custom notification message.
+     * @return true|WP_Error True on success, WP_Error when the user is missing or not pending.
+     */
+    function wcv_approve_vendor( $vendor_id, $custom_message = '', $use_custom_msg = false ) {
+        $vendor = new WP_User( (int) $vendor_id );
+
+        if ( ! $vendor->exists() ) {
+            return new WP_Error(
+                'wcv_vendor_not_found',
+                __( 'Vendor not found.', 'wc-vendors' )
+            );
+        }
+
+        if ( ! in_array( 'pending_vendor', (array) $vendor->roles, true ) ) {
+            return new WP_Error(
+                'wcv_vendor_not_pending',
+                __( 'Vendor cannot be approved. Please make sure the vendor is pending.', 'wc-vendors' )
+            );
+        }
+
+        $vendor->remove_role( 'pending_vendor' );
+        wcv_set_primary_vendor_role( (int) $vendor_id, 'vendor', $use_custom_msg, $custom_message );
+        update_user_meta( (int) $vendor_id, '_wcv_vendor_status', 'active' );
+
+        do_action( 'wcvendors_approve_vendor', $vendor );
+
+        return true;
+    }
+}
+
+if ( ! function_exists( 'wcv_deny_vendor' ) ) {
+    /**
+     * Deny a pending vendor.
+     *
+     * Removes the pending vendor role and clears the vendor status. Shared by
+     * the admin screen and the REST API.
+     *
+     * @since 2.7.3
+     *
+     * @param int    $vendor_id      Vendor user ID.
+     * @param string $custom_message Custom notification message.
+     * @param bool   $use_custom_msg Whether to use a custom notification message.
+     * @return true|WP_Error True on success, WP_Error when the user is missing or not pending.
+     */
+    function wcv_deny_vendor( $vendor_id, $custom_message = '', $use_custom_msg = false ) {
+        $vendor = new WP_User( (int) $vendor_id );
+
+        if ( ! $vendor->exists() ) {
+            return new WP_Error(
+                'wcv_vendor_not_found',
+                __( 'Vendor not found.', 'wc-vendors' )
+            );
+        }
+
+        if ( ! in_array( 'pending_vendor', (array) $vendor->roles, true ) ) {
+            return new WP_Error(
+                'wcv_vendor_not_pending',
+                __( 'Vendor cannot be denied. Please make sure the vendor is pending.', 'wc-vendors' )
+            );
+        }
+
+        $role = apply_filters( 'wcvendors_denied_vendor_role', get_option( 'default_role', 'subscriber' ) );
+
+        $vendor->remove_role( 'pending_vendor' );
+
+        // Only add the default role if the user has no other roles.
+        if ( empty( $vendor->roles ) ) {
+            $vendor->add_role( $role );
+        }
+
+        delete_user_meta( (int) $vendor_id, '_wcv_vendor_status' );
+
+        do_action( 'wcvendors_deny_vendor', $vendor, $use_custom_msg, $custom_message );
+
+        return true;
+    }
+}
+
+if ( ! function_exists( 'wcv_activate_vendor' ) ) {
+    /**
+     * Activate a vendor.
+     *
+     * Marks the vendor account active. Shared by the admin screen and the REST API.
+     *
+     * @since 2.7.3
+     *
+     * @param int $vendor_id Vendor user ID.
+     * @return true|WP_Error True on success, WP_Error when the vendor is missing, already active, or the save fails.
+     */
+    function wcv_activate_vendor( $vendor_id ) {
+        return wcv_set_vendor_status( $vendor_id, 'active' );
+    }
+}
+
+if ( ! function_exists( 'wcv_deactivate_vendor' ) ) {
+    /**
+     * Deactivate a vendor.
+     *
+     * Marks the vendor account inactive. Shared by the admin screen and the REST API.
+     *
+     * @since 2.7.3
+     *
+     * @param int $vendor_id Vendor user ID.
+     * @return true|WP_Error True on success, WP_Error when the vendor is missing, already inactive, or the save fails.
+     */
+    function wcv_deactivate_vendor( $vendor_id ) {
+        return wcv_set_vendor_status( $vendor_id, 'inactive' );
+    }
+}
+
+if ( ! defined( 'WCV_VENDOR_ALREADY_ACTIVE' ) ) {
+    // Error code wcv_set_vendor_status() returns for a no-op activate. Consumers
+    // key the admin message and the REST 409 status on it, so define it once.
+    define( 'WCV_VENDOR_ALREADY_ACTIVE', 'wcv_vendor_already_active' );
+}
+
+if ( ! defined( 'WCV_VENDOR_ALREADY_INACTIVE' ) ) {
+    // Error code wcv_set_vendor_status() returns for a no-op deactivate.
+    define( 'WCV_VENDOR_ALREADY_INACTIVE', 'wcv_vendor_already_inactive' );
+}
+
+if ( ! function_exists( 'wcv_restate_sticky_settings' ) ) {
+    /**
+     * Restate vendor settings a partial write would otherwise clear.
+     *
+     * Vendors_Settings::save() reads these yes/no fields as 'no' when the change
+     * set does not name them, then deletes their meta. Restate any named field
+     * that is currently on, so a partial write cannot clear a setting it never
+     * sent. Read the stored meta, not get_prop(): a Pro field reports 'no' while
+     * Pro is inactive, but save() deletes the row either way.
+     *
+     * @since 2.7.3
+     *
+     * @param Vendors_Settings $settings  The settings object to write.
+     * @param int              $vendor_id Vendor user ID.
+     * @param array            $fields    Field keys to restate.
+     *
+     * @return void
+     */
+    function wcv_restate_sticky_settings( $settings, $vendor_id, array $fields ) {
+        // Nothing to write, so nothing to protect. Keeps an unchanged write idempotent.
+        $changes = $settings->get_changes();
+
+        if ( empty( $changes ) ) {
+            return;
+        }
+
+        $meta_keys = array(
+            'vacation_mode'      => '_wcv_vacation_mode',
+            'lock_new_products'  => '_wcv_lock_new_products_vendor',
+            'lock_edit_products' => '_wcv_lock_edit_products_vendor',
+            'html_enabled'       => 'pv_shop_html_enabled',
+        );
+
+        foreach ( $fields as $field ) {
+            if ( ! isset( $meta_keys[ $field ] ) || isset( $changes[ $field ] ) ) {
+                continue;
+            }
+
+            if ( 'yes' === get_user_meta( (int) $vendor_id, $meta_keys[ $field ], true ) ) {
+                $settings->set_prop( $field, 'yes' );
+            }
+        }
+    }
+}
+
+if ( ! function_exists( 'wcv_set_vendor_status' ) ) {
+    /**
+     * Write a vendor status and fire the matching transition hook.
+     *
+     * A vendor that already holds the requested status is refused, so a caller
+     * can tell a real transition from a no-op.
+     *
+     * @since 2.7.3
+     *
+     * @param int    $vendor_id Vendor user ID.
+     * @param string $status    Target status: 'active' or 'inactive'.
+     * @return true|WP_Error True on success, WP_Error otherwise.
+     */
+    function wcv_set_vendor_status( $vendor_id, $status ) {
+        $vendor_id = (int) $vendor_id;
+        $settings  = new Vendors_Settings( $vendor_id, true );
+
+        if ( ! $settings->is_valid() ) {
+            return new WP_Error(
+                'wcv_vendor_not_found',
+                __( 'Vendor not found.', 'wc-vendors' )
+            );
+        }
+
+        $current = $settings->get_vendor_status();
+
+        if ( $status === $current['value'] ) {
+            return 'active' === $status
+                ? new WP_Error( WCV_VENDOR_ALREADY_ACTIVE, __( 'Vendor is already active.', 'wc-vendors' ) )
+                : new WP_Error( WCV_VENDOR_ALREADY_INACTIVE, __( 'Vendor is already inactive.', 'wc-vendors' ) );
+        }
+
+        $settings->set_prop( 'vendor_status', $status );
+
+        // A status write names only vendor_status, so restate any sticky setting
+        // that is currently on. Otherwise save() would clear it.
+        wcv_restate_sticky_settings(
+            $settings,
+            $vendor_id,
+            array( 'vacation_mode', 'lock_new_products', 'lock_edit_products' )
+        );
+
+        $result = $settings->save();
+
+        if ( is_wp_error( $result ) ) {
+            return $result;
+        }
+
+        if ( 'active' === $status ) {
+            do_action( 'wcvendors_set_vendor_active', $vendor_id );
+        } else {
+            do_action( 'wcvendors_set_vendor_inactive', $vendor_id );
+        }
+
+        return true;
     }
 }

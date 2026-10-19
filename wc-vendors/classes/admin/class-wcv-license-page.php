@@ -122,11 +122,78 @@ class WCV_License_Page {
                 if ( is_callable( $plugins[ $active ]['tab_content_callback'] ) ) {
                     $content = call_user_func( $plugins[ $active ]['tab_content_callback'] );
                     $content = apply_filters( "{$active}_license_page_content", $content );
-                    echo wp_kses_post( $content );
+                    echo wp_kses_post( $this->mask_license_key_input( $content ) );
                 }
                 do_action( "{$active}_after_license_page_content" );
             }
             echo '</div>';
+        }
+
+        /**
+         * Switch license key inputs to type password so the key is masked.
+         *
+         * Extensions render the input with id ending in _license_key.
+         *
+         * @since 2.7.3
+         *
+         * @param string $content Tab content HTML.
+         * @return string
+         */
+        private function mask_license_key_input( $content ) {
+            if ( class_exists( 'WP_HTML_Tag_Processor' ) ) {
+                return $this->mask_license_key_input_with_processor( $content );
+            }
+
+            return $this->mask_license_key_input_with_regex( $content );
+        }
+
+        /**
+         * Mask license key inputs with the HTML API. Needs WordPress 6.2 or later.
+         *
+         * @since 2.7.3
+         *
+         * @param string $content Tab content HTML.
+         * @return string
+         */
+        private function mask_license_key_input_with_processor( $content ) {
+            $tags = new WP_HTML_Tag_Processor( $content );
+            while ( $tags->next_tag( array( 'tag_name' => 'INPUT' ) ) ) {
+                $id = $tags->get_attribute( 'id' );
+                if ( is_string( $id ) && str_ends_with( $id, '_license_key' ) ) {
+                    $tags->set_attribute( 'type', 'password' );
+                }
+            }
+
+            return $tags->get_updated_html();
+        }
+
+        /**
+         * Mask license key inputs with a regex. Fallback for WordPress before 6.2.
+         *
+         * @since 2.7.3
+         *
+         * @param string $content Tab content HTML.
+         * @return string
+         */
+        private function mask_license_key_input_with_regex( $content ) {
+            $result = preg_replace_callback(
+                '/<input\b(?:[^>"\']|"[^"]*"|\'[^\']*\')*>/i',
+                function ( $matches ) {
+                    $tag = $matches[0];
+                    if ( ! preg_match( '/(?:^|\s)id=(["\'])[^"\']*_license_key\1/i', $tag ) ) {
+                        return $tag;
+                    }
+                    if ( preg_match( '/(?:^|\s)type=(["\'])[^"\']*\1/i', $tag ) ) {
+                        $replaced = preg_replace( '/(?:^|\s)type=(["\'])[^"\']*\1/i', ' type="password"', $tag );
+                        return null === $replaced ? $tag : $replaced;
+                    }
+                    $replaced = preg_replace( '/<input\b/i', '<input type="password"', $tag );
+                    return null === $replaced ? $tag : $replaced;
+                },
+                $content
+            );
+
+            return null === $result ? $content : $result;
         }
 
         /**

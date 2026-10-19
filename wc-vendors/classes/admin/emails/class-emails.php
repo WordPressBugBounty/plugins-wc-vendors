@@ -45,6 +45,54 @@ class WCV_Emails {
 
         // WooCommerce Product Enquiry Compatibility.
         add_filter( 'product_enquiry_send_to', array( $this, 'product_enquiry_compatibility' ), 10, 2 );
+
+        // Fill in preview data for the application emails.
+        add_filter( 'woocommerce_prepare_email_for_preview', array( $this, 'prepare_application_email_for_preview' ) );
+    }
+
+    /**
+     * Give the application emails a dummy user and status for the WooCommerce email preview.
+     *
+     * WooCommerce only builds a dummy user for its own account emails, so these
+     * templates would show an empty username and status in the preview.
+     *
+     * @since 2.7.3
+     * @param WC_Email $email The email being previewed.
+     * @return WC_Email
+     */
+    public function prepare_application_email_for_preview( $email ) {
+
+        $statuses = array(
+            'WCVendors_Admin_Notify_Application'  => 'pending',
+            'WCVendors_Vendor_Notify_Application' => 'pending',
+            'WCVendors_Admin_Notify_Approved'     => 'approved',
+            'WCVendors_Vendor_Notify_Approved'    => 'approved',
+            'WCVendors_Vendor_Notify_Denied'      => '',
+        );
+
+        $class = get_class( $email );
+
+        if ( ! isset( $statuses[ $class ] ) ) {
+            return $email;
+        }
+
+        $user             = new WP_User( 0 );
+        $user->user_login = 'user_preview';
+        $user->user_email = 'user_preview@example.com';
+
+        if ( property_exists( $email, 'user' ) ) {
+            $email->user = $user;
+        }
+
+        if ( property_exists( $email, 'user_email' ) ) {
+            $email->user_email = $user->user_email;
+        }
+
+        if ( property_exists( $email, 'status' ) ) {
+            $email->status = $statuses[ $class ];
+        }
+
+        return $email;
     }
 
     /**

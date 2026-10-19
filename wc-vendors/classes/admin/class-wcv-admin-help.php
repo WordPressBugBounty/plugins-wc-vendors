@@ -109,7 +109,7 @@ class WCVendors_Admin_Help {
                 'content' =>
                     '<h2>' . __( 'Upgrade', 'wc-vendors' ) . '</h2>' .
                     '<p>' . __( 'If you need to manually run the updates, please click on the button below.', 'wc-vendors' ) . '</p>' .
-                    '<p><a href="' . esc_url( add_query_arg( 'do_update_wcvendors', 'true', admin_url( 'admin.php?page=wcv-settings' ) ) ) . '" class="button button-primary">' . __( 'Run the updater', 'wc-vendors' ) . '</a></p>',
+                    '<p><a href="' . esc_url( wp_nonce_url( add_query_arg( 'do_update_wcvendors', 'true', admin_url( 'admin.php?page=wcv-settings' ) ), 'do_update_wcvendors' ) ) . '" class="button button-primary">' . __( 'Run the updater', 'wc-vendors' ) . '</a></p>',
 
             )
         );

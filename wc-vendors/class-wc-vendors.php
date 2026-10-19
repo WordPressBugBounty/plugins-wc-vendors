@@ -8,11 +8,11 @@
  * Author URI:           https://www.wcvendors.com
  * GitHub Plugin URI:    https://github.com/wcvendors/wcvendors
  *
- * Version:              2.7.2.2
- * Requires at least:    5.9
+ * Version:              2.7.3
+ * Requires at least:    6.2
  * Tested up to:         7.1
  * WC requires at least: 5.0
- * WC tested up to:      11.0
+ * WC tested up to:      11.2
  *
  * Text Domain:          wc-vendors
  * Domain Path:          /languages/
@@ -77,6 +77,7 @@ add_action(
  * Required functions
  */
 require_once trailingslashit( __DIR__ ) . 'classes/includes/class-functions.php';
+require_once trailingslashit( __DIR__ ) . 'classes/includes/wcv-product-functions.php';
 require_once trailingslashit( __DIR__ ) . 'classes/class-activation.php';
 require_once trailingslashit( __DIR__ ) . 'classes/class-deactivation.php';
 register_activation_hook( __FILE__, array( 'WCV_Activate', 'activate' ) );
@@ -145,8 +146,18 @@ class WC_Vendors {
         }
 
         if ( ! defined( 'WCV_VERSION' ) ) {
-            define( 'WCV_VERSION', '2.7.2.2' );
+            define( 'WCV_VERSION', '2.7.3' );
         }
+
+        /*
+         * Optional host-set kill switches for the public REST API (Phase 0).
+         * These are read, never defined, by the plugin. Set either in wp-config.php:
+         *
+         *   define( 'WCV_DISABLE_REST_API', true );  // remove the wcvendors/v1 surface.
+         *   define( 'WCV_DISABLE_ABILITIES', true ); // remove abilities registration only.
+         *
+         * Undefined means enabled. See classes/rest-api/class-wcv-rest-api-loader.php.
+         */
 
         if ( ! defined( 'WCV_TEMPLATE_BASE' ) ) {
             define( 'WCV_TEMPLATE_BASE', untrailingslashit( plugin_dir_path( __FILE__ ) ) . '/templates/' );

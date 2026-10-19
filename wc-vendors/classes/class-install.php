@@ -43,6 +43,10 @@ class WCVendors_Install {
                 'wcv_normalize_capability_product_types',
                 'wcv_reset_duplicate_sub_order_cleanup',
             ),
+            '2.7.3'  => array(
+                'wcv_clear_reports_cache',
+                'wcv_dedupe_commission_rows',
+            ),
         );
 
 
@@ -114,12 +118,28 @@ class WCVendors_Install {
     public static function install_actions() {
         // phpcs:disable
         if ( ! empty( $_GET['do_update_wcvendors'] ) ) {
+            if ( ! current_user_can( 'manage_woocommerce' )
+                || ! isset( $_GET['_wpnonce'] )
+                || ! wp_verify_nonce( sanitize_key( $_GET['_wpnonce'] ), 'do_update_wcvendors' ) ) {
+                wp_die( esc_html__( 'Action failed. Please refresh the page and retry.', 'wc-vendors' ) );
+            }
             self::update();
             WCVendors_Admin_Notices::add_notice( 'update' );
         }
         // phpcs:enable
+        if ( ! empty( $_GET['retry_wcvendors_commission_dedupe'] ) ) {
+            if ( ! current_user_can( 'manage_woocommerce' )
+                || ! isset( $_GET['_wpnonce'] )
+                || ! wp_verify_nonce( sanitize_key( $_GET['_wpnonce'] ), 'retry_wcvendors_commission_dedupe' ) ) {
+                wp_die( esc_html__( 'Action failed. Please refresh the page and retry.', 'wc-vendors' ) );
+            }
+            // The stored DB version is already current, so update() would queue nothing.
+            self::$background_updater->push_to_queue( 'wcv_dedupe_commission_rows' )->save()->dispatch();
+        }
         if ( ! empty( $_GET['force_update_wcvendors'] ) ) {
-            if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_key( $_GET['_wpnonce'] ), 'force_update_wcvendors' ) ) {
+            if ( ! current_user_can( 'manage_woocommerce' )
+                || ! isset( $_GET['_wpnonce'] )
+                || ! wp_verify_nonce( sanitize_key( $_GET['_wpnonce'] ), 'force_update_wcvendors' ) ) {
                 wp_die( esc_html__( 'Action failed. Please refresh the page and retry.', 'wc-vendors' ) );
             }
             self::update();
@@ -256,6 +276,9 @@ class WCVendors_Install {
         $table_name = $wpdb->prefix . 'pv_commission';
         require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 
+        // dbDelta cannot add unique_commission while duplicate rows exist, and it hides the
+        // failure. wcv_dedupe_commission_rows() removes the duplicates and adds the key.
+
         $sql
             = "CREATE TABLE $table_name (
             id bigint(20) NOT NULL AUTO_INCREMENT,
@@ -268,7 +291,9 @@ class WCVendors_Install {
             tax decimal(20,8) NOT NULL,
             status varchar(20) NOT NULL DEFAULT 'due',
             time datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
-            UNIQUE KEY id (id)
+            commission_base decimal(20,8) DEFAULT NULL,
+            UNIQUE KEY id (id),
+            UNIQUE KEY unique_commission (order_id, product_id, vendor_id, qty)
         );";
 
         dbDelta( $sql );

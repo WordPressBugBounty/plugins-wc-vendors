@@ -1818,7 +1818,7 @@ class WCV_Order_Controller {
             'United States (US)'  => array(
                 'Fedex'         => 'https://www.fedex.com/Tracking?action=track&tracknumbers=%1$s',
                 'FedEx Sameday' => 'https://www.fedexsameday.com/fdx_dotracking_ua.aspx?tracknum=%1$s',
-                'OnTrac'        => 'http://www.ontrac.com/trackingdetail.asp?tracking=%1$s',
+                'OnTrac'        => 'https://www.ontrac.com/tracking/?number=%1$s',
                 'UPS'           => 'https://www.ups.com/track?loc=en_US&tracknum=%1$s',
                 'USPS'          => 'https://tools.usps.com/go/TrackConfirmAction_input?qtc_tLabels1=%1$s',
                 'DHL US'        => 'https://www.dhl.com/us-en/home/tracking/tracking-express.html?submit=1&tracking-id=%1$s',

@@ -2,7 +2,14 @@
 /**
  * Abstract class for WC Vendor API.
  *
+ * FROZEN: the `wcv-api/v1` namespace is frozen as of 2.7.3. Do not add new
+ * routes to it. New endpoints go on the public `wcvendors/v1` base in
+ * `classes/rest-api/`. This namespace retires through per-slice migration, not
+ * through duplication. See classes/rest-api/class-wcv-rest-api-loader.php.
+ *
  * @package WCVendors/API
+ *
+ * @deprecated 2.7.3 Frozen. Use WCV_REST_Controller for new routes.
  */
 abstract class WCV_API {
     /**

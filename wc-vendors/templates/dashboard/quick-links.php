@@ -4,7 +4,7 @@
  *
  * Override this template by copying it to yourtheme/wc-vendors/dashboard/
  *
- * @version    2.6.5 - Fix security issues.
+ * @version    2.7.3 - Show usage stats as text under the quick links.
  *
  * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
  * @phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound
@@ -34,14 +34,14 @@
                 )
             );
             ?>
-            <button class="button <?php echo esc_attr( $key ); ?> <?php echo $stat['over'] ? 'over_limit' : ''; ?>">
+            <span class="wcv-usage-stat <?php echo esc_attr( $key ); ?> <?php echo $stat['over'] ? 'over_limit' : ''; ?>">
                 <?php if ( $stat['icon'] ) : ?>
                     <svg class="wcv-icon wcv-icon-sm">
                         <use xlink:href="<?php echo esc_attr( WCV_ASSETS_URL ); ?>svg/wcv-icons.svg#<?php echo esc_attr( $stat['icon'] ); ?>"></use>
                     </svg>
                 <?php endif; ?>
                 <?php printf( esc_html( $stat['template'] ), esc_html( $stat['usage'] ), esc_html( $stat['limit'] ) ); ?>
-            </button>
+            </span>
         <?php endforeach; ?>
 
         <?php do_action( 'wcv_dashboard_after_usage_statistics' ); ?>
